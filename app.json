@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Dietician Mobile",
+    "slug": "dietician-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bekarasu.dietician-mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F3EA"
+      }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

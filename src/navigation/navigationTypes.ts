@@ -1,0 +1,28 @@
+export type AuthStackParamList = {
+  OnboardingIntro: undefined;
+  Welcome: undefined;
+  Login: undefined;
+  Register: undefined;
+  VerifyOTP: undefined;
+};
+
+export type OnboardingStackParamList = {
+  Onboarding: undefined;
+};
+
+export type AppTabParamList = {
+  Home: undefined;
+  DailyFoodLog: undefined;
+  MealRecommendation: undefined;
+  ProgressDashboard: undefined;
+  ProfileGoals: undefined;
+};
+
+export type AppStackParamList = {
+  Tabs: undefined;
+  RefrigeratorInventory: undefined;
+  HydrationTracking: undefined;
+  FriendCompetition: undefined;
+  BloodTestUpload: undefined;
+  Settings: undefined;
+};
