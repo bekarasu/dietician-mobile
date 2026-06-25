@@ -1,107 +1,69 @@
-# Dietician Mobile Boilerplate
+# Dietician Mobile
 
-Expo-based React Native boilerplate for an AI-assisted personal dietitian application. The scaffold is intentionally focused on structure, typed domain models, reusable UI primitives, and clear extension points for backend and AI integration.
+A mobile application built with React Native and Expo.
 
-## Why Expo
+## Features & Tech Stack
 
-Expo is the right default here because the project is mobile-first, TypeScript-friendly, and currently relies on standard navigation, forms, and local mock data instead of custom native SDKs. It keeps iOS and Android setup lighter while leaving room to eject later if the production app needs native health integrations or platform-specific modules.
+- **Framework**: React Native with Expo
+- **Language**: TypeScript
+- **State Management**: Zustand
+- **Navigation**: React Navigation (Native Stack & Bottom Tabs)
+- **Forms**: React Hook Form
+- **Storage**: Expo Secure Store
+- **Styling & Animations**: React Native Reanimated
 
-## Stack
+## Getting Started
 
-- React Native with Expo
-- TypeScript
-- React Navigation
-- Zustand
-- React Hook Form
-- Local mock data and placeholder services
+### Prerequisites
 
-## Run The Project
+- Node.js
+- npm or yarn
+- Expo Go app on your physical device (optional, for testing)
 
-1. Install dependencies:
+### Installation
 
-```bash
-npm install
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-2. Start Expo:
+### Running the App
+
+Start the Expo development server:
 
 ```bash
 npm start
 ```
 
-3. Run platform targets when native tooling is available:
+Run on iOS simulator:
 
 ```bash
 npm run ios
+```
+*(Note: This uses `.env.development` and runs on port 3000)*
+
+Run on Android emulator:
+
+```bash
 npm run android
 ```
 
-4. Validate types:
+Run on Web:
 
 ```bash
-npm run typecheck
+npm run web
 ```
 
-## Folder Structure
+## Scripts
 
-```txt
-src/
-  app/
-  assets/
-  components/
-  constants/
-  features/
-  hooks/
-  navigation/
-  screens/
-  services/
-    mocks/
-  store/
-  theme/
-  types/
-  utils/
-```
+- `npm start`: Starts the Expo Metro bundler
+- `npm run ios`: Starts the app on an iOS simulator
+- `npm run android`: Starts the app on an Android emulator
+- `npm run web`: Starts the app in a web browser
+- `npm run typecheck`: Runs TypeScript compiler check without emitting files
+- `npm run lint`: Runs ESLint for code formatting and quality
 
-## Architecture Notes
+## License
 
-- `src/app` contains app-level providers and bootstrapping.
-- `src/navigation` separates auth flow from the main authenticated stack and bottom tabs.
-- `src/screens` owns route-level composition only; reusable UI and feature-specific helpers live elsewhere.
-- `src/components` contains shared UI primitives such as `AppButton`, `AppTextInput`, `AppCard`, and `ScreenContainer`.
-- `src/features/onboarding/onboardingPages.ts` is the config-driven source of truth for onboarding steps. Add or remove pages there without rewriting the flow controller.
-- `src/store` uses small Zustand stores for auth, profile, daily logs, inventory, hydration, and progress.
-- `src/services` is the integration boundary. Services currently return mock data or placeholder responses and are safe to swap for backend calls later.
-- `src/types/models.ts` centralizes shared domain types.
-- `src/constants/health.ts` keeps the medical and AI guidance boundaries explicit in one place.
-
-## Included Flows
-
-- Auth: welcome, login, register
-- Main navigation: dashboard, food log, meal recommendation, progress, profile/goals
-- Additional screens: refrigerator inventory, water and coffee tracking, friend competition, blood test upload, settings
-
-## Health Boundaries Included In The Boilerplate
-
-- Blood test upload UI includes a medical disclaimer.
-- Recommendation copy avoids aggressive restriction language.
-- Comments in service files call out the need for secure health-data handling, clinician boundaries, and backend-side safety controls.
-- AI suggestions are framed as general nutrition guidance rather than diagnosis.
-
-## Future Backend Integration
-
-1. Replace mock services in `src/services` with API clients.
-2. Keep the screen layer unchanged and move data loading into store actions or dedicated query hooks.
-3. Add authenticated persistence for profile, logs, inventory, hydration, progress, and uploads.
-4. Move AI recommendation generation to a backend service that applies prompt controls, audit logging, and health-safety policies.
-
-## Future AI Integration
-
-The current recommendation service is deliberately simple. It already accepts structured context including goal type, dietary preferences, daily logs, inventory, progress, hydration, and coffee intake. That shape is meant to become the payload for a backend recommendation endpoint or an orchestrated AI provider.
-
-## Notes For Production Hardening
-
-- Add secure storage and token handling.
-- Add analytics and crash reporting.
-- Add consent flows for sensitive health data.
-- Add validation, retry handling, and offline sync.
-- Add tests for store actions, services, and route flows.
+This project is proprietary and confidential.
