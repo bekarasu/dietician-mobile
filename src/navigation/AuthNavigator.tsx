@@ -8,13 +8,16 @@ import { OnboardingIntroScreen } from '../screens/OnboardingIntroScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { VerifyOTPScreen } from '../screens/VerifyOTPScreen';
 import { WelcomeScreen } from '../screens/WelcomeScreen';
+import { useAuthStore } from '../store/useAuthStore';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export function AuthNavigator() {
+  const hasSeenOnboardingIntro = useAuthStore((state) => state.hasSeenOnboardingIntro);
+
   return (
     <Stack.Navigator
-      initialRouteName="OnboardingIntro"
+      initialRouteName={hasSeenOnboardingIntro ? 'Welcome' : 'OnboardingIntro'}
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: theme.colors.background },

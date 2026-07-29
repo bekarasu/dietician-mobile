@@ -34,9 +34,12 @@ function buildProfileFromDraft(draft: OnboardingDraft, profile: UserProfile | nu
     heightCm: Number(draft.heightCm) || profile?.heightCm || 170,
     weightKg: Number(draft.weightKg) || profile?.weightKg || 70,
     targetWeightKg: Number(draft.targetWeightKg) || profile?.targetWeightKg || 70,
+    gender: draft.gender || profile?.gender,
+    activityLevel: draft.activityLevel || profile?.activityLevel,
     goalType: draft.goalType,
     dietaryPreferences: draft.dietaryPreferences,
     dislikedFoods: splitCommaSeparatedList(draft.dislikedFoods),
+    allergies: splitCommaSeparatedList(draft.allergies),
     dailyCalorieTarget: Number(draft.dailyCalorieTarget) || profile?.dailyCalorieTarget || 2200,
   } satisfies UserProfile;
 }
@@ -74,7 +77,7 @@ export function OnboardingScreen(_: Props) {
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
 
   const profile = useProfileStore((state) => state.profile);
-  const updateProfile = useProfileStore((state) => state.updateProfile);
+  const setProfile = useProfileStore((state) => state.setProfile);
   const hydration = useHydrationStore((state) => state.hydration);
   const coffee = useHydrationStore((state) => state.coffee);
   const setTargets = useHydrationStore((state) => state.setTargets);
@@ -104,9 +107,12 @@ export function OnboardingScreen(_: Props) {
       heightCm: profile ? String(profile.heightCm) : '',
       weightKg: profile ? String(profile.weightKg) : '',
       targetWeightKg: profile ? String(profile.targetWeightKg) : '',
+      gender: profile?.gender ?? '',
+      activityLevel: profile?.activityLevel ?? '',
       goalType: profile?.goalType ?? 'habit_building',
       dietaryPreferences: profile?.dietaryPreferences ?? [],
       dislikedFoods: profile?.dislikedFoods.join(', ') ?? '',
+      allergies: profile?.allergies?.join(', ') ?? '',
       dailyCalorieTarget: profile ? String(profile.dailyCalorieTarget) : '',
       targetWaterMl: String(hydration.targetWaterMl),
       targetCoffeeCups: String(coffee.targetCups),
@@ -131,7 +137,11 @@ export function OnboardingScreen(_: Props) {
     }
 
     if (isLastPage) {
-      await updateProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
+      if (response.profile) {
+        setProfile(response.profile);
+      } else {
+        setProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
+      }
       setTargets(Number(draft.targetWaterMl) || hydration.targetWaterMl, Number(draft.targetCoffeeCups) || coffee.targetCups);
       completeOnboarding();
       return;

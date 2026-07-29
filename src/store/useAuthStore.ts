@@ -10,6 +10,8 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   otpToken: string | null;
+  hasSeenOnboardingIntro: boolean;
+  setHasSeenOnboardingIntro: () => Promise<void>;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
@@ -23,9 +25,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true, // Start loading for bootstrap
   error: null,
   otpToken: null,
+  hasSeenOnboardingIntro: false,
+
+  setHasSeenOnboardingIntro: async () => {
+    try {
+      const SecureStore = await import('expo-secure-store');
+      await SecureStore.setItemAsync('HAS_SEEN_ONBOARDING_INTRO', 'true');
+      set({ hasSeenOnboardingIntro: true });
+    } catch (e) {
+      console.warn('Failed to save onboarding status', e);
+    }
+  },
 
   bootstrap: async () => {
     try {
+      const SecureStore = await import('expo-secure-store');
+      const hasSeen = await SecureStore.getItemAsync('HAS_SEEN_ONBOARDING_INTRO');
+      set({ hasSeenOnboardingIntro: hasSeen === 'true' });
+
       const accessToken = await tokenService.getAccessToken();
       if (accessToken) {
         // Here we would ideally fetch the user profile with the token.

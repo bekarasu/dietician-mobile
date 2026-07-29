@@ -1,6 +1,6 @@
 import { User } from '../types/models';
 
-const API_URL = 'http://localhost:8081/api/v1/auth';
+const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/auth`;
 
 // Helper to handle fetch responses
 const handleResponse = async (response: Response) => {
@@ -34,7 +34,7 @@ export const authService = {
 
     const data = await handleResponse(response);
     // Returns OTPToken
-    return data.data.otp_token || data.data.OTPToken; 
+    return data.data.otp_token || data.data.OTPToken;
   },
 
   async verifyOTP(otpToken: string, otp: string) {
@@ -51,7 +51,7 @@ export const authService = {
         refreshToken: data.data.refreshToken,
       },
       // Since verify doesn't return user details, we'll mock it for now
-      user: buildUser('verified@user.com', 'Verified User'), 
+      user: buildUser('verified@user.com', 'Verified User'),
     };
   },
 

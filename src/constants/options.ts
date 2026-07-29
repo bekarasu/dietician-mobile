@@ -16,4 +16,18 @@ export const DIETARY_OPTIONS: Array<{ label: string; value: DietaryPreference }>
   { label: 'Dairy free', value: 'dairy_free' },
 ];
 
+export const GENDER_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+  { label: 'Other', value: 'other' },
+];
+
+export const ACTIVITY_LEVEL_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Sedentary', value: 'sedentary' },
+  { label: 'Lightly Active', value: 'lightly_active' },
+  { label: 'Moderately Active', value: 'moderately_active' },
+  { label: 'Very Active', value: 'very_active' },
+  { label: 'Extra Active', value: 'extra_active' },
+];
+
 export const INVENTORY_CATEGORIES = ['Produce', 'Protein', 'Dairy', 'Frozen', 'Pantry', 'Snacks'];

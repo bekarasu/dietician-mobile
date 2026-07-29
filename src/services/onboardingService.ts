@@ -1,4 +1,7 @@
 import { OnboardingDraft, OnboardingPageId, OnboardingPageResponse } from '../types/models';
+import { tokenService } from './tokenService';
+
+const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
 function buildGoalSuggestion(draft: OnboardingDraft) {
   const currentWeight = Number(draft.weightKg) || 0;
@@ -58,11 +61,64 @@ export const onboardingService = {
               ? `Preference filters synced. Future recommendations will respect ${draft.dietaryPreferences.join(', ')}.`
               : 'Preference filters synced. No dietary filter was selected yet.',
         };
-      case 'habits':
-        return {
-          pageId,
-          message: `Hydration targets synced. Daily targets are ${draft.targetWaterMl || '0'} ml water and ${draft.targetCoffeeCups || '0'} coffee cups.`,
-        };
+      case 'habits': {
+        try {
+          const token = await tokenService.getAccessToken();
+          const response = await fetch(`${API_URL}/onboarding`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              name: draft.name,
+              age: Number(draft.age),
+              heightCm: Number(draft.heightCm),
+              weightKg: Number(draft.weightKg),
+              targetWeightKg: Number(draft.targetWeightKg),
+              gender: draft.gender,
+              activityLevel: draft.activityLevel,
+              goalType: draft.goalType,
+              dietaryPreferences: draft.dietaryPreferences,
+              dislikedFoods: draft.dislikedFoods,
+              allergies: draft.allergies,
+              dailyCalorieTarget: draft.dailyCalorieTarget ? Number(draft.dailyCalorieTarget) : undefined,
+              targetWaterMl: Number(draft.targetWaterMl),
+              targetCoffeeCups: Number(draft.targetCoffeeCups),
+            }),
+          });
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            console.error('Onboarding sync failed', err);
+            throw new Error('Failed to sync onboarding data');
+          }
+
+          const responseData = await response.json();
+
+          return {
+            pageId,
+            message: `Hydration targets synced. Daily targets are ${draft.targetWaterMl || '0'} ml water and ${draft.targetCoffeeCups || '0'} coffee cups.`,
+            profile: {
+              ...responseData.data,
+              // map snake_case to camelCase if needed, assuming backend returned it as such
+              heightCm: responseData.data.height_cm,
+              weightKg: responseData.data.weight_kg,
+              targetWeightKg: responseData.data.target_weight_kg,
+              goalType: responseData.data.goal,
+              dailyCalorieTarget: responseData.data.daily_calorie_target,
+              // Note: preferences/dislikedFoods are not part of the UserProfile backend response struct, 
+              // we will populate them from the draft to keep the UI up-to-date.
+              dietaryPreferences: draft.dietaryPreferences,
+              dislikedFoods: draft.dislikedFoods ? draft.dislikedFoods.split(',').map(s => s.trim()) : [],
+              allergies: draft.allergies ? draft.allergies.split(',').map(s => s.trim()) : [],
+            },
+          };
+        } catch (error) {
+          console.error('Error submitting onboarding data:', error);
+          throw error;
+        }
+      }
       default:
         return {
           pageId,

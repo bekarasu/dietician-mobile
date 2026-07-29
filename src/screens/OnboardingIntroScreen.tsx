@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AppButton } from '../components/AppButton';
 import { ONBOARDING_INTRO_PAGES } from '../features/onboarding/introPages';
+import { useAuthStore } from '../store/useAuthStore';
 import { theme } from '../theme/theme';
 
 import type { AuthStackParamList } from '../navigation/navigationTypes';
@@ -19,10 +20,14 @@ export function OnboardingIntroScreen({ navigation }: Props) {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleSkip = () => navigation.replace('Welcome');
+  const handleSkip = () => {
+    useAuthStore.getState().setHasSeenOnboardingIntro();
+    navigation.replace('Welcome');
+  };
 
   const handleNext = () => {
     if (currentIndex === ONBOARDING_INTRO_PAGES.length - 1) {
+      useAuthStore.getState().setHasSeenOnboardingIntro();
       navigation.replace('Welcome');
       return;
     }

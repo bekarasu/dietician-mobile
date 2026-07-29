@@ -13,16 +13,23 @@ export function useAppBootstrap() {
     let isMounted = true;
 
     const bootstrap = async () => {
-      await Promise.all([
-        useAuthStore.getState().bootstrap(),
-        useProfileStore.getState().bootstrap(),
-        useDailyLogStore.getState().bootstrap(),
-        useInventoryStore.getState().bootstrap(),
-        useProgressStore.getState().bootstrap(),
-      ]);
+      try {
+        await useAuthStore.getState().bootstrap();
 
-      if (isMounted) {
-        setIsReady(true);
+        await Promise.all([
+          useProfileStore.getState().bootstrap(),
+          useDailyLogStore.getState().bootstrap(),
+          useInventoryStore.getState().bootstrap(),
+          useProgressStore.getState().bootstrap(),
+        ]);
+      } catch (error) {
+        console.error('App bootstrap error:', error);
+        // If bootstrapping fails (e.g., due to 401 unauthorized), clear auth state so the user isn't stuck
+        await useAuthStore.getState().logout();
+      } finally {
+        if (isMounted) {
+          setIsReady(true);
+        }
       }
     };
 

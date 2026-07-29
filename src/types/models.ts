@@ -21,8 +21,11 @@ export interface UserProfile {
   heightCm: number;
   weightKg: number;
   targetWeightKg: number;
+  gender?: string;
+  activityLevel?: string;
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
+  allergies?: string[];
   dislikedFoods: string[];
   dailyCalorieTarget: number;
 }
@@ -120,8 +123,11 @@ export interface OnboardingDraft {
   heightCm: string;
   weightKg: string;
   targetWeightKg: string;
+  gender: string;
+  activityLevel: string;
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
+  allergies: string;
   dislikedFoods: string;
   dailyCalorieTarget: string;
   targetWaterMl: string;
@@ -132,4 +138,5 @@ export interface OnboardingPageResponse {
   pageId: OnboardingPageId;
   message: string;
   patch?: Partial<OnboardingDraft>;
+  profile?: UserProfile;
 }

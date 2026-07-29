@@ -1,4 +1,4 @@
-import { DIETARY_OPTIONS, GOAL_TYPE_OPTIONS } from '../../constants/options';
+import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../../constants/options';
 
 import { OnboardingPageDefinition } from './types';
 
@@ -30,6 +30,20 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         inputType: 'number',
         required: true,
         placeholder: '180',
+      },
+      {
+        id: 'gender',
+        label: 'Biological gender',
+        inputType: 'single-select',
+        required: true,
+        options: GENDER_OPTIONS,
+      },
+      {
+        id: 'activityLevel',
+        label: 'Activity level',
+        inputType: 'single-select',
+        required: true,
+        options: ACTIVITY_LEVEL_OPTIONS,
       },
     ],
   },
@@ -86,6 +100,12 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         label: 'Disliked foods',
         inputType: 'text',
         placeholder: 'mushrooms, liver, olives',
+      },
+      {
+        id: 'allergies',
+        label: 'Allergies',
+        inputType: 'text',
+        placeholder: 'peanuts, shellfish',
       },
       {
         id: 'dailyCalorieTarget',

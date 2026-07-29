@@ -7,6 +7,7 @@ interface ProfileState {
   profile: UserProfile | null;
   bootstrap: () => Promise<void>;
   updateProfile: (profile: UserProfile) => Promise<void>;
+  setProfile: (profile: UserProfile) => void;
 }
 
 export const useProfileStore = create<ProfileState>((set) => ({
@@ -18,5 +19,8 @@ export const useProfileStore = create<ProfileState>((set) => ({
   updateProfile: async (profile) => {
     const savedProfile = await profileService.updateProfile(profile);
     set({ profile: savedProfile });
+  },
+  setProfile: (profile) => {
+    set({ profile });
   },
 }));
