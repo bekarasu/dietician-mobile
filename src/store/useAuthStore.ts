@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 
 import { authService } from '../services/authService';
+import { profileService } from '../services/profileService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
+import { useOnboardingStore } from './useOnboardingStore';
 
 interface AuthState {
   user: User | null;
@@ -45,12 +47,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const accessToken = await tokenService.getAccessToken();
       if (accessToken) {
-        // Here we would ideally fetch the user profile with the token.
-        // For now, mock it since we don't have a profile endpoint mapped yet.
-        set({
-          user: { id: 'user-1', email: 'user@example.com', name: 'Existing User' },
-          isAuthenticated: true,
-        });
+        try {
+          const profile = await profileService.getProfile();
+          set({
+            // Assuming email is not in profile for now, mock it or leave empty
+            user: { id: profile.id, email: '', name: profile.name || 'User' },
+            isAuthenticated: true,
+          });
+          
+          if (profile.heightCm && profile.weightKg && profile.goalType) {
+            useOnboardingStore.getState().completeOnboarding();
+          }
+        } catch (err) {
+          console.warn('Failed to fetch profile during bootstrap', err);
+          // If token is invalid, we might want to clear it, but let's just leave it for now
+        }
       }
     } catch (e) {
       // Ignore secure store errors, just require login again
@@ -65,6 +76,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.login(email, password);
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
+      
+      try {
+        const profile = await profileService.getProfile();
+        if (profile.heightCm && profile.weightKg && profile.goalType) {
+          useOnboardingStore.getState().completeOnboarding();
+        }
+      } catch (err) {
+        console.warn('Failed to fetch profile during login', err);
+      }
+
       set({ user: response.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({
@@ -100,6 +121,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.verifyOTP(otpToken, otp);
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
+      
+      try {
+        const profile = await profileService.getProfile();
+        if (profile.heightCm && profile.weightKg && profile.goalType) {
+          useOnboardingStore.getState().completeOnboarding();
+        }
+      } catch (err) {
+        console.warn('Failed to fetch profile during verifyOTP', err);
+      }
+
       set({
         user: response.user,
         isAuthenticated: true,
