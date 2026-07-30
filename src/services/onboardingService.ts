@@ -101,12 +101,12 @@ export const onboardingService = {
             message: `Hydration targets synced. Daily targets are ${draft.targetWaterMl || '0'} ml water and ${draft.targetCoffeeCups || '0'} coffee cups.`,
             profile: {
               ...responseData.data,
-              // map snake_case to camelCase if needed, assuming backend returned it as such
-              heightCm: responseData.data.height_cm,
-              weightKg: responseData.data.weight_kg,
-              targetWeightKg: responseData.data.target_weight_kg,
+              // map camelCase mapping if needed, assuming backend returned it as such
+              heightCm: responseData.data.heightCm,
+              weightKg: responseData.data.weightKg,
+              targetWeightKg: responseData.data.targetWeightKg,
               goalType: responseData.data.goal,
-              dailyCalorieTarget: responseData.data.daily_calorie_target,
+              dailyCalorieTarget: responseData.data.dailyCalorieTarget,
               // Note: preferences/dislikedFoods are not part of the UserProfile backend response struct, 
               // we will populate them from the draft to keep the UI up-to-date.
               dietaryPreferences: draft.dietaryPreferences,

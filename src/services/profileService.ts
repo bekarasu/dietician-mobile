@@ -30,18 +30,18 @@ export const profileService = {
     if (prefResponse.ok) {
       const prefJson = await prefResponse.json();
       prefs.dietaryPreferences = prefJson.data.preferences?.map((p: any) => p.preference) || [];
-      prefs.dislikedFoods = prefJson.data.disliked_foods?.map((f: any) => f.food_name) || [];
+      prefs.dislikedFoods = prefJson.data.dislikedFoods?.map((f: any) => f.foodName) || [];
     }
 
     return {
       id: data.id,
-      name: data.display_name,
+      name: data.displayName,
       age: data.age,
-      heightCm: data.height_cm,
-      weightKg: data.weight_kg,
-      targetWeightKg: data.target_weight_kg,
+      heightCm: data.heightCm,
+      weightKg: data.weightKg,
+      targetWeightKg: data.targetWeightKg,
       goalType: data.goal,
-      dailyCalorieTarget: data.daily_calorie_target,
+      dailyCalorieTarget: data.dailyCalorieTarget,
       dietaryPreferences: prefs.dietaryPreferences,
       dislikedFoods: prefs.dislikedFoods,
     } as UserProfile;
@@ -56,13 +56,13 @@ export const profileService = {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        display_name: profile.name,
+        displayName: profile.name,
         age: profile.age,
-        height_cm: profile.heightCm,
-        weight_kg: profile.weightKg,
-        target_weight_kg: profile.targetWeightKg,
+        heightCm: profile.heightCm,
+        weightKg: profile.weightKg,
+        targetWeightKg: profile.targetWeightKg,
         goal: profile.goalType,
-        daily_calorie_target: profile.dailyCalorieTarget,
+        dailyCalorieTarget: profile.dailyCalorieTarget,
       }),
     });
 
@@ -79,7 +79,7 @@ export const profileService = {
       body: JSON.stringify({
         preferences: profile.dietaryPreferences,
         allergies: [],
-        disliked_foods: profile.dislikedFoods,
+        dislikedFoods: profile.dislikedFoods,
       }),
     });
 

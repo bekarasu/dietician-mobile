@@ -6,7 +6,15 @@ const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/auth`;
 const handleResponse = async (response: Response) => {
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error?.message || data.message || 'API request failed');
+    let errorMessage = 'API request failed';
+    if (typeof data.error === 'string') {
+      errorMessage = data.error;
+    } else if (data.error?.message) {
+      errorMessage = data.error.message;
+    } else if (data.message) {
+      errorMessage = data.message;
+    }
+    throw new Error(errorMessage);
   }
   return data;
 };
@@ -34,14 +42,14 @@ export const authService = {
 
     const data = await handleResponse(response);
     // Returns OTPToken
-    return data.data.otp_token || data.data.OTPToken;
+    return data?.data?.otpToken;
   },
 
   async verifyOTP(otpToken: string, otp: string) {
     const response = await fetch(`${API_URL}/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ otp_token: otpToken, otp }), // Using standard snake case, adjust if needed
+      body: JSON.stringify({ otpToken, otp }),
     });
 
     const data = await handleResponse(response);

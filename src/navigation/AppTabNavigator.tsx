@@ -1,5 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { Ionicons } from '@expo/vector-icons';
+
 import { DailyFoodLogScreen } from '../screens/DailyFoodLogScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { MealRecommendationScreen } from '../screens/MealRecommendationScreen';
@@ -26,11 +28,56 @@ export function AppTabNavigator() {
         },
       }}
     >
-      <Tab.Screen component={HomeScreen} name="Home" options={{ title: 'Today' }} />
-      <Tab.Screen component={DailyFoodLogScreen} name="DailyFoodLog" options={{ title: 'Food Log' }} />
-      <Tab.Screen component={MealRecommendationScreen} name="MealRecommendation" options={{ title: 'Meals' }} />
-      <Tab.Screen component={ProgressDashboardScreen} name="ProgressDashboard" options={{ title: 'Progress' }} />
-      <Tab.Screen component={ProfileGoalsScreen} name="ProfileGoals" options={{ title: 'Profile' }} />
+      <Tab.Screen
+        component={HomeScreen}
+        name="Home"
+        options={{
+          title: 'Today',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        component={DailyFoodLogScreen}
+        name="DailyFoodLog"
+        options={{
+          title: 'Food Log',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'journal' : 'journal-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        component={MealRecommendationScreen}
+        name="MealRecommendation"
+        options={{
+          title: 'Meals',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        component={ProgressDashboardScreen}
+        name="ProgressDashboard"
+        options={{
+          title: 'Progress',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        component={ProfileGoalsScreen}
+        name="ProfileGoals"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
