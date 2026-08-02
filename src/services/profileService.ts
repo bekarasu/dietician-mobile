@@ -1,16 +1,11 @@
 import { UserProfile } from '../types/models';
-import { tokenService } from './tokenService';
+import { fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
 export const profileService = {
   async getProfile(): Promise<UserProfile> {
-    const token = await tokenService.getAccessToken();
-    const response = await fetch(`${API_URL}`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    const response = await fetchWithAuth(`${API_URL}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch profile');
@@ -20,11 +15,7 @@ export const profileService = {
     const data = json.data;
 
     // We also need to fetch preferences since they aren't included in the base profile endpoint
-    const prefResponse = await fetch(`${API_URL}/preferences`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
 
     let prefs = { dietaryPreferences: [], dislikedFoods: [] };
     if (prefResponse.ok) {
@@ -48,12 +39,10 @@ export const profileService = {
   },
 
   async updateProfile(profile: UserProfile): Promise<UserProfile> {
-    const token = await tokenService.getAccessToken();
-    const response = await fetch(`${API_URL}`, {
+    const response = await fetchWithAuth(`${API_URL}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         displayName: profile.name,
@@ -70,11 +59,10 @@ export const profileService = {
       throw new Error('Failed to update profile');
     }
 
-    const prefResponse = await fetch(`${API_URL}/preferences`, {
+    const prefResponse = await fetchWithAuth(`${API_URL}/preferences`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         preferences: profile.dietaryPreferences,

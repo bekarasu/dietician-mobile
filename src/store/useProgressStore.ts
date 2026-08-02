@@ -8,6 +8,7 @@ interface ProgressState {
   friends: FriendCompetitionEntry[];
   bootstrap: () => Promise<void>;
   latestEntry: () => ProgressEntry | undefined;
+  addWeightLog: (weightKg: number, notes?: string) => Promise<void>;
 }
 
 export const useProgressStore = create<ProgressState>((set, get) => ({
@@ -24,5 +25,13 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
   latestEntry: () => {
     const entries = get().entries;
     return entries[entries.length - 1];
+  },
+  addWeightLog: async (weightKg: number, notes?: string) => {
+    const newEntry = await progressService.addWeightEntry(weightKg, notes);
+    if (newEntry) {
+      set((state) => ({
+        entries: [...state.entries, newEntry].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+      }));
+    }
   },
 }));

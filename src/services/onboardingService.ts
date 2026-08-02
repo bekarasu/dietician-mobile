@@ -1,5 +1,6 @@
 import { OnboardingDraft, OnboardingPageId, OnboardingPageResponse } from '../types/models';
-import { tokenService } from './tokenService';
+import { fetchWithAuth } from './apiClient';
+import { progressService } from './progressService';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
@@ -63,12 +64,10 @@ export const onboardingService = {
         };
       case 'habits': {
         try {
-          const token = await tokenService.getAccessToken();
-          const response = await fetch(`${API_URL}/onboarding`, {
+          const response = await fetchWithAuth(`${API_URL}/onboarding`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
             body: JSON.stringify({
               name: draft.name,
@@ -95,6 +94,10 @@ export const onboardingService = {
           }
 
           const responseData = await response.json();
+
+          if (draft.weightKg) {
+            await progressService.addWeightEntry(Number(draft.weightKg), 'Initial weight from onboarding');
+          }
 
           return {
             pageId,

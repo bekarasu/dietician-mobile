@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
 
 import { AppCard } from '../components/AppCard';
 import { ProgressBar } from '../components/ProgressBar';
@@ -49,10 +49,12 @@ export function HomeScreen() {
       </AppCard>
 
       <View style={styles.metricsRow}>
-        <AppCard style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Current weight</Text>
-          <Text style={styles.metricValue}>{latestEntry ? formatKg(latestEntry.weightKg) : '--'}</Text>
-        </AppCard>
+        <Pressable style={styles.metricCard} onPress={() => navigation.navigate('WeightProgress')}>
+          <AppCard>
+            <Text style={styles.metricLabel}>Current weight</Text>
+            <Text style={styles.metricValue}>{latestEntry ? formatKg(latestEntry.weightKg) : '--'}</Text>
+          </AppCard>
+        </Pressable>
         <AppCard style={styles.metricCard}>
           <Text style={styles.metricLabel}>Weekly consistency</Text>
           <Text style={styles.metricValue}>{latestEntry?.weeklyConsistency ?? 0}%</Text>

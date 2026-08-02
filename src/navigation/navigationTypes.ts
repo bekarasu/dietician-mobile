@@ -25,4 +25,5 @@ export type AppStackParamList = {
   FriendCompetition: undefined;
   BloodTestUpload: undefined;
   Settings: undefined;
+  WeightProgress: undefined;
 };
