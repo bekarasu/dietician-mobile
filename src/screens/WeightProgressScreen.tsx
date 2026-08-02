@@ -25,13 +25,21 @@ export function WeightProgressScreen() {
     setIsSubmitting(false);
   };
 
+  // If there's only 1 entry, duplicate it for the previous day so we get a flat line instead of a crash/weird rendering
+  const chartEntries = entries.length === 1 
+    ? [
+        { ...entries[0], date: new Date(new Date(entries[0].date).getTime() - 86400000).toISOString() },
+        entries[0]
+      ]
+    : entries;
+
   const chartData = {
-    labels: entries.map(e => new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
+    labels: chartEntries.map(e => new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
     datasets: [
       {
-        data: entries.map(e => e.weightKg),
+        data: chartEntries.map(e => e.weightKg),
         color: (opacity = 1) => theme.colors.primary,
-        strokeWidth: 2
+        strokeWidth: 2,
       }
     ]
   };
