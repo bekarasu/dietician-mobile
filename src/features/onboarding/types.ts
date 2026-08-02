@@ -23,7 +23,11 @@ export interface OnboardingSelectFieldDefinition extends OnboardingFieldBase {
   options: OnboardingFieldOption[];
 }
 
-export type OnboardingFieldDefinition = OnboardingInputFieldDefinition | OnboardingSelectFieldDefinition;
+export interface OnboardingFileUploadFieldDefinition extends OnboardingFieldBase {
+  inputType: 'file-upload';
+}
+
+export type OnboardingFieldDefinition = OnboardingInputFieldDefinition | OnboardingSelectFieldDefinition | OnboardingFileUploadFieldDefinition;
 
 export interface OnboardingPageDefinition {
   id: OnboardingPageId;

@@ -112,7 +112,7 @@ export interface RecommendationInput {
   coffee: CoffeeEntry;
 }
 
-export type OnboardingPageId = 'basics' | 'goals' | 'preferences' | 'habits';
+export type OnboardingPageId = 'basics' | 'goals' | 'preferences' | 'blood-test' | 'habits';
 
 export interface OnboardingDraft {
   name: string;
@@ -129,6 +129,7 @@ export interface OnboardingDraft {
   dailyCalorieTarget: string;
   targetWaterMl: string;
   targetCoffeeCups: string;
+  bloodTestUploaded: boolean;
 }
 
 export interface OnboardingPageResponse {

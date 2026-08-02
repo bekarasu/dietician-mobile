@@ -116,6 +116,20 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
     ],
   },
   {
+    id: 'blood-test',
+    title: 'Upload blood test',
+    subtitle: 'Optional. You can upload recent blood test results to personalize your recommendations further.',
+    requestSummary: 'Uploads are securely processed and analyzed.',
+    fields: [
+      {
+        id: 'bloodTestUploaded',
+        label: 'Blood Test Results',
+        inputType: 'file-upload',
+        required: false,
+      },
+    ],
+  },
+  {
     id: 'habits',
     title: 'Add habit targets',
     subtitle: 'Hydration and coffee targets become immediately available in the dashboard after onboarding.',

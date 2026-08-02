@@ -18,6 +18,7 @@ const initialDraft: OnboardingDraft = {
   dailyCalorieTarget: '',
   targetWaterMl: '2500',
   targetCoffeeCups: '3',
+  bloodTestUploaded: false,
 };
 
 interface OnboardingState {
