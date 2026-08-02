@@ -66,11 +66,8 @@ export interface MealRecommendation {
 
 export interface BloodTestUpload {
   id: string;
-  fileName: string;
-  uploadedAt: string;
-  status: 'pending' | 'processed';
-  note: string;
-  disclaimerAcknowledged: boolean;
+  status: string;
+  uploadedAt?: string;
 }
 
 export interface ProgressEntry {

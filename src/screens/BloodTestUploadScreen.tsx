@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
-import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { BLOOD_TEST_DISCLAIMER } from '../constants/health';
@@ -13,13 +13,49 @@ import { BloodTestUpload } from '../types/models';
 import { formatDateLabel } from '../utils/date';
 
 export function BloodTestUploadScreen() {
-  const [fileName, setFileName] = useState('blood-panel-march.pdf');
   const [uploads, setUploads] = useState<BloodTestUpload[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
-  const createPlaceholderUpload = async () => {
-    const upload = await bloodTestService.createPlaceholderUpload(fileName || 'untitled-report.pdf');
-    setUploads((current) => [upload, ...current]);
-    setFileName('');
+  useEffect(() => {
+    loadUploads();
+  }, []);
+
+  const loadUploads = async () => {
+    try {
+      const data = await bloodTestService.listUploads();
+      setUploads(data);
+    } catch (error) {
+      console.error('Failed to load uploads:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectAndUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploading(true);
+        const file = result.assets[0];
+        
+        const upload = await bloodTestService.uploadBloodTest(
+          file.uri,
+          file.name,
+          file.mimeType || 'application/octet-stream'
+        );
+        
+        setUploads((current) => [upload, ...current]);
+      }
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -35,17 +71,25 @@ export function BloodTestUploadScreen() {
       </AppCard>
 
       <AppCard style={styles.formCard}>
-        <AppTextInput label="Placeholder file name" onChangeText={setFileName} value={fileName} placeholder="blood-panel.pdf" />
-        <AppButton title="Simulate upload" onPress={createPlaceholderUpload} />
+        {uploading ? (
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        ) : (
+          <AppButton title="Select and Upload Document" onPress={handleSelectAndUpload} />
+        )}
       </AppCard>
 
-      {uploads.map((upload) => (
-        <AppCard key={upload.id} style={styles.uploadCard}>
-          <Text style={styles.uploadTitle}>{upload.fileName}</Text>
-          <Text style={styles.uploadMeta}>{formatDateLabel(upload.uploadedAt)} · {upload.status}</Text>
-          <Text style={styles.uploadNote}>{upload.note}</Text>
-        </AppCard>
-      ))}
+      {loading ? (
+        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
+      ) : (
+        uploads.map((upload) => (
+          <AppCard key={upload.id} style={styles.uploadCard}>
+            <Text style={styles.uploadTitle}>Blood Test Report</Text>
+            <Text style={styles.uploadMeta}>
+              {upload.uploadedAt ? formatDateLabel(upload.uploadedAt) : 'Recent'} · {upload.status}
+            </Text>
+          </AppCard>
+        ))
+      )}
     </ScreenContainer>
   );
 }
@@ -65,6 +109,8 @@ const styles = StyleSheet.create({
   },
   formCard: {
     gap: theme.spacing.md,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.lg,
   },
   uploadCard: {
     gap: theme.spacing.xs,
@@ -76,8 +122,7 @@ const styles = StyleSheet.create({
   uploadMeta: {
     color: theme.colors.muted,
   },
-  uploadNote: {
-    color: theme.colors.text,
-    lineHeight: 22,
-  },
+  loader: {
+    marginTop: theme.spacing.xl,
+  }
 });
