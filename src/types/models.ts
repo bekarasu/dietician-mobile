@@ -64,10 +64,32 @@ export interface MealRecommendation {
   createdAt: string;
 }
 
+export interface BloodTestResult {
+  testName: string;
+  result: string;
+  resultUnit: string;
+  referenceValue: string;
+}
+
+export interface BloodTestGroup {
+  groupName: string;
+  groupDate: string;
+  tests: BloodTestResult[];
+}
+
 export interface BloodTestUpload {
   id: string;
   status: string;
   uploadedAt?: string;
+  parsedResults?: {
+    testGroups?: BloodTestGroup[];
+  };
+  isHidden: boolean;
+}
+
+export interface UploadDetailResponse {
+  upload: BloodTestUpload;
+  metadata: any[];
 }
 
 export interface ProgressEntry {

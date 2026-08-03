@@ -23,7 +23,13 @@
       "package": "com.bekarasu.dieticianmobile"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Dietician to access your Face ID to protect your health data."
+        }
+      ]
     ]
   }
 }
