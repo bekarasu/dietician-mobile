@@ -19,7 +19,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#F7F3EA"
-      }
+      },
+      "package": "com.bekarasu.dieticianmobile"
     },
     "plugins": [
       "expo-secure-store"
