@@ -32,17 +32,17 @@ export const fetchWithAuth = async (url: RequestInfo | URL, options: RequestInit
     if (refreshToken) {
       if (!isRefreshing) {
         isRefreshing = true;
-        try {
-          const newTokens = await authService.refresh(refreshToken);
-          await tokenService.setTokens(newTokens.accessToken, newTokens.refreshToken);
-          isRefreshing = false;
-          onRefreshed(newTokens.accessToken);
-        } catch (error) {
-          isRefreshing = false;
-          await tokenService.clearTokens();
-          onRefreshed(null);
-          return response;
-        }
+        authService.refresh(refreshToken)
+          .then(async (newTokens) => {
+            await tokenService.setTokens(newTokens.accessToken, newTokens.refreshToken);
+            isRefreshing = false;
+            onRefreshed(newTokens.accessToken);
+          })
+          .catch(async () => {
+            isRefreshing = false;
+            await tokenService.clearTokens();
+            onRefreshed(null);
+          });
       }
 
       return new Promise<Response>((resolve) => {
