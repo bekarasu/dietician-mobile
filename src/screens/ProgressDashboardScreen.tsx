@@ -38,7 +38,7 @@ export function ProgressDashboardScreen() {
         <ProgressBar label="Goal progress" current={latestEntry?.goalProgress ?? 0} target={100} suffix="%" />
       </AppCard>
 
-      {entries.map((entry) => (
+      {[...entries].reverse().map((entry) => (
         <AppCard key={entry.id} style={styles.entryCard}>
           <View style={styles.entryHeader}>
             <Text style={styles.entryDate}>{formatDateLabel(entry.date)}</Text>

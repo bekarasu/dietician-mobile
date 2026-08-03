@@ -25,13 +25,16 @@ export function WeightProgressScreen() {
     setIsSubmitting(false);
   };
 
+  // Get last 5 entries
+  const lastEntries = entries.slice(-7);
+
   // If there's only 1 entry, duplicate it for the previous day so we get a flat line instead of a crash/weird rendering
-  const chartEntries = entries.length === 1 
+  const chartEntries = lastEntries.length === 1
     ? [
-        { ...entries[0], date: new Date(new Date(entries[0].date).getTime() - 86400000).toISOString() },
-        entries[0]
-      ]
-    : entries;
+      { ...lastEntries[0], date: new Date(new Date(lastEntries[0].date).getTime() - 86400000).toISOString() },
+      lastEntries[0]
+    ]
+    : lastEntries;
 
   const chartData = {
     labels: chartEntries.map(e => new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
@@ -47,14 +50,14 @@ export function WeightProgressScreen() {
   const screenWidth = Dimensions.get('window').width;
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }} 
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScreenContainer>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <SectionHeader 
-            title="Weight Progress" 
+          <SectionHeader
+            title="Weight Progress"
             subtitle="Track your weight over time and stay consistent with your goals."
           />
 
@@ -102,10 +105,10 @@ export function WeightProgressScreen() {
               />
               <Text style={styles.unit}>kg</Text>
             </View>
-            <AppButton 
-              title={isSubmitting ? "Saving..." : "Save Weight"} 
-              onPress={handleSubmit} 
-              disabled={isSubmitting || !newWeight} 
+            <AppButton
+              title={isSubmitting ? "Saving..." : "Save Weight"}
+              onPress={handleSubmit}
+              disabled={isSubmitting || !newWeight}
             />
           </AppCard>
         </ScrollView>
