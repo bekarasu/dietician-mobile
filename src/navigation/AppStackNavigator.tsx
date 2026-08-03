@@ -22,7 +22,7 @@ export function AppStackNavigator() {
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >
-      <Stack.Screen component={AppTabNavigator} name="Tabs" options={{ headerShown: false }} />
+      <Stack.Screen component={AppTabNavigator} name="Tabs" options={{ headerShown: false, title: 'Home' }} />
       <Stack.Screen component={RefrigeratorInventoryScreen} name="RefrigeratorInventory" options={{ title: 'Inventory' }} />
       <Stack.Screen component={HydrationTrackingScreen} name="HydrationTracking" options={{ title: 'Water & Coffee' }} />
       <Stack.Screen component={FriendCompetitionScreen} name="FriendCompetition" options={{ title: 'Friend Challenge' }} />
