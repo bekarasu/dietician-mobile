@@ -64,5 +64,16 @@ export const bloodTestService = {
       const text = await response.text().catch(() => 'No response body');
       throw new Error(`Failed to update visibility (Status: ${response.status} ${response.statusText}): ${text}`);
     }
+  },
+
+  async deleteUpload(id: string): Promise<void> {
+    const response = await fetchWithAuth(`${API_URL}/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'No response body');
+      throw new Error(`Failed to delete upload (Status: ${response.status} ${response.statusText}): ${text}`);
+    }
   }
 };

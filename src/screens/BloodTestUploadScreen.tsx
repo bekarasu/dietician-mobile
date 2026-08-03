@@ -76,6 +76,51 @@ export function BloodTestUploadScreen() {
     }
   };
 
+  const handleDeleteUpload = (id: string) => {
+    Alert.alert(
+      'Delete Result',
+      'Are you sure you want to completely remove this blood test result?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const hasHardware = await LocalAuthentication.hasHardwareAsync();
+              const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+              if (!isEnrolled) {
+                Alert.alert(
+                  'Security Requirement',
+                  'You must set up a screen lock or biometrics on your device to use this feature.'
+                );
+                return;
+              }
+
+              if (hasHardware && isEnrolled) {
+                const result = await LocalAuthentication.authenticateAsync({
+                  promptMessage: 'Authenticate to delete result',
+                  fallbackLabel: 'Use Passcode',
+                });
+
+                if (!result.success) {
+                  return;
+                }
+              }
+
+              await bloodTestService.deleteUpload(id);
+              setUploads(current => current.filter(u => u.id !== id));
+            } catch (error: any) {
+              console.error('Failed to delete upload:', error);
+              Alert.alert('Error', `Failed to delete upload: ${error.message || String(error)}`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -218,6 +263,15 @@ export function BloodTestUploadScreen() {
                       </Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <TouchableOpacity 
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleDeleteUpload(upload.id);
+                        }}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text style={{ fontSize: 16 }}>🗑️</Text>
+                      </TouchableOpacity>
                       <TouchableOpacity 
                         onPress={(e) => {
                           e.stopPropagation();
