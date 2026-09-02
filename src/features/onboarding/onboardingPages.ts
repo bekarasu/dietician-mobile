@@ -107,12 +107,6 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         inputType: 'text',
         placeholder: 'peanuts, shellfish',
       },
-      {
-        id: 'dailyCalorieTarget',
-        label: 'Daily calorie target',
-        inputType: 'number',
-        placeholder: 'Leave blank to accept a suggested target',
-      },
     ],
   },
   {

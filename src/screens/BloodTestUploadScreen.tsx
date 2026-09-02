@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -17,7 +16,6 @@ export function BloodTestUploadScreen() {
   const [authChecking, setAuthChecking] = useState(true);
   const [uploads, setUploads] = useState<BloodTestUpload[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [expandedUploadId, setExpandedUploadId] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [uploadDetails, setUploadDetails] = useState<Record<string, BloodTestUpload>>({});
@@ -27,9 +25,9 @@ export function BloodTestUploadScreen() {
       setExpandedUploadId(null);
       return;
     }
-    
+
     setExpandedUploadId(id);
-    
+
     if (!uploadDetails[id]) {
       setDetailLoading(true);
       try {
@@ -130,7 +128,7 @@ export function BloodTestUploadScreen() {
     try {
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      
+
       if (!isEnrolled) {
         Alert.alert(
           'Security Warning',
@@ -171,32 +169,6 @@ export function BloodTestUploadScreen() {
     }
   };
 
-  const handleSelectAndUpload = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        setUploading(true);
-        const file = result.assets[0];
-        
-        const upload = await bloodTestService.uploadBloodTest(
-          file.uri,
-          file.name,
-          file.mimeType || 'application/octet-stream'
-        );
-        
-        setUploads((current) => [upload, ...current]);
-      }
-    } catch (error) {
-      console.error('Failed to upload file:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   if (authChecking) {
     return (
       <ScreenContainer>
@@ -226,21 +198,13 @@ export function BloodTestUploadScreen() {
   return (
     <ScreenContainer>
       <SectionHeader
-        title="Blood test upload"
-        subtitle="This remains intentionally narrow. Production versions should include encryption, retention rules, access controls, and explicit medical disclaimers."
+        title="Blood test results"
+        subtitle="Manage your uploaded blood test results."
       />
 
       <AppCard style={styles.warningCard}>
         <Text style={styles.warningTitle}>Medical disclaimer</Text>
         <Text style={styles.warningText}>{BLOOD_TEST_DISCLAIMER}</Text>
-      </AppCard>
-
-      <AppCard style={styles.formCard}>
-        {uploading ? (
-          <ActivityIndicator size="small" color={theme.colors.primary} />
-        ) : (
-          <AppButton title="Select and Upload Document" onPress={handleSelectAndUpload} />
-        )}
       </AppCard>
 
       {loading ? (
@@ -263,7 +227,7 @@ export function BloodTestUploadScreen() {
                       </Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={(e) => {
                           e.stopPropagation();
                           handleDeleteUpload(upload.id);
@@ -272,7 +236,7 @@ export function BloodTestUploadScreen() {
                       >
                         <Text style={{ fontSize: 16 }}>🗑️</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={(e) => {
                           e.stopPropagation();
                           handleToggleVisibility(upload.id, upload.isHidden);
@@ -284,7 +248,7 @@ export function BloodTestUploadScreen() {
                       <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
                     </View>
                   </View>
-                  
+
                   {isExpanded && (
                     <View style={styles.expandedContent}>
                       {upload.isHidden ? (

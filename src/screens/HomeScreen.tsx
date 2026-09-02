@@ -42,10 +42,6 @@ export function HomeScreen() {
       <AppCard style={styles.heroCard}>
         <Text style={styles.heroLabel}>Current focus</Text>
         <Text style={styles.heroValue}>{profile ? formatGoalType(profile.goalType) : 'Loading profile'}</Text>
-        <Text style={styles.heroMeta}>
-          Daily calorie target: {profile?.dailyCalorieTarget ?? 0} kcal
-          {'\n'}Target weight: {profile ? formatKg(profile.targetWeightKg) : '--'}
-        </Text>
       </AppCard>
 
       <View style={styles.metricsRow}>
@@ -96,8 +92,8 @@ export function HomeScreen() {
           },
           {
             id: 'blood',
-            title: 'Blood tests',
-            description: 'Placeholder upload flow with explicit health disclaimers.',
+            title: 'Blood test results',
+            description: 'Manage your uploaded blood test results.',
             onPress: () => navigation.navigate('BloodTestUpload'),
           },
           {
