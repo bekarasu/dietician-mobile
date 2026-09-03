@@ -10,6 +10,11 @@ interface OnboardingFieldBase {
   label: string;
   required?: boolean;
   helperText?: string;
+  helpAlert?: {
+    title: string;
+    message: string;
+    linkText?: string;
+  };
 }
 
 export interface OnboardingInputFieldDefinition extends OnboardingFieldBase {

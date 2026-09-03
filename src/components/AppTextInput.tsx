@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,16 +16,37 @@ interface AppTextInputProps extends TextInputProps {
 
 export const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextInput(
   { label, error, style, ...props },
-  ref,
+  forwardedRef,
 ) {
+  const internalRef = React.useRef<TextInput>(null);
+
+  React.useImperativeHandle(forwardedRef, () => internalRef.current as TextInput);
+
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        ref={ref}
+        ref={internalRef}
         placeholderTextColor={theme.colors.muted}
         style={[styles.input, props.multiline ? styles.multiline : undefined, style]}
         {...props}
+        onChangeText={(text) => {
+          if (
+            props.keyboardType === 'numeric' ||
+            props.keyboardType === 'number-pad' ||
+            props.keyboardType === 'decimal-pad' ||
+            props.inputMode === 'numeric' ||
+            props.inputMode === 'decimal'
+          ) {
+            const numericText = text.replace(/[^0-9.]/g, '');
+            if (numericText !== text) {
+              internalRef.current?.setNativeProps({ text: numericText });
+            }
+            props.onChangeText?.(numericText);
+          } else {
+            props.onChangeText?.(text);
+          }
+        }}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>

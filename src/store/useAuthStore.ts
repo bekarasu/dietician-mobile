@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setHasSeenOnboardingIntro: async () => {
     try {
       const SecureStore = await import('expo-secure-store');
-      await SecureStore.setItemAsync('HAS_SEEN_ONBOARDING_INTRO', 'true');
+      // await SecureStore.setItemAsync('HAS_SEEN_ONBOARDING_INTRO', 'true');
       set({ hasSeenOnboardingIntro: true });
     } catch (e) {
       console.warn('Failed to save onboarding status', e);
@@ -42,7 +42,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   bootstrap: async () => {
     try {
       const SecureStore = await import('expo-secure-store');
-      const hasSeen = await SecureStore.getItemAsync('HAS_SEEN_ONBOARDING_INTRO');
+      // const hasSeen = await SecureStore.getItemAsync('HAS_SEEN_ONBOARDING_INTRO');
+      const hasSeen = false;
       set({ hasSeenOnboardingIntro: hasSeen === 'true' });
 
       const accessToken = await tokenService.getAccessToken();
@@ -54,7 +55,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             user: { id: profile.id, email: '', name: profile.name || 'User' },
             isAuthenticated: true,
           });
-          
+
           if (profile.heightCm && profile.weightKg && profile.goalType) {
             useOnboardingStore.getState().completeOnboarding();
           }
@@ -76,7 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.login(email, password);
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
-      
+
       try {
         const profile = await profileService.getProfile();
         if (profile.heightCm && profile.weightKg && profile.goalType) {
@@ -121,7 +122,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.verifyOTP(otpToken, otp);
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
-      
+
       try {
         const profile = await profileService.getProfile();
         if (profile.heightCm && profile.weightKg && profile.goalType) {

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AppButton } from '../../components/AppButton';
 import { AppTextInput } from '../../components/AppTextInput';
@@ -45,7 +45,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange }
           return (
             <AppTextInput
               key={String(field.id)}
-              keyboardType={field.inputType === 'number' ? 'numeric' : 'default'}
+              inputMode={field.inputType === 'number' ? 'numeric' : 'text'}
               label={field.label}
               multiline={field.multiline}
               onChangeText={(text) => onChange(field.id, text)}
@@ -72,7 +72,14 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange }
 
         return (
           <View key={String(field.id)} style={styles.selectionGroup}>
-            <Text style={styles.selectionLabel}>{field.label}</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.selectionLabel}>{field.label}</Text>
+              {field.helpAlert ? (
+                <TouchableOpacity onPress={() => Alert.alert(field.helpAlert!.title, field.helpAlert!.message)}>
+                  <Text style={styles.helpLinkText}>{field.helpAlert.linkText || 'Learn more'}</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
             {field.helperText ? <Text style={styles.helperText}>{field.helperText}</Text> : null}
             <View style={styles.optionGrid}>
               {selectField.options.map((option) => {
@@ -138,5 +145,15 @@ const styles = StyleSheet.create({
   errorText: {
     color: theme.colors.danger,
     fontSize: theme.typography.caption.fontSize,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  helpLinkText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.caption.fontSize,
+    textDecorationLine: 'underline',
   },
 });

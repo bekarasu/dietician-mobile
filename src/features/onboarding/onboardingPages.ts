@@ -22,7 +22,7 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         label: 'Age',
         inputType: 'number',
         required: true,
-        placeholder: '31',
+        placeholder: '25',
       },
       {
         id: 'heightCm',
@@ -44,6 +44,11 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         inputType: 'single-select',
         required: true,
         options: ACTIVITY_LEVEL_OPTIONS,
+        helpAlert: {
+          title: 'Activity Types',
+          message: 'Sedentary: Little or no exercise.\nLight: Light exercise 1-3 days/week.\nModerate: Moderate exercise 3-5 days/week.\nActive: Hard exercise 6-7 days/week.\nVery Active: Very hard exercise & physical job.',
+          linkText: 'What do these mean?',
+        },
       },
     ],
   },

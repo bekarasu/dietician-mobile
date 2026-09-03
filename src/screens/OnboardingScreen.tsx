@@ -62,7 +62,7 @@ function pageIsValid(draft: OnboardingDraft, pageIndex: number) {
   });
 }
 
-export function OnboardingScreen(_: Props) {
+export function OnboardingScreen({ navigation }: Props) {
   const user = useAuthStore((state) => state.user);
   const draft = useOnboardingStore((state) => state.draft);
   const currentPageIndex = useOnboardingStore((state) => state.currentPageIndex);
@@ -143,7 +143,7 @@ export function OnboardingScreen(_: Props) {
         setProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
       }
       setTargets(Number(draft.targetWaterMl) || hydration.targetWaterMl, Number(draft.targetCoffeeCups) || coffee.targetCups);
-      completeOnboarding();
+      navigation.navigate('GeneratingDietPlan');
       return;
     }
 
