@@ -38,7 +38,6 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange }
     <View style={styles.container}>
       {page.fields.map((field) => {
         const rawValue = draft[field.id];
-        console.log({ draft })
         const hasError = showValidation && isFieldMissing(field, draft);
 
         if (field.inputType === 'text' || field.inputType === 'number') {

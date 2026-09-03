@@ -31,13 +31,7 @@ export const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function Ap
         style={[styles.input, props.multiline ? styles.multiline : undefined, style]}
         {...props}
         onChangeText={(text) => {
-          if (
-            props.keyboardType === 'numeric' ||
-            props.keyboardType === 'number-pad' ||
-            props.keyboardType === 'decimal-pad' ||
-            props.inputMode === 'numeric' ||
-            props.inputMode === 'decimal'
-          ) {
+          if (isNumeric(props)) {
             const numericText = text.replace(/[^0-9.]/g, '');
             if (numericText !== text) {
               internalRef.current?.setNativeProps({ text: numericText });
@@ -52,6 +46,12 @@ export const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function Ap
     </View>
   );
 });
+
+const isNumeric = (props: TextInputProps) => props.keyboardType === 'numeric' ||
+  props.keyboardType === 'number-pad' ||
+  props.keyboardType === 'decimal-pad' ||
+  props.inputMode === 'numeric' ||
+  props.inputMode === 'decimal';
 
 const styles = StyleSheet.create({
   wrapper: {
