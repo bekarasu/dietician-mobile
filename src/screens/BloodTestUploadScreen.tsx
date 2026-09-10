@@ -161,9 +161,10 @@ export function BloodTestUploadScreen() {
   const loadUploads = async () => {
     try {
       const data = await bloodTestService.listUploads();
-      setUploads(data);
+      setUploads(data || []);
     } catch (error) {
       console.error('Failed to load uploads:', error);
+      setUploads([]);
     } finally {
       setLoading(false);
     }
@@ -211,9 +212,15 @@ export function BloodTestUploadScreen() {
         <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
       ) : (
         <View style={styles.listContainer}>
-          {uploads.map((upload) => {
-            const isExpanded = expandedUploadId === upload.id;
-            const displayData = uploadDetails[upload.id] || upload;
+          {(!uploads || uploads.length === 0) ? (
+            <AppCard style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No records found</Text>
+              <Text style={styles.emptyText}>You haven't uploaded any blood test results yet.</Text>
+            </AppCard>
+          ) : (
+            uploads.map((upload) => {
+              const isExpanded = expandedUploadId === upload.id;
+              const displayData = uploadDetails[upload.id] || upload;
             return (
               <TouchableOpacity key={upload.id} onPress={() => toggleExpand(upload.id)} activeOpacity={0.8}>
                 <AppCard style={styles.uploadCard}>
@@ -281,7 +288,8 @@ export function BloodTestUploadScreen() {
                 </AppCard>
               </TouchableOpacity>
             );
-          })}
+          })
+        )}
         </View>
       )}
     </ScreenContainer>
@@ -325,6 +333,20 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     gap: theme.spacing.md,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  emptyTitle: {
+    color: theme.colors.text,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  emptyText: {
+    color: theme.colors.muted,
+    textAlign: 'center',
   },
   uploadHeader: {
     flexDirection: 'row',
