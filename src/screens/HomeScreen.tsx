@@ -33,7 +33,7 @@ export function HomeScreen() {
 
   useEffect(() => {
     if (profile) {
-      setHydrationTargets(profile.targetWaterMl || 2500, profile.targetCoffeeCups || 2);
+      setHydrationTargets(profile.targetWaterMl ?? 0, profile.targetCoffeeCups ?? 0);
     }
   }, [profile, setHydrationTargets]);
 

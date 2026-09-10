@@ -15,6 +15,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   bootstrap: async () => {
     if (get().profile) return;
     const profile = await profileService.getProfile();
+    console.log(profile)
     set({ profile });
   },
   updateProfile: async (profile) => {

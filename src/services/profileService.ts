@@ -39,6 +39,10 @@ export const profileService = {
       dailyCalorieTarget: data.dailyCalorieTarget,
       dietaryPreferences: prefs.dietaryPreferences,
       dislikedFoods: prefs.dislikedFoods,
+      activityLevel: data.activityLevel,
+      gender: data.gender,
+      targetWaterMl: data.targetWaterMl,
+      targetCoffeeCups: data.targetCoffeeCups,
     } as UserProfile;
   },
 
@@ -56,6 +60,10 @@ export const profileService = {
         targetWeightKg: profile.targetWeightKg,
         goal: profile.goalType,
         dailyCalorieTarget: profile.dailyCalorieTarget,
+        activityLevel: profile.activityLevel,
+        gender: profile.gender,
+        targetWaterMl: profile.targetWaterMl,
+        targetCoffeeCups: profile.targetCoffeeCups,
       }),
     });
 

@@ -113,10 +113,10 @@ export function OnboardingScreen({ navigation }: Props) {
       dislikedFoods: profile?.dislikedFoods.join(', ') ?? '',
       allergies: profile?.allergies?.join(', ') ?? '',
       dailyCalorieTarget: profile ? String(profile.dailyCalorieTarget) : '',
-      targetWaterMl: String(hydration.targetWaterMl),
-      targetCoffeeCups: String(coffee.targetCups),
+      targetWaterMl: profile?.targetWaterMl ? String(profile.targetWaterMl) : '',
+      targetCoffeeCups: profile?.targetCoffeeCups ? String(profile.targetCoffeeCups) : '',
     });
-  }, [coffee.targetCups, draft.age.length, draft.name.length, draft.targetWeightKg.length, draft.weightKg.length, hydration.targetWaterMl, mergeDraft, profile, responses, user?.name]);
+  }, [draft.age.length, draft.name.length, draft.targetWeightKg.length, draft.weightKg.length, mergeDraft, profile, responses, user?.name]);
 
   const latestInsight = useMemo(() => {
     return responses.habits ?? responses.preferences ?? responses.goals ?? responses.basics ?? null;
@@ -141,7 +141,9 @@ export function OnboardingScreen({ navigation }: Props) {
       } else {
         setProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
       }
-      setTargets(Number(draft.targetWaterMl) || hydration.targetWaterMl, Number(draft.targetCoffeeCups) || coffee.targetCups);
+      const waterTarget = draft.targetWaterMl !== '' ? Number(draft.targetWaterMl) : hydration.targetWaterMl;
+      const coffeeTarget = draft.targetCoffeeCups !== '' ? Number(draft.targetCoffeeCups) : coffee.targetCups;
+      setTargets(waterTarget, coffeeTarget);
       navigation.navigate('GeneratingDietPlan');
       return;
     }

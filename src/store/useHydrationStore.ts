@@ -14,7 +14,7 @@ interface HydrationState {
 }
 
 export const useHydrationStore = create<HydrationState>((set, get) => ({
-  hydration: { date: new Date().toISOString().split('T')[0], waterMl: 0, targetWaterMl: 2500 },
+  hydration: { date: new Date().toISOString().split('T')[0], waterMl: 0, targetWaterMl: 0 },
   coffee: { date: new Date().toISOString().split('T')[0], cups: 0, targetCups: 2 },
   rawDailyLog: null,
   bootstrap: async () => {
