@@ -37,8 +37,8 @@ export function RegisterScreen({ navigation }: Props) {
     defaultValues: {
       firstName: 'Burak',
       lastName: 'Karasu',
-      email: 'demo@dietician.app',
-      password: 'password123',
+      email: 'public.void95@gmail.com',
+      password: 'Qwe123456*',
     },
   });
 

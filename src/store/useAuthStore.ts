@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
 import { authService } from '../services/authService';
-import { profileService } from '../services/profileService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
 import { useOnboardingStore } from './useOnboardingStore';
+import { useProfileStore } from './useProfileStore';
 
 interface AuthState {
   user: User | null;
@@ -44,20 +44,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const SecureStore = await import('expo-secure-store');
       // const hasSeen = await SecureStore.getItemAsync('HAS_SEEN_ONBOARDING_INTRO');
       const hasSeen = false;
-      set({ hasSeenOnboardingIntro: hasSeen === 'true' });
+      set({ hasSeenOnboardingIntro: Boolean(hasSeen) });
 
       const accessToken = await tokenService.getAccessToken();
       if (accessToken) {
         try {
-          const profile = await profileService.getProfile();
-          set({
-            // Assuming email is not in profile for now, mock it or leave empty
-            user: { id: profile.id, email: '', name: profile.name || 'User' },
-            isAuthenticated: true,
-          });
+          await useProfileStore.getState().bootstrap();
+          const profile = useProfileStore.getState().profile;
+          
+          if (profile) {
+            set({
+              user: { id: profile.id, name: profile.name },
+              isAuthenticated: true,
+            });
 
-          if (profile.heightCm && profile.weightKg && profile.goalType) {
-            useOnboardingStore.getState().completeOnboarding();
+            if (profile.heightCm && profile.weightKg && profile.goalType) {
+              useOnboardingStore.getState().completeOnboarding();
+            }
           }
         } catch (err) {
           console.warn('Failed to fetch profile during bootstrap', err);
@@ -79,8 +82,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
 
       try {
-        const profile = await profileService.getProfile();
-        if (profile.heightCm && profile.weightKg && profile.goalType) {
+        await useProfileStore.getState().bootstrap();
+        const profile = useProfileStore.getState().profile;
+        if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
           useOnboardingStore.getState().completeOnboarding();
         }
       } catch (err) {
@@ -124,8 +128,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await tokenService.setTokens(response.tokens.accessToken, response.tokens.refreshToken);
 
       try {
-        const profile = await profileService.getProfile();
-        if (profile.heightCm && profile.weightKg && profile.goalType) {
+        await useProfileStore.getState().bootstrap();
+        const profile = useProfileStore.getState().profile;
+        if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
           useOnboardingStore.getState().completeOnboarding();
         }
       } catch (err) {
@@ -156,6 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.warn('Logout API failed:', error);
     } finally {
       await tokenService.clearTokens();
+      useProfileStore.getState().setProfile(null);
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
     }
   },

@@ -49,7 +49,13 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange }
               multiline={field.multiline}
               onChangeText={(text) => onChange(field.id, text)}
               placeholder={field.placeholder}
-              value={Array.isArray(rawValue) ? '' : String(rawValue ?? '')}
+              value={
+                Array.isArray(rawValue)
+                  ? ''
+                  : String(rawValue ?? '') === 'undefined'
+                    ? ''
+                    : String(rawValue ?? '')
+              }
               error={hasError ? `${field.label} is required.` : undefined}
             />
           );

@@ -25,16 +25,8 @@ export function WeightProgressScreen() {
     setIsSubmitting(false);
   };
 
-  // Get last 5 entries
-  const lastEntries = entries.slice(-7);
-
-  // If there's only 1 entry, duplicate it for the previous day so we get a flat line instead of a crash/weird rendering
-  const chartEntries = lastEntries.length === 1
-    ? [
-      { ...lastEntries[0], date: new Date(new Date(lastEntries[0].date).getTime() - 86400000).toISOString() },
-      lastEntries[0]
-    ]
-    : lastEntries;
+  // Get last 7 entries
+  const chartEntries = entries.slice(-7);
 
   const chartData = {
     labels: chartEntries.map(e => new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
@@ -62,7 +54,7 @@ export function WeightProgressScreen() {
           />
 
           <AppCard style={styles.chartCard}>
-            {entries.length > 0 ? (
+            {entries.length > 1 ? (
               <LineChart
                 data={chartData}
                 width={screenWidth - theme.spacing.lg * 4}
@@ -87,6 +79,15 @@ export function WeightProgressScreen() {
                 bezier
                 style={styles.chart}
               />
+            ) : entries.length === 1 ? (
+              <View style={styles.singleEntryContainer}>
+                <Text style={styles.singleEntryLabel}>Current weight</Text>
+                <Text style={styles.singleEntryValue}>{formatKg(entries[0].weightKg)}</Text>
+                <Text style={styles.singleEntryDate}>
+                  Logged on {new Date(entries[0].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </Text>
+                <Text style={styles.singleEntryHint}>Log one more weight to see your progress chart!</Text>
+              </View>
             ) : (
               <Text style={styles.emptyText}>No weight logs yet. Start by entering your current weight below.</Text>
             )}
@@ -161,5 +162,30 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     fontSize: 16,
     fontWeight: '500',
+  },
+  singleEntryContainer: {
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+  },
+  singleEntryLabel: {
+    fontSize: 16,
+    color: theme.colors.muted,
+  },
+  singleEntryValue: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: theme.colors.primary,
+  },
+  singleEntryDate: {
+    fontSize: 14,
+    color: theme.colors.text,
+  },
+  singleEntryHint: {
+    fontSize: 14,
+    color: theme.colors.muted,
+    textAlign: 'center',
+    marginTop: theme.spacing.md,
   }
 });

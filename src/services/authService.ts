@@ -24,7 +24,6 @@ const handleResponse = async (response: Response) => {
 // until there's a profile endpoint to fetch the user.
 const buildUser = (email: string, name?: string): User => ({
   id: 'user-1',
-  email,
   name: name ?? 'User',
 });
 

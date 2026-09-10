@@ -1,6 +1,7 @@
 import { OnboardingDraft, OnboardingPageId, OnboardingPageResponse } from '../types/models';
 import { fetchWithAuth } from './apiClient';
-import { progressService } from './progressService';
+import { profileService } from './profileService';
+import { useProgressStore } from '../store/useProgressStore';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
@@ -96,29 +97,17 @@ export const onboardingService = {
           const responseData = await response.json();
 
           if (draft.weightKg) {
-            await progressService.addWeightEntry(Number(draft.weightKg), 'Initial weight from onboarding');
+            await useProgressStore.getState().addWeightLog(Number(draft.weightKg), 'Initial weight from onboarding');
           }
+
+          const profile = await profileService.getProfile();
+
+          console.log('profile', profile);
 
           return {
             pageId,
             message: `Hydration targets synced. Daily targets are ${draft.targetWaterMl || '0'} ml water and ${draft.targetCoffeeCups || '0'} coffee cups.`,
-            profile: {
-              ...responseData.data,
-              name: responseData.data.name ?? draft.name,
-              age: responseData.data.age ?? Number(draft.age),
-              heightCm: responseData.data.heightCm ?? Number(draft.heightCm),
-              weightKg: responseData.data.weightKg ?? Number(draft.weightKg),
-              targetWeightKg: responseData.data.targetWeightKg ?? Number(draft.targetWeightKg),
-              gender: responseData.data.gender ?? draft.gender,
-              activityLevel: responseData.data.activityLevel ?? draft.activityLevel,
-              goalType: responseData.data.goal ?? responseData.data.goalType ?? draft.goalType,
-              dailyCalorieTarget: responseData.data.dailyCalorieTarget ?? (draft.dailyCalorieTarget ? Number(draft.dailyCalorieTarget) : 0),
-              // Note: preferences/dislikedFoods are not part of the UserProfile backend response struct, 
-              // we will populate them from the draft to keep the UI up-to-date.
-              dietaryPreferences: draft.dietaryPreferences,
-              dislikedFoods: draft.dislikedFoods ? draft.dislikedFoods.split(',').map(s => s.trim()) : [],
-              allergies: draft.allergies ? draft.allergies.split(',').map(s => s.trim()) : [],
-            },
+            profile,
           };
         } catch (error) {
           console.error('Error submitting onboarding data:', error);

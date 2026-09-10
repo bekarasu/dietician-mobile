@@ -11,13 +11,6 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
     requestSummary: 'This step can sync account basics or validate required fields with a backend.',
     fields: [
       {
-        id: 'name',
-        label: 'Name',
-        inputType: 'text',
-        required: true,
-        placeholder: 'How should the app address you?',
-      },
-      {
         id: 'age',
         label: 'Age',
         inputType: 'number',

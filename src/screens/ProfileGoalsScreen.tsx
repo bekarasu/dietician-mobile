@@ -20,6 +20,7 @@ interface ProfileFormValues {
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
   dislikedFoods: string;
+  allergies: string;
 }
 
 function toFormValues(profile: UserProfile): ProfileFormValues {
@@ -30,6 +31,7 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
     goalType: profile.goalType,
     dietaryPreferences: profile.dietaryPreferences || [],
     dislikedFoods: profile.dislikedFoods.join(', '),
+    allergies: (profile.allergies || []).join(', '),
   };
 }
 
@@ -49,6 +51,7 @@ export function ProfileGoalsScreen() {
           goalType: 'habit_building',
           dietaryPreferences: [],
           dislikedFoods: '',
+          allergies: '',
         },
   });
 
@@ -76,6 +79,10 @@ export function ProfileGoalsScreen() {
         goalType: values.goalType,
         dietaryPreferences: values.dietaryPreferences,
         dislikedFoods: values.dislikedFoods
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+        allergies: values.allergies
           .split(',')
           .map((item) => item.trim())
           .filter(Boolean),
@@ -180,6 +187,14 @@ export function ProfileGoalsScreen() {
           name="dislikedFoods"
           render={({ field: { onBlur, onChange, value } }) => (
             <AppTextInput label="Disliked foods" onBlur={onBlur} onChangeText={onChange} placeholder="mushrooms, liver" value={value} />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="allergies"
+          render={({ field: { onBlur, onChange, value } }) => (
+            <AppTextInput label="Allergies" onBlur={onBlur} onChangeText={onChange} placeholder="peanuts, dairy" value={value} />
           )}
         />
 

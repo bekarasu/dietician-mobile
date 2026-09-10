@@ -7,12 +7,13 @@ interface ProfileState {
   profile: UserProfile | null;
   bootstrap: () => Promise<void>;
   updateProfile: (profile: UserProfile) => Promise<void>;
-  setProfile: (profile: UserProfile) => void;
+  setProfile: (profile: UserProfile | null) => void;
 }
 
-export const useProfileStore = create<ProfileState>((set) => ({
+export const useProfileStore = create<ProfileState>((set, get) => ({
   profile: null,
   bootstrap: async () => {
+    if (get().profile) return;
     const profile = await profileService.getProfile();
     set({ profile });
   },

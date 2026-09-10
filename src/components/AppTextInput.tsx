@@ -47,11 +47,15 @@ export const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function Ap
   );
 });
 
-const isNumeric = (props: TextInputProps) => props.keyboardType === 'numeric' ||
-  props.keyboardType === 'number-pad' ||
-  props.keyboardType === 'decimal-pad' ||
-  props.inputMode === 'numeric' ||
-  props.inputMode === 'decimal';
+function isNumeric(props: TextInputProps) {
+  return (
+    props.keyboardType === 'numeric' ||
+    props.keyboardType === 'number-pad' ||
+    props.keyboardType === 'decimal-pad' ||
+    props.inputMode === 'numeric' ||
+    props.inputMode === 'decimal'
+  );
+}
 
 const styles = StyleSheet.create({
   wrapper: {

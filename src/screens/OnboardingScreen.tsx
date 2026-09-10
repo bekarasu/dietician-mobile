@@ -91,7 +91,6 @@ export function OnboardingScreen({ navigation }: Props) {
 
   useEffect(() => {
     const hasStarted =
-      draft.name.length > 0 ||
       draft.age.length > 0 ||
       draft.weightKg.length > 0 ||
       draft.targetWeightKg.length > 0 ||

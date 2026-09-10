@@ -66,7 +66,7 @@ export function GeneratingDietPlanScreen(_: Props) {
 
       try {
         await recommendationService.createDietPlan(profile.id);
-        await new Promise((resolve) => setTimeout(resolve, 30 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
       } catch (error) {
         console.error('Failed to create diet plan:', error);
         if (isMounted) setErrorMsg('We encountered an issue, but you can still explore the app.');
@@ -126,6 +126,14 @@ export function GeneratingDietPlanScreen(_: Props) {
             ))}
           </View>
         )}
+
+        {/* AI Warning Message */}
+        <View style={styles.aiWarningContainer}>
+          <Ionicons name="sparkles" size={20} color={theme.colors.primary} />
+          <Text style={styles.aiWarningText}>
+            Our AI is carefully crafting your plan! It's always learning, so please take a moment to review the plan before applying it.
+          </Text>
+        </View>
       </View>
     </ScreenContainer>
   );
@@ -201,5 +209,20 @@ const styles = StyleSheet.create({
   activeDot: {
     width: 24,
     backgroundColor: theme.colors.primary,
+  },
+  aiWarningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.secondarySurface,
+    padding: theme.spacing.md,
+    borderRadius: 12,
+    marginTop: 40,
+  },
+  aiWarningText: {
+    flex: 1,
+    color: theme.colors.muted,
+    fontSize: 13,
+    lineHeight: 20,
+    marginLeft: 12,
   },
 });
