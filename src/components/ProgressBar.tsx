@@ -7,9 +7,10 @@ interface ProgressBarProps {
   current: number;
   target: number;
   suffix?: string;
+  color?: string;
 }
 
-export function ProgressBar({ label, current, target, suffix = '' }: ProgressBarProps) {
+export function ProgressBar({ label, current, target, suffix = '', color = theme.colors.primary }: ProgressBarProps) {
   const safeTarget = target <= 0 ? 1 : target;
   const progress = Math.min(current / safeTarget, 1);
   const percentage = Math.round(progress * 100);
@@ -25,7 +26,7 @@ export function ProgressBar({ label, current, target, suffix = '' }: ProgressBar
         </Text>
       </View>
       <View style={styles.track}>
-        <View style={[styles.fill, { width: `${percentage}%` }]} />
+        <View style={[styles.fill, { width: `${percentage}%`, backgroundColor: color }]} />
       </View>
     </View>
   );

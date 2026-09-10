@@ -25,6 +25,5 @@ export type AppStackParamList = {
   HydrationTracking: undefined;
   FriendCompetition: undefined;
   BloodTestUpload: undefined;
-  Settings: undefined;
   WeightProgress: undefined;
 };

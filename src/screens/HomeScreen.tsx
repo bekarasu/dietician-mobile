@@ -72,10 +72,18 @@ export function HomeScreen() {
         </AppCard>
       </View>
 
-      <AppCard style={styles.stack}>
-        <ProgressBar label="Water" current={hydration.waterMl} target={hydration.targetWaterMl} suffix=" ml" />
-        <ProgressBar label="Coffee" current={coffee.cups} target={coffee.targetCups} suffix=" cups" />
-      </AppCard>
+      <Pressable onPress={() => navigation.navigate('HydrationTracking')}>
+        <AppCard style={styles.stack}>
+          <ProgressBar label="Water" current={hydration.waterMl} target={hydration.targetWaterMl} suffix=" ml" />
+          <ProgressBar 
+            label="Coffee" 
+            current={coffee.cups} 
+            target={coffee.targetCups} 
+            suffix=" cups" 
+            color={coffee.cups > coffee.targetCups ? theme.colors.danger : theme.colors.primary}
+          />
+        </AppCard>
+      </Pressable>
 
       {onboardingInsight ? (
         <AppCard style={styles.insightCard}>
@@ -94,12 +102,6 @@ export function HomeScreen() {
             onPress: () => navigation.navigate('RefrigeratorInventory'),
           },
           {
-            id: 'hydration',
-            title: 'Water & coffee',
-            description: 'Track daily fluid intake and moderate stimulant load.',
-            onPress: () => navigation.navigate('HydrationTracking'),
-          },
-          {
             id: 'friends',
             title: 'Friend challenge',
             description: 'Compare consistency and difficulty-weighted progress.',
@@ -110,12 +112,6 @@ export function HomeScreen() {
             title: 'Blood test results',
             description: 'Manage your uploaded blood test results.',
             onPress: () => navigation.navigate('BloodTestUpload'),
-          },
-          {
-            id: 'settings',
-            title: 'Settings',
-            description: 'Responsible defaults, reminders, and account exit path.',
-            onPress: () => navigation.navigate('Settings'),
           },
         ]}
       />

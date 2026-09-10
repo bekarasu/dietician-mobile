@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -9,6 +9,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { DIETARY_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
 import { useAuthStore } from '../store/useAuthStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
@@ -39,7 +40,10 @@ export function ProfileGoalsScreen() {
   const profile = useProfileStore((state) => state.profile);
   const updateProfile = useProfileStore((state) => state.updateProfile);
   const logout = useAuthStore((state) => state.logout);
+  const restartOnboarding = useOnboardingStore((state) => state.restartOnboarding);
   const [isLoading, setIsLoading] = useState(false);
+  const [mealReminders, setMealReminders] = useState(true);
+  const [safeGuidanceMode, setSafeGuidanceMode] = useState(true);
 
   const { control, handleSubmit, reset, watch, setValue } = useForm<ProfileFormValues>({
     defaultValues: profile
@@ -144,44 +148,6 @@ export function ProfileGoalsScreen() {
             )}
           />
         </View>
-
-        <View style={styles.goalGroup}>
-          <Text style={styles.goalLabel}>Goal type</Text>
-          <View style={styles.goalOptions}>
-            {GOAL_TYPE_OPTIONS.map((option) => (
-              <AppButton
-                key={option.value}
-                title={option.label}
-                variant={selectedGoalType === option.value ? 'primary' : 'secondary'}
-                onPress={() => setValue('goalType', option.value)}
-                style={styles.goalButton}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.goalGroup}>
-          <Text style={styles.goalLabel}>Dietary preferences</Text>
-          <View style={styles.goalOptions}>
-            {DIETARY_OPTIONS.map((option) => (
-              <AppButton
-                key={option.value}
-                title={option.label}
-                variant={selectedDietaryPreferences?.includes(option.value) ? 'primary' : 'secondary'}
-                onPress={() => {
-                  const current = selectedDietaryPreferences || [];
-                  if (current.includes(option.value)) {
-                    setValue('dietaryPreferences', current.filter((v) => v !== option.value));
-                  } else {
-                    setValue('dietaryPreferences', [...current, option.value]);
-                  }
-                }}
-                style={styles.goalButton}
-              />
-            ))}
-          </View>
-        </View>
-
         <Controller
           control={control}
           name="dislikedFoods"
@@ -199,6 +165,27 @@ export function ProfileGoalsScreen() {
         />
 
         <AppButton title="Save profile" loading={isLoading} onPress={handleSubmit(onSubmit)} />
+      </AppCard>
+
+      <SectionHeader title="Settings" subtitle="Manage your app preferences and account settings." />
+      <AppCard style={styles.form}>
+        <View style={styles.settingRow}>
+          <View style={styles.settingTextBlock}>
+            <Text style={styles.settingTitle}>Meal reminders</Text>
+            <Text style={styles.settingText}>Keep lightweight notifications for hydration, meals, and check-ins.</Text>
+          </View>
+          <Switch value={mealReminders} onValueChange={setMealReminders} thumbColor={theme.colors.surface} trackColor={{ true: theme.colors.primary, false: theme.colors.border }} />
+        </View>
+
+        <View style={styles.settingRow}>
+          <View style={styles.settingTextBlock}>
+            <Text style={styles.settingTitle}>Safe guidance mode</Text>
+            <Text style={styles.settingText}>Bias recommendations toward sustainable nutrition and avoid compensatory restriction.</Text>
+          </View>
+          <Switch value={safeGuidanceMode} onValueChange={setSafeGuidanceMode} thumbColor={theme.colors.surface} trackColor={{ true: theme.colors.primary, false: theme.colors.border }} />
+        </View>
+
+        <AppButton title="Restart onboarding" variant="secondary" onPress={restartOnboarding} />
         <AppButton title="Log out" variant="secondary" onPress={logout} />
       </AppCard>
     </ScreenContainer>
@@ -227,5 +214,23 @@ const styles = StyleSheet.create({
   },
   goalButton: {
     minWidth: '48%',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingTextBlock: {
+    flex: 1,
+    gap: theme.spacing.xs,
+  },
+  settingTitle: {
+    color: theme.colors.text,
+    fontWeight: '700',
+  },
+  settingText: {
+    color: theme.colors.muted,
+    lineHeight: 22,
   },
 });
