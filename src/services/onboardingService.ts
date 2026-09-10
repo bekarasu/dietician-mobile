@@ -107,7 +107,7 @@ export const onboardingService = {
           return {
             pageId,
             message: `Hydration targets synced. Daily targets are ${draft.targetWaterMl || '0'} ml water and ${draft.targetCoffeeCups || '0'} coffee cups.`,
-            profile,
+            profile: profile || undefined,
           };
         } catch (error) {
           console.error('Error submitting onboarding data:', error);

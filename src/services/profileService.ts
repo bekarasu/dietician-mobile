@@ -4,8 +4,12 @@ import { fetchWithAuth } from './apiClient';
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
 export const profileService = {
-  async getProfile(): Promise<UserProfile> {
+  async getProfile(): Promise<UserProfile | null> {
     const response = await fetchWithAuth(`${API_URL}`);
+
+    if (response.status === 404) {
+      return null;
+    }
 
     if (!response.ok) {
       throw new Error('Failed to fetch profile');

@@ -50,21 +50,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (accessToken) {
         try {
           await useProfileStore.getState().bootstrap();
-          const profile = useProfileStore.getState().profile;
-          
-          if (profile) {
-            set({
-              user: { id: profile.id, name: profile.name },
-              isAuthenticated: true,
-            });
-
-            if (profile.heightCm && profile.weightKg && profile.goalType) {
-              useOnboardingStore.getState().completeOnboarding();
-            }
-          }
         } catch (err) {
           console.warn('Failed to fetch profile during bootstrap', err);
           // If token is invalid, we might want to clear it, but let's just leave it for now
+        }
+
+        set({ isAuthenticated: true });
+
+        const profile = useProfileStore.getState().profile;
+        if (profile) {
+          set({
+            user: { id: profile.id, name: profile.name },
+          });
+
+          if (profile.heightCm && profile.weightKg && profile.goalType) {
+            useOnboardingStore.getState().completeOnboarding();
+          }
         }
       }
     } catch (e) {
