@@ -27,6 +27,8 @@ export interface UserProfile {
   allergies?: string[];
   dislikedFoods: string[];
   dailyCalorieTarget: number;
+  targetWaterMl?: number;
+  targetCoffeeCups?: number;
 }
 
 export interface DailyFoodLogInput {
@@ -40,6 +42,19 @@ export interface DailyFoodLog extends DailyFoodLogInput {
   id: string;
   createdAt: string;
   recoveryRecommendation: string;
+}
+
+export interface DailyLogResponse {
+  id: string;
+  userId: string;
+  logDate: string;
+  waterIntakeMl: number;
+  coffeeCups: number;
+  sleepHours: number;
+  exerciseMinutes: number;
+  mood: string;
+  notes: string;
+  meals: any[];
 }
 
 export interface RefrigeratorItemInput {

@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 
 import { AppCard } from '../components/AppCard';
@@ -20,8 +21,22 @@ export function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const profile = useProfileStore((state) => state.profile);
   const latestEntry = useProgressStore((state) => state.latestEntry());
+
   const hydration = useHydrationStore((state) => state.hydration);
   const coffee = useHydrationStore((state) => state.coffee);
+  const bootstrapHydration = useHydrationStore((state) => state.bootstrap);
+  const setHydrationTargets = useHydrationStore((state) => state.setTargets);
+
+  useEffect(() => {
+    bootstrapHydration();
+  }, [bootstrapHydration]);
+
+  useEffect(() => {
+    if (profile) {
+      setHydrationTargets(profile.targetWaterMl || 2500, profile.targetCoffeeCups || 2);
+    }
+  }, [profile, setHydrationTargets]);
+
   const onboardingInsight = useOnboardingStore((state) => {
     return (
       state.responses.habits?.message ??

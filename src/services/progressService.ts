@@ -15,7 +15,7 @@ export const progressService = {
 
       const data = await response.json();
       const weightLogs = data.data?.weightLogs || [];
-      
+
       return weightLogs.map((log: any) => ({
         id: log.id,
         date: log.loggedAt,
@@ -64,24 +64,61 @@ export const progressService = {
     }
   },
 
-	async removeWeightEntry(id: string): Promise<boolean> {
-		try {
-			const response = await fetchWithAuth(`${API_URL}/me/weight/${id}`, {
-				method: 'DELETE',
-			});
+  async removeWeightEntry(id: string): Promise<boolean> {
+    try {
+      const response = await fetchWithAuth(`${API_URL}/me/weight/${id}`, {
+        method: 'DELETE',
+      });
 
-			if (!response.ok) {
-				throw new Error('Failed to remove weight log');
-			}
+      if (!response.ok) {
+        throw new Error('Failed to remove weight log');
+      }
 
-			return true;
-		} catch (error) {
-			console.error('Error removing weight entry:', error);
-			return false;
-		}
-	},
+      return true;
+    } catch (error) {
+      console.error('Error removing weight entry:', error);
+      return false;
+    }
+  },
 
   async getFriendCompetition(): Promise<FriendCompetitionEntry[]> {
     return mockFriends;
+  },
+
+  async getDailyLog(date: string): Promise<any> {
+    try {
+      const response = await fetchWithAuth(`${process.env.EXPO_PUBLIC_PROGRESS_API_URL}/daily-logs/${date}`);
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch daily log');
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching daily log:', error);
+      return null;
+    }
+  },
+
+  async upsertDailyLog(logData: any): Promise<any> {
+    try {
+      const response = await fetchWithAuth(`${process.env.EXPO_PUBLIC_PROGRESS_API_URL}/daily-logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(logData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upsert daily log');
+      }
+
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Error upserting daily log:', error);
+      return null;
+    }
   },
 };
