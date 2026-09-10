@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { Ionicons } from '@expo/vector-icons';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -11,7 +12,7 @@ import { theme } from '../theme/theme';
 import { formatKg } from '../utils/formatters';
 
 export function WeightProgressScreen() {
-  const { entries, addWeightLog } = useProgressStore();
+  const { entries, addWeightLog, removeWeightLog } = useProgressStore();
   const [newWeight, setNewWeight] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,6 +24,17 @@ export function WeightProgressScreen() {
     await addWeightLog(weightVal, 'Logged from Progress Screen');
     setNewWeight('');
     setIsSubmitting(false);
+  };
+
+  const handleRemove = (id: string) => {
+    Alert.alert(
+      "Remove Weight Log",
+      "Are you sure you want to remove this weight log?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: () => removeWeightLog(id) }
+      ]
+    );
   };
 
   // Get last 7 entries
@@ -112,6 +124,25 @@ export function WeightProgressScreen() {
               disabled={isSubmitting || !newWeight}
             />
           </AppCard>
+
+          {entries.length > 0 && (
+            <View style={styles.historyContainer}>
+              <Text style={styles.historyTitle}>History</Text>
+              {[...entries].reverse().map((entry) => (
+                <AppCard key={entry.id} style={styles.historyCard}>
+                  <View>
+                    <Text style={styles.historyWeight}>{formatKg(entry.weightKg)}</Text>
+                    <Text style={styles.historyDate}>
+                      {new Date(entry.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleRemove(entry.id)} style={styles.removeButton}>
+                    <Ionicons name="trash-outline" size={24} color={theme.colors.danger} />
+                  </TouchableOpacity>
+                </AppCard>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </ScreenContainer>
     </KeyboardAvoidingView>
@@ -187,5 +218,34 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     textAlign: 'center',
     marginTop: theme.spacing.md,
+  },
+  historyContainer: {
+    marginTop: theme.spacing.xl,
+    gap: theme.spacing.md,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: theme.colors.text,
+    paddingHorizontal: theme.spacing.md,
+  },
+  historyCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing.md,
+  },
+  historyWeight: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  historyDate: {
+    fontSize: 14,
+    color: theme.colors.muted,
+    marginTop: 2,
+  },
+  removeButton: {
+    padding: theme.spacing.sm,
   }
 });

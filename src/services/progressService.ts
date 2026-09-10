@@ -64,6 +64,23 @@ export const progressService = {
     }
   },
 
+	async removeWeightEntry(id: string): Promise<boolean> {
+		try {
+			const response = await fetchWithAuth(`${API_URL}/me/weight/${id}`, {
+				method: 'DELETE',
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to remove weight log');
+			}
+
+			return true;
+		} catch (error) {
+			console.error('Error removing weight entry:', error);
+			return false;
+		}
+	},
+
   async getFriendCompetition(): Promise<FriendCompetitionEntry[]> {
     return mockFriends;
   },
