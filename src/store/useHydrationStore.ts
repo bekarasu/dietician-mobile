@@ -11,11 +11,17 @@ interface HydrationState {
   addWater: (amount: number) => Promise<void>;
   addCoffee: (cups: number) => Promise<void>;
   setTargets: (targetWaterMl: number, targetCoffeeCups: number) => void;
+  historicalHydration: HydrationEntry[];
+  historicalCoffee: CoffeeEntry[];
 }
+
+import { mockHistoricalCoffee, mockHistoricalHydration } from '../services/mocks/mockData';
 
 export const useHydrationStore = create<HydrationState>((set, get) => ({
   hydration: { date: new Date().toISOString().split('T')[0], waterMl: 0, targetWaterMl: 0 },
   coffee: { date: new Date().toISOString().split('T')[0], cups: 0, targetCups: 2 },
+  historicalHydration: mockHistoricalHydration,
+  historicalCoffee: mockHistoricalCoffee,
   rawDailyLog: null,
   bootstrap: async () => {
     try {

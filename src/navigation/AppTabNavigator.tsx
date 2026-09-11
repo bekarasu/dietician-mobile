@@ -42,7 +42,7 @@ export function AppTabNavigator() {
         component={DailyFoodLogScreen}
         name="DailyFoodLog"
         options={{
-          title: 'Food Log',
+          title: 'Log & Inv',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'journal' : 'journal-outline'} size={size} color={color} />
           ),

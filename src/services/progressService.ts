@@ -100,6 +100,21 @@ export const progressService = {
     }
   },
 
+  async getWeeklyDailyLogs(date?: string): Promise<any[]> {
+    try {
+      const query = date ? `?date=${date}` : '';
+      const response = await fetchWithAuth(`${process.env.EXPO_PUBLIC_PROGRESS_API_URL}/daily-logs/weekly${query}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch weekly daily logs');
+      }
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching weekly daily logs:', error);
+      return [];
+    }
+  },
+
   async upsertDailyLog(logData: any): Promise<any> {
     try {
       const response = await fetchWithAuth(`${process.env.EXPO_PUBLIC_PROGRESS_API_URL}/daily-logs`, {

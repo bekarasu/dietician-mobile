@@ -147,3 +147,23 @@ export const mockCoffee: CoffeeEntry = {
   cups: 2,
   targetCups: 3,
 };
+
+export const mockHistoricalHydration: HydrationEntry[] = [
+  { date: '2026-04-28', waterMl: 2000, targetWaterMl: 2500 },
+  { date: '2026-04-29', waterMl: 2200, targetWaterMl: 2500 },
+  { date: '2026-04-30', waterMl: 1800, targetWaterMl: 2500 },
+  { date: '2026-05-01', waterMl: 2500, targetWaterMl: 2500 },
+  { date: '2026-05-02', waterMl: 2600, targetWaterMl: 2500 },
+  { date: '2026-05-03', waterMl: 2100, targetWaterMl: 2500 },
+  { date: '2026-05-04', waterMl: 1500, targetWaterMl: 2500 },
+];
+
+export const mockHistoricalCoffee: CoffeeEntry[] = [
+  { date: '2026-04-28', cups: 3, targetCups: 3 },
+  { date: '2026-04-29', cups: 2, targetCups: 3 },
+  { date: '2026-04-30', cups: 4, targetCups: 3 },
+  { date: '2026-05-01', cups: 2, targetCups: 3 },
+  { date: '2026-05-02', cups: 1, targetCups: 3 },
+  { date: '2026-05-03', cups: 2, targetCups: 3 },
+  { date: '2026-05-04', cups: 2, targetCups: 3 },
+];

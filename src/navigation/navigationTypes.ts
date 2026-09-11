@@ -21,9 +21,9 @@ export type AppTabParamList = {
 
 export type AppStackParamList = {
   Tabs: undefined;
-  RefrigeratorInventory: undefined;
   HydrationTracking: undefined;
   FriendCompetition: undefined;
   BloodTestUpload: undefined;
   WeightProgress: undefined;
+  FoodSelection: { selectedFoods: string[]; fieldName: string };
 };

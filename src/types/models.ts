@@ -8,6 +8,17 @@ export type DietaryPreference =
   | 'gluten_free'
   | 'dairy_free';
 
+export interface FoodResponse {
+  id: string;
+  name: string;
+  kcal: number;
+  kj: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  portionSize: number;
+}
+
 export interface User {
   id: string;
   name: string;

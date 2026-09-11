@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -13,6 +15,7 @@ import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
+import { AppStackParamList, AppTabParamList } from '../navigation/navigationTypes';
 
 interface ProfileFormValues {
   name: string;
@@ -20,8 +23,6 @@ interface ProfileFormValues {
   heightCm: string;
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
-  dislikedFoods: string;
-  allergies: string;
 }
 
 function toFormValues(profile: UserProfile): ProfileFormValues {
@@ -31,12 +32,12 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
     heightCm: String(profile.heightCm),
     goalType: profile.goalType,
     dietaryPreferences: profile.dietaryPreferences || [],
-    dislikedFoods: profile.dislikedFoods.join(', '),
-    allergies: (profile.allergies || []).join(', '),
   };
 }
 
 export function ProfileGoalsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
+  const route = useRoute<RouteProp<AppTabParamList, 'ProfileGoals'>>();
   const profile = useProfileStore((state) => state.profile);
   const updateProfile = useProfileStore((state) => state.updateProfile);
   const logout = useAuthStore((state) => state.logout);
@@ -54,8 +55,6 @@ export function ProfileGoalsScreen() {
           heightCm: '',
           goalType: 'habit_building',
           dietaryPreferences: [],
-          dislikedFoods: '',
-          allergies: '',
         },
   });
 
@@ -64,6 +63,8 @@ export function ProfileGoalsScreen() {
       reset(toFormValues(profile));
     }
   }, [profile, reset]);
+
+
 
   const selectedGoalType = watch('goalType');
   const selectedDietaryPreferences = watch('dietaryPreferences');
@@ -82,14 +83,6 @@ export function ProfileGoalsScreen() {
         heightCm: Number(values.heightCm) || profile.heightCm,
         goalType: values.goalType,
         dietaryPreferences: values.dietaryPreferences,
-        dislikedFoods: values.dislikedFoods
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
-        allergies: values.allergies
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
       });
       Alert.alert('Success', 'Profile saved successfully!');
     } catch (error) {
@@ -148,23 +141,49 @@ export function ProfileGoalsScreen() {
             )}
           />
         </View>
-        <Controller
-          control={control}
-          name="dislikedFoods"
-          render={({ field: { onBlur, onChange, value } }) => (
-            <AppTextInput label="Disliked foods" onBlur={onBlur} onChangeText={onChange} placeholder="mushrooms, liver" value={value} />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="allergies"
-          render={({ field: { onBlur, onChange, value } }) => (
-            <AppTextInput label="Allergies" onBlur={onBlur} onChangeText={onChange} placeholder="peanuts, dairy" value={value} />
-          )}
-        />
-
         <AppButton title="Save profile" loading={isLoading} onPress={handleSubmit(onSubmit)} />
+      </AppCard>
+
+      <SectionHeader title="Dietary Restrictions" subtitle="Manage your food allergies and disliked items." />
+      <AppCard style={styles.form}>
+        <View style={styles.foodSelectorContainer}>
+          <Text style={styles.foodSelectorLabel}>Disliked foods</Text>
+          <TouchableOpacity
+            style={styles.foodSelectorButton}
+            onPress={() =>
+              navigation.navigate('FoodSelection', {
+                selectedFoods: profile?.dislikedFoods || [],
+                fieldName: 'dislikedFoods',
+              })
+            }
+          >
+            <Text style={profile?.dislikedFoods?.length ? styles.foodSelectorText : styles.foodSelectorPlaceholder}>
+              {profile?.dislikedFoods?.length ? profile.dislikedFoods.join(', ') : 'Select foods to avoid...'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.foodSelectorContainer}>
+          <Text style={styles.foodSelectorLabel}>Allergies</Text>
+          <TouchableOpacity
+            style={styles.foodSelectorButton}
+            onPress={() =>
+              navigation.navigate('FoodSelection', {
+                selectedFoods: profile?.allergies || [],
+                fieldName: 'allergies',
+              })
+            }
+          >
+            <Text style={profile?.allergies?.length ? styles.foodSelectorText : styles.foodSelectorPlaceholder}>
+              {profile?.allergies?.length ? profile.allergies.join(', ') : 'Select allergies...'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </AppCard>
+
+      <SectionHeader title="Medical Data" subtitle="Manage your uploaded medical and blood test results." />
+      <AppCard style={styles.form}>
+        <AppButton title="Manage Blood Test Results" variant="secondary" onPress={() => navigation.navigate('BloodTestUpload')} />
       </AppCard>
 
       <SectionHeader title="Settings" subtitle="Manage your app preferences and account settings." />
@@ -232,5 +251,28 @@ const styles = StyleSheet.create({
   settingText: {
     color: theme.colors.muted,
     lineHeight: 22,
+  },
+  foodSelectorContainer: {
+    gap: theme.spacing.xs,
+  },
+  foodSelectorLabel: {
+    color: theme.colors.text,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  foodSelectorButton: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.lg,
+  },
+  foodSelectorText: {
+    color: theme.colors.text,
+    fontSize: 16,
+  },
+  foodSelectorPlaceholder: {
+    color: theme.colors.muted,
+    fontSize: 16,
   },
 });

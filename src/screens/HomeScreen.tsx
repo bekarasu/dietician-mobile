@@ -96,22 +96,10 @@ export function HomeScreen() {
       <QuickActionGrid
         actions={[
           {
-            id: 'inventory',
-            title: 'Inventory',
-            description: 'Keep home ingredients available to future meal generation.',
-            onPress: () => navigation.navigate('RefrigeratorInventory'),
-          },
-          {
             id: 'friends',
             title: 'Friend challenge',
             description: 'Compare consistency and difficulty-weighted progress.',
             onPress: () => navigation.navigate('FriendCompetition'),
-          },
-          {
-            id: 'blood',
-            title: 'Blood test results',
-            description: 'Manage your uploaded blood test results.',
-            onPress: () => navigation.navigate('BloodTestUpload'),
           },
         ]}
       />

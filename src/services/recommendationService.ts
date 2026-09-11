@@ -1,6 +1,6 @@
 import { fetchWithAuth } from './apiClient';
 import { AI_GUIDANCE_NOTICE } from '../constants/health';
-import { MealRecommendation, RecommendationInput } from '../types/models';
+import { FoodResponse, MealRecommendation, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
 
 function getIngredientFallback(input: RecommendationInput) {
@@ -12,6 +12,20 @@ function getIngredientFallback(input: RecommendationInput) {
 const API_URL = process.env.EXPO_PUBLIC_RECOMMENDATION_API_URL;
 
 export const recommendationService = {
+  async listFoods(): Promise<FoodResponse[]> {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+    const response = await fetchWithAuth(`${API_URL}/foods`, {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`List Foods API Error [${response.status}]:`, errorText);
+      throw new Error(`Failed to list foods: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.foods;
+  },
+
   async createDietPlan(userId: string) {
     if (!API_URL) throw new Error('Recommendation API URL is not defined');
     
