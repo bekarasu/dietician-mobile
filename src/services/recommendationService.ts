@@ -26,15 +26,8 @@ export const recommendationService = {
     return data.foods;
   },
 
-  async createDietPlan(userId: string) {
+  async createDietPlan(userId: string, durationDays: number = 7) {
     if (!API_URL) throw new Error('Recommendation API URL is not defined');
-    
-    // Create basic default meals payload as required by backend DTO
-    const defaultMeals = [
-      { mealType: 'Breakfast', name: 'Starting Breakfast' },
-      { mealType: 'Lunch', name: 'Starting Lunch' },
-      { mealType: 'Dinner', name: 'Starting Dinner' }
-    ];
 
     const response = await fetchWithAuth(`${API_URL}/diet-plans`, {
       method: 'POST',
@@ -42,7 +35,7 @@ export const recommendationService = {
       body: JSON.stringify({
         userId,
         startDate: new Date().toISOString(),
-        meals: defaultMeals
+        durationDays
       }),
     });
 

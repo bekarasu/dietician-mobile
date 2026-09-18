@@ -83,6 +83,7 @@ export function OnboardingScreen({ navigation }: Props) {
   const setTargets = useHydrationStore((state) => state.setTargets);
 
   const [showValidation, setShowValidation] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   const currentPage = ONBOARDING_PAGES[currentPageIndex];
   const isLastPage = currentPageIndex === ONBOARDING_PAGES.length - 1;
@@ -177,6 +178,7 @@ export function OnboardingScreen({ navigation }: Props) {
           onChange={updateField}
           page={currentPage}
           showValidation={showValidation}
+          onUploadingChange={setIsUploadingFile}
         />
       </AppCard>
 
@@ -201,12 +203,13 @@ export function OnboardingScreen({ navigation }: Props) {
 
       <View style={styles.actions}>
         <AppButton
-          disabled={currentPageIndex === 0 || isSubmitting}
+          disabled={currentPageIndex === 0 || isSubmitting || isUploadingFile}
           onPress={goToPreviousPage}
           title="Back"
           variant="ghost"
         />
         <AppButton
+          disabled={isUploadingFile}
           loading={isSubmitting}
           onPress={handleContinue}
           style={styles.primaryAction}

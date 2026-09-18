@@ -21,11 +21,12 @@ export const profileService = {
     // We also need to fetch preferences since they aren't included in the base profile endpoint
     const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
 
-    let prefs = { dietaryPreferences: [], dislikedFoods: [] };
+    let prefs: { dietaryPreferences: string[]; dislikedFoods: string[]; allergies: string[] } = { dietaryPreferences: [], dislikedFoods: [], allergies: [] };
     if (prefResponse.ok) {
       const prefJson = await prefResponse.json();
       prefs.dietaryPreferences = prefJson.data.preferences?.map((p: any) => p.preference) || [];
       prefs.dislikedFoods = prefJson.data.dislikedFoods?.map((f: any) => f.foodName) || [];
+      prefs.allergies = prefJson.data.allergies?.map((a: any) => a.allergy) || [];
     }
 
     return {
@@ -39,6 +40,7 @@ export const profileService = {
       dailyCalorieTarget: data.dailyCalorieTarget,
       dietaryPreferences: prefs.dietaryPreferences,
       dislikedFoods: prefs.dislikedFoods,
+      allergies: prefs.allergies,
       activityLevel: data.activityLevel,
       gender: data.gender,
       targetWaterMl: data.targetWaterMl,
@@ -78,7 +80,7 @@ export const profileService = {
       },
       body: JSON.stringify({
         preferences: profile.dietaryPreferences,
-        allergies: [],
+        allergies: profile.allergies?.map(a => ({ allergy: a })) || [],
         dislikedFoods: profile.dislikedFoods,
       }),
     });

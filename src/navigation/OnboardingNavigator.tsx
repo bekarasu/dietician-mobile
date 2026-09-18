@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { FoodSelectionScreen } from '../screens/FoodSelectionScreen'
 import { GeneratingDietPlanScreen } from '../screens/GeneratingDietPlanScreen'
 import { OnboardingScreen } from '../screens/OnboardingScreen'
 import { theme } from '../theme/theme'
@@ -18,6 +19,7 @@ export function OnboardingNavigator() {
 		>
 			<Stack.Screen component={OnboardingScreen} name="Onboarding" />
 			<Stack.Screen component={GeneratingDietPlanScreen} name="GeneratingDietPlan" />
+			<Stack.Screen component={FoodSelectionScreen} name="FoodSelection" />
 		</Stack.Navigator>
 	)
 }

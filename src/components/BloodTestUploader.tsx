@@ -9,9 +9,10 @@ import { bloodTestService } from '../services/bloodTestService';
 
 interface BloodTestUploaderProps {
   onUploadComplete?: () => void;
+  onUploadStateChange?: (uploading: boolean) => void;
 }
 
-export function BloodTestUploader({ onUploadComplete }: BloodTestUploaderProps) {
+export function BloodTestUploader({ onUploadComplete, onUploadStateChange }: BloodTestUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
 
@@ -24,6 +25,7 @@ export function BloodTestUploader({ onUploadComplete }: BloodTestUploaderProps) 
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setUploading(true);
+        onUploadStateChange?.(true);
         const file = result.assets[0];
         
         await bloodTestService.uploadBloodTest(
@@ -39,6 +41,7 @@ export function BloodTestUploader({ onUploadComplete }: BloodTestUploaderProps) 
       console.error('Failed to upload file:', error);
     } finally {
       setUploading(false);
+      onUploadStateChange?.(false);
     }
   };
 

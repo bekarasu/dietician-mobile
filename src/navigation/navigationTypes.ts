@@ -9,6 +9,7 @@ export type AuthStackParamList = {
 export type OnboardingStackParamList = {
   Onboarding: undefined;
   GeneratingDietPlan: undefined;
+  FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };
 
 export type AppTabParamList = {
@@ -25,5 +26,5 @@ export type AppStackParamList = {
   FriendCompetition: undefined;
   BloodTestUpload: undefined;
   WeightProgress: undefined;
-  FoodSelection: { selectedFoods: string[]; fieldName: string };
+  FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };

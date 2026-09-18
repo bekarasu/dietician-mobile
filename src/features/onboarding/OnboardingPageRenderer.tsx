@@ -1,8 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AppButton } from '../../components/AppButton';
 import { AppTextInput } from '../../components/AppTextInput';
 import { BloodTestUploader } from '../../components/BloodTestUploader';
+import { OnboardingStackParamList } from '../../navigation/navigationTypes';
 import { theme } from '../../theme/theme';
 import { OnboardingDraft } from '../../types/models';
 
@@ -17,6 +20,7 @@ interface OnboardingPageRendererProps {
   draft: OnboardingDraft;
   showValidation: boolean;
   onChange: (field: keyof OnboardingDraft, value: OnboardingDraft[keyof OnboardingDraft]) => void;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
 function isFieldMissing(field: OnboardingFieldDefinition, draft: OnboardingDraft) {
@@ -33,7 +37,9 @@ function isFieldMissing(field: OnboardingFieldDefinition, draft: OnboardingDraft
   return String(value).trim().length === 0;
 }
 
-export function OnboardingPageRenderer({ page, draft, showValidation, onChange }: OnboardingPageRendererProps) {
+export function OnboardingPageRenderer({ page, draft, showValidation, onChange, onUploadingChange }: OnboardingPageRendererProps) {
+  const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParamList>>();
+
   return (
     <View style={styles.container}>
       {page.fields.map((field) => {
@@ -66,7 +72,37 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange }
             <View key={String(field.id)} style={styles.selectionGroup}>
               <Text style={styles.selectionLabel}>{field.label}</Text>
               {field.helperText ? <Text style={styles.helperText}>{field.helperText}</Text> : null}
-              <BloodTestUploader onUploadComplete={() => onChange(field.id, true as OnboardingDraft[keyof OnboardingDraft])} />
+              <BloodTestUploader 
+                onUploadComplete={() => onChange(field.id, true as OnboardingDraft[keyof OnboardingDraft])} 
+                onUploadStateChange={onUploadingChange}
+              />
+              {hasError ? <Text style={styles.errorText}>{field.label} is required.</Text> : null}
+            </View>
+          );
+        }
+
+        if (field.inputType === 'food-selection') {
+          const selectedFoodsStr = String(rawValue || '');
+          const selectedFoods = selectedFoodsStr ? selectedFoodsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+          return (
+            <View key={String(field.id)} style={styles.selectionGroup}>
+              <Text style={styles.selectionLabel}>{field.label}</Text>
+              {field.helperText ? <Text style={styles.helperText}>{field.helperText}</Text> : null}
+              <TouchableOpacity
+                style={styles.foodSelectorButton}
+                onPress={() => {
+                  navigation.navigate('FoodSelection', {
+                    selectedFoods,
+                    fieldName: field.id,
+                    context: 'onboarding',
+                  });
+                }}
+              >
+                <Text style={selectedFoods.length ? styles.foodSelectorText : styles.foodSelectorPlaceholder}>
+                  {selectedFoods.length ? selectedFoods.join(', ') : field.placeholder || 'Select foods...'}
+                </Text>
+              </TouchableOpacity>
               {hasError ? <Text style={styles.errorText}>{field.label} is required.</Text> : null}
             </View>
           );
@@ -160,5 +196,20 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontSize: theme.typography.caption.fontSize,
     textDecorationLine: 'underline',
+  },
+  foodSelectorButton: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.lg,
+  },
+  foodSelectorText: {
+    color: theme.colors.text,
+    fontSize: 16,
+  },
+  foodSelectorPlaceholder: {
+    color: theme.colors.muted,
+    fontSize: 16,
   },
 });

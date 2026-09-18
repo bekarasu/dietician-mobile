@@ -28,11 +28,20 @@ export interface OnboardingSelectFieldDefinition extends OnboardingFieldBase {
   options: OnboardingFieldOption[];
 }
 
+export interface OnboardingFoodSelectionFieldDefinition extends OnboardingFieldBase {
+  inputType: 'food-selection';
+  placeholder?: string;
+}
+
 export interface OnboardingFileUploadFieldDefinition extends OnboardingFieldBase {
   inputType: 'file-upload';
 }
 
-export type OnboardingFieldDefinition = OnboardingInputFieldDefinition | OnboardingSelectFieldDefinition | OnboardingFileUploadFieldDefinition;
+export type OnboardingFieldDefinition =
+  | OnboardingInputFieldDefinition
+  | OnboardingSelectFieldDefinition
+  | OnboardingFileUploadFieldDefinition
+  | OnboardingFoodSelectionFieldDefinition;
 
 export interface OnboardingPageDefinition {
   id: OnboardingPageId;

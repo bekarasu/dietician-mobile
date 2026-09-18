@@ -6,16 +6,18 @@ import { AppButton } from '../components/AppButton';
 import { FoodSelectionList } from '../components/FoodSelectionList';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { AppStackParamList } from '../navigation/navigationTypes';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'FoodSelection'>;
 
 export function FoodSelectionScreen({ route, navigation }: Props) {
-  const { selectedFoods: initialSelectedFoods, fieldName } = route.params;
+  const { selectedFoods: initialSelectedFoods, fieldName, context = 'profile' } = route.params;
   const [selectedFoods, setSelectedFoods] = useState<string[]>(initialSelectedFoods || []);
   const profile = useProfileStore((state) => state.profile);
   const updateProfile = useProfileStore((state) => state.updateProfile);
+  const updateField = useOnboardingStore((state) => state.updateField);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleToggleFood = (foodName: string) => {
@@ -28,6 +30,12 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
   };
 
   const handleSave = async () => {
+    if (context === 'onboarding') {
+      updateField(fieldName as any, selectedFoods.join(', '));
+      navigation.goBack();
+      return;
+    }
+
     if (!profile) {
       navigation.goBack();
       return;

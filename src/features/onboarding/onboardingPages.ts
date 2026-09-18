@@ -96,14 +96,14 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
       {
         id: 'dislikedFoods',
         label: 'Disliked foods',
-        inputType: 'text',
-        placeholder: 'mushrooms, liver, olives',
+        inputType: 'food-selection',
+        placeholder: 'Select foods to avoid...',
       },
       {
         id: 'allergies',
         label: 'Allergies',
-        inputType: 'text',
-        placeholder: 'peanuts, shellfish',
+        inputType: 'food-selection',
+        placeholder: 'Select allergies...',
       },
     ],
   },
