@@ -102,6 +102,8 @@ export interface DietMeal {
   carbsG: number;
   fatG: number;
   ingredients: string[];
+  isTaken?: boolean;
+  isExtra?: boolean;
 }
 
 export interface DietPlan {
