@@ -5,7 +5,7 @@ const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
 export const profileService = {
   async getProfile(): Promise<UserProfile | null> {
-    const response = await fetchWithAuth(`${API_URL}`);
+    const response = await fetchWithAuth(`${API_URL}?include_fridge=true`);
 
     if (response.status === 404) {
       return null;
@@ -30,6 +30,9 @@ export const profileService = {
       prefs.availableIngredients = prefJson.data.availableIngredients?.map((i: any) => i.ingredient) || [];
     }
 
+    // Use availableIngredients from the profile payload if present, otherwise fallback to preferences
+    const availableIngredients = data.availableIngredients || prefs.availableIngredients;
+
     return {
       id: data.id,
       name: data.displayName,
@@ -41,7 +44,7 @@ export const profileService = {
       dailyCalorieTarget: data.dailyCalorieTarget,
       dietaryPreferences: prefs.dietaryPreferences,
       dislikedFoods: prefs.dislikedFoods,
-      availableIngredients: prefs.availableIngredients,
+      availableIngredients: availableIngredients,
       allergies: prefs.allergies,
       activityLevel: data.activityLevel,
       gender: data.gender,

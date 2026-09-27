@@ -5,13 +5,12 @@ const API_URL = `${process.env.EXPO_PUBLIC_MEDICAL_API_URL}/uploads`;
 
 export const bloodTestService = {
   async uploadBloodTest(fileUri: string, fileName: string, mimeType: string): Promise<BloodTestUpload> {
+    const fileResponse = await fetch(fileUri);
+    const blob = await fileResponse.blob();
+
     const formData = new FormData();
     formData.append('uploadType', 'BloodTest');
-    formData.append('file', {
-      uri: fileUri,
-      name: fileName,
-      type: mimeType,
-    } as any);
+    formData.append('file', blob, fileName);
 
     const response = await fetchWithAuth(API_URL, {
       method: 'POST',

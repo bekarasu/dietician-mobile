@@ -5,6 +5,7 @@ import { FriendCompetitionScreen } from '../screens/FriendCompetitionScreen';
 import { HydrationTrackingScreen } from '../screens/HydrationTrackingScreen';
 import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
+import { InventoryScreen } from '../screens/InventoryScreen';
 import { theme } from '../theme/theme';
 import { AppTabNavigator } from './AppTabNavigator';
 import { AppStackParamList } from './navigationTypes';
@@ -22,6 +23,7 @@ export function AppStackNavigator() {
       }}
     >
       <Stack.Screen component={AppTabNavigator} name="Tabs" options={{ headerShown: false, title: 'Home' }} />
+      <Stack.Screen component={InventoryScreen} name="Inventory" options={{ title: 'My Fridge' }} />
       <Stack.Screen component={HydrationTrackingScreen} name="HydrationTracking" options={{ title: 'Water & Coffee' }} />
       <Stack.Screen component={FriendCompetitionScreen} name="FriendCompetition" options={{ title: 'Friend Challenge' }} />
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood Test Upload' }} />
