@@ -18,6 +18,7 @@ export const mockProfile: UserProfile = {
   goalType: 'weight_loss',
   dietaryPreferences: ['omnivore', 'dairy_free'],
   dislikedFoods: ['liver', 'mayonnaise'],
+  availableIngredients: [],
   dailyCalorieTarget: 2200,
 };
 

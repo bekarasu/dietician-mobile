@@ -37,6 +37,7 @@ export interface UserProfile {
   dietaryPreferences: DietaryPreference[];
   allergies?: string[];
   dislikedFoods: string[];
+  availableIngredients: string[];
   dailyCalorieTarget: number;
   targetWaterMl?: number;
   targetCoffeeCups?: number;

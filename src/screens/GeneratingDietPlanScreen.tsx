@@ -66,7 +66,7 @@ export function GeneratingDietPlanScreen(_: Props) {
 
       try {
         await recommendationService.createDietPlan(profile.id, 7);
-        await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1 * 1000));
       } catch (error) {
         console.error('Failed to create diet plan:', error);
         if (isMounted) setErrorMsg('We encountered an issue, but you can still explore the app.');

@@ -40,6 +40,7 @@ function buildProfileFromDraft(draft: OnboardingDraft, profile: UserProfile | nu
     dietaryPreferences: draft.dietaryPreferences,
     dislikedFoods: splitCommaSeparatedList(draft.dislikedFoods),
     allergies: splitCommaSeparatedList(draft.allergies),
+    availableIngredients: [],
     dailyCalorieTarget: Number(draft.dailyCalorieTarget) || profile?.dailyCalorieTarget || 2200,
   } satisfies UserProfile;
 }
