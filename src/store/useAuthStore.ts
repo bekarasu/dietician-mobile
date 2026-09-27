@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
 
           if (profile.heightCm && profile.weightKg && profile.goalType) {
-            useOnboardingStore.getState().completeOnboarding();
+            useOnboardingStore.getState().restoreOnboardingState();
           }
         }
       }
@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await useProfileStore.getState().bootstrap();
         const profile = useProfileStore.getState().profile;
         if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
-          useOnboardingStore.getState().completeOnboarding();
+          useOnboardingStore.getState().restoreOnboardingState();
         }
       } catch (err) {
         console.warn('Failed to fetch profile during login', err);
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await useProfileStore.getState().bootstrap();
         const profile = useProfileStore.getState().profile;
         if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
-          useOnboardingStore.getState().completeOnboarding();
+          useOnboardingStore.getState().restoreOnboardingState();
         }
       } catch (err) {
         console.warn('Failed to fetch profile during verifyOTP', err);

@@ -15,7 +15,7 @@ export type OnboardingStackParamList = {
 export type AppTabParamList = {
   Home: undefined;
   DailyFoodLog: undefined;
-  MealRecommendation: undefined;
+  DietPlan: undefined;
   ProgressDashboard: undefined;
   ProfileGoals: undefined;
 };

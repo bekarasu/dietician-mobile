@@ -25,6 +25,7 @@ interface OnboardingState {
   draft: OnboardingDraft;
   currentPageIndex: number;
   isCompleted: boolean;
+  justCompletedOnboarding: boolean;
   isSubmitting: boolean;
   error: string | null;
   responses: Partial<Record<OnboardingPageId, OnboardingPageResponse>>;
@@ -34,6 +35,8 @@ interface OnboardingState {
   goToPreviousPage: () => void;
   submitPage: (pageId: OnboardingPageId) => Promise<OnboardingPageResponse | null>;
   completeOnboarding: () => void;
+  restoreOnboardingState: () => void;
+  clearJustCompletedOnboarding: () => void;
   restartOnboarding: () => void;
 }
 
@@ -41,6 +44,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   draft: initialDraft,
   currentPageIndex: 0,
   isCompleted: false,
+  justCompletedOnboarding: false,
   isSubmitting: false,
   error: null,
   responses: {},
@@ -97,13 +101,20 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     }
   },
   completeOnboarding: () => {
-    set({ isCompleted: true });
+    set({ isCompleted: true, justCompletedOnboarding: true });
+  },
+  restoreOnboardingState: () => {
+    set({ isCompleted: true, justCompletedOnboarding: false });
+  },
+  clearJustCompletedOnboarding: () => {
+    set({ justCompletedOnboarding: false });
   },
   restartOnboarding: () => {
     set({
       draft: initialDraft,
       currentPageIndex: 0,
       isCompleted: false,
+      justCompletedOnboarding: false,
       isSubmitting: false,
       error: null,
       responses: {},

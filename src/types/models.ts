@@ -89,6 +89,30 @@ export interface MealRecommendation {
   createdAt: string;
 }
 
+export interface DietMeal {
+  id: string;
+  dayOfWeek: number;
+  mealType: string;
+  recipeId: string | null;
+  name: string;
+  description: string;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  ingredients: string[];
+}
+
+export interface DietPlan {
+  id: string;
+  userId: string;
+  startDate: string;
+  endDate: string | null;
+  goals: string;
+  status: string;
+  meals: DietMeal[];
+}
+
 export interface BloodTestResult {
   testName: string;
   result: string;

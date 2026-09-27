@@ -46,6 +46,21 @@ export const recommendationService = {
     return response.json();
   },
 
+  async getActiveDietPlan() {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+    
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/active`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error('Failed to fetch active diet plan');
+    }
+
+    return response.json();
+  },
+
   buildRecoveryRecommendation(calories: number) {
     if (calories >= 900) {
       return 'You went well above plan today. Favor a protein-forward meal with vegetables, hydrate, and return to your normal structure tomorrow without severe restriction.';

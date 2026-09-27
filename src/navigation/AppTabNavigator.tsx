@@ -1,20 +1,32 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useEffect } from 'react';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import { DailyFoodLogScreen } from '../screens/DailyFoodLogScreen';
+import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
-import { MealRecommendationScreen } from '../screens/MealRecommendationScreen';
 import { ProfileGoalsScreen } from '../screens/ProfileGoalsScreen';
 import { ProgressDashboardScreen } from '../screens/ProgressDashboardScreen';
 import { theme } from '../theme/theme';
 import { AppTabParamList } from './navigationTypes';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 
 const Tab = createBottomTabNavigator<AppTabParamList>();
 
 export function AppTabNavigator() {
+  const justCompletedOnboarding = useOnboardingStore((state) => state.justCompletedOnboarding);
+  const clearJustCompletedOnboarding = useOnboardingStore((state) => state.clearJustCompletedOnboarding);
+
+  useEffect(() => {
+    if (justCompletedOnboarding) {
+      clearJustCompletedOnboarding();
+    }
+  }, [justCompletedOnboarding, clearJustCompletedOnboarding]);
+
   return (
     <Tab.Navigator
+      initialRouteName={justCompletedOnboarding ? 'DietPlan' : 'Home'}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
@@ -49,10 +61,10 @@ export function AppTabNavigator() {
         }}
       />
       <Tab.Screen
-        component={MealRecommendationScreen}
-        name="MealRecommendation"
+        component={DietPlanScreen}
+        name="DietPlan"
         options={{
-          title: 'Meals',
+          title: 'Diet Plan',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={size} color={color} />
           ),
