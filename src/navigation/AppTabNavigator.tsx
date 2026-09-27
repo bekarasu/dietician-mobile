@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 
 import { Ionicons } from '@expo/vector-icons';
 
-import { DailyFoodLogScreen } from '../screens/DailyFoodLogScreen';
 import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileGoalsScreen } from '../screens/ProfileGoalsScreen';
@@ -47,16 +46,6 @@ export function AppTabNavigator() {
           title: 'Today',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        component={DailyFoodLogScreen}
-        name="DailyFoodLog"
-        options={{
-          title: 'Log & Inv',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'journal' : 'journal-outline'} size={size} color={color} />
           ),
         }}
       />

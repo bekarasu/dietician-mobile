@@ -181,6 +181,11 @@ export function ProfileGoalsScreen() {
         </View>
       </AppCard>
 
+      <SectionHeader title="My Fridge" subtitle="Manage ingredients available at home for personalized meal plans." />
+      <AppCard style={styles.form}>
+        <AppButton title="Manage Fridge Inventory" variant="secondary" onPress={() => navigation.navigate('Inventory')} />
+      </AppCard>
+
       <SectionHeader title="Medical Data" subtitle="Manage your uploaded medical and blood test results." />
       <AppCard style={styles.form}>
         <AppButton title="Manage Blood Test Results" variant="secondary" onPress={() => navigation.navigate('BloodTestUpload')} />

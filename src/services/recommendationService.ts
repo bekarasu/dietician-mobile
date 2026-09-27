@@ -61,6 +61,60 @@ export const recommendationService = {
     return response.json();
   },
 
+  async updateActiveDietPlan(feedback: string, dayToUpdate?: number) {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/active/feedback`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        feedback,
+        dayToUpdate,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update active diet plan');
+    }
+
+    return response.json();
+  },
+
+  async markMealAsTaken(mealId: string) {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/take`, {
+      method: 'PATCH',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to mark meal as taken');
+    }
+
+    return response.json();
+  },
+
+  async addExtraMeal(dayOfWeek: number, mealType: string, name: string, calories: number) {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/active/meals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dayOfWeek,
+        mealType,
+        name,
+        calories
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add extra meal');
+    }
+
+    return response.json();
+  },
+
   buildRecoveryRecommendation(calories: number) {
     if (calories >= 900) {
       return 'You went well above plan today. Favor a protein-forward meal with vegetables, hydrate, and return to your normal structure tomorrow without severe restriction.';

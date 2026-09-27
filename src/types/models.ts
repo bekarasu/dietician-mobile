@@ -37,6 +37,7 @@ export interface UserProfile {
   dietaryPreferences: DietaryPreference[];
   allergies?: string[];
   dislikedFoods: string[];
+  availableIngredients: string[];
   dailyCalorieTarget: number;
   targetWaterMl?: number;
   targetCoffeeCups?: number;
@@ -101,6 +102,8 @@ export interface DietMeal {
   carbsG: number;
   fatG: number;
   ingredients: string[];
+  isTaken?: boolean;
+  isExtra?: boolean;
 }
 
 export interface DietPlan {
