@@ -80,19 +80,33 @@ export const recommendationService = {
     return response.json();
   },
 
-  async markMealAsTaken(mealId: string) {
-    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+	async markMealAsTaken(mealId: string) {
+		if (!API_URL) throw new Error('Recommendation API URL is not defined');
 
-    const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/take`, {
-      method: 'PATCH',
-    });
+		const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/take`, {
+			method: 'PATCH',
+		});
 
-    if (!response.ok) {
-      throw new Error('Failed to mark meal as taken');
-    }
+		if (!response.ok) {
+			throw new Error('Failed to mark meal as taken');
+		}
 
-    return response.json();
-  },
+		return response.json();
+	},
+
+	async swapMeal(mealId: string) {
+		if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+		const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/swap`, {
+			method: 'PATCH',
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to swap meal');
+		}
+
+		return response.json();
+	},
 
   async addExtraMeal(dayOfWeek: number, mealType: string, name: string, calories: number) {
     if (!API_URL) throw new Error('Recommendation API URL is not defined');

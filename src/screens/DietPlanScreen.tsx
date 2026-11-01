@@ -189,18 +189,21 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
 
 function MealCard({ meal, logDate, isLogged, isExtra, onMealLogged }: { meal: DietMeal; logDate: string; isLogged?: boolean; isExtra?: boolean; onMealLogged?: () => void }) {
   const [expanded, setExpanded] = useState(false);
-  const [showSwap, setShowSwap] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [isSwapping, setIsSwapping] = useState(false);
   const updateActiveDietPlan = useDietPlanStore((state) => state.updateActiveDietPlan);
   const profile = useProfileStore((state) => state.profile);
   const availableIngredients = profile?.availableIngredients || [];
 
   const handleSwap = async () => {
-    if (!feedback.trim()) return;
-    const fullFeedback = `Replace ${meal.name} (${meal.mealType} on day ${meal.dayOfWeek}). Reason: ${feedback}`;
-    await updateActiveDietPlan(fullFeedback, meal.dayOfWeek);
-    setShowSwap(false);
-    setFeedback('');
+    setIsSwapping(true);
+    try {
+      await recommendationService.swapMeal(meal.id);
+      onMealLogged?.();
+    } catch (e) {
+      Alert.alert('Error', 'Failed to swap meal.');
+    } finally {
+      setIsSwapping(false);
+    }
   };
 
   const handleLogMeal = async () => {
@@ -294,23 +297,15 @@ function MealCard({ meal, logDate, isLogged, isExtra, onMealLogged }: { meal: Di
             {!isLogged && (
               <>
                 <View style={styles.divider} />
-                {!showSwap ? (
-                  <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                    <AppButton title="Swap Meal" variant="ghost" onPress={() => setShowSwap(true)} style={{ flex: 1 }} />
-                    <AppButton title="Meal Is Taken" onPress={handleLogMeal} style={{ flex: 1 }} />
+                {isSwapping ? (
+                  <View style={{ padding: theme.spacing.md, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <Text style={{ color: theme.colors.muted, marginTop: theme.spacing.xs }}>Swapping meal...</Text>
                   </View>
                 ) : (
-                  <View style={{ gap: theme.spacing.sm, marginTop: theme.spacing.sm }}>
-                    <AppTextInput
-                      label="Feedback"
-                      placeholder="Why do you want to swap? (e.g. want something lighter)"
-                      value={feedback}
-                      onChangeText={setFeedback}
-                    />
-                    <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                      <AppButton title="Cancel" variant="ghost" onPress={() => setShowSwap(false)} style={{ flex: 1 }} />
-                      <AppButton title="Confirm Swap" onPress={handleSwap} style={{ flex: 1 }} />
-                    </View>
+                  <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                    <AppButton title="Swap Meal" variant="ghost" onPress={handleSwap} style={{ flex: 1 }} />
+                    <AppButton title="Meal Is Taken" onPress={handleLogMeal} style={{ flex: 1 }} />
                   </View>
                 )}
               </>
