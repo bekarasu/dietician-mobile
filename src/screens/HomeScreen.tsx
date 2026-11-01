@@ -8,7 +8,6 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { HEALTH_NOTICE } from '../constants/health';
-import { QuickActionGrid } from '../features/dashboard/components/QuickActionGrid';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useHydrationStore } from '../store/useHydrationStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
@@ -51,7 +50,7 @@ export function HomeScreen() {
     <ScreenContainer>
       <SectionHeader
         title={`Good morning, ${profile?.name ?? 'there'}`}
-        subtitle="A steady plan usually beats compensation. Use the quick actions to log behavior and keep the recommendation engine informed."
+        subtitle="A steady plan usually beats compensation. Log your weight, water, and coffee to keep the recommendation engine informed."
       />
 
       <AppCard style={styles.heroCard}>
@@ -91,18 +90,6 @@ export function HomeScreen() {
           <Text style={styles.noticeText}>{onboardingInsight}</Text>
         </AppCard>
       ) : null}
-
-      <SectionHeader title="Quick actions" subtitle="Every screen in the requested scope is reachable from here or the bottom tabs." />
-      <QuickActionGrid
-        actions={[
-          {
-            id: 'leaderboard',
-            title: 'Leaderboard',
-            description: 'See how your progress compares with friends and everyone else.',
-            onPress: () => navigation.navigate('Leaderboard'),
-          },
-        ]}
-      />
 
       <AppCard style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>Safety note</Text>

@@ -7,6 +7,7 @@ import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, Text, 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { UserAvatar } from '../components/UserAvatar';
 import { getComparisonMessage, getDifferenceLabel, getStatusMessage } from '../features/leaderboard/scoreMessages';
@@ -63,7 +64,7 @@ export function LeaderboardScreen() {
     }
   }, [scope, period, periodStart]);
 
-  // Runs on focus too, so friend changes show up on returning from that screen.
+  // Runs on focus too, because this tab stays mounted while friends change from Profile.
   useFocusEffect(
     useCallback(() => {
       load();
@@ -136,6 +137,8 @@ export function LeaderboardScreen() {
         refreshControl: <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary} />,
       }}
     >
+      <SectionHeader title="Leaderboard" subtitle="See how your progress compares with friends and everyone else." />
+
       <SegmentedControl options={SCOPE_OPTIONS} value={scope} onChange={changeScope} />
       <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={changePeriod} />
 

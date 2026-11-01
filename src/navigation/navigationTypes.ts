@@ -17,6 +17,7 @@ export type OnboardingStackParamList = {
 export type AppTabParamList = {
   Home: undefined;
   DietPlan: undefined;
+  Leaderboard: undefined;
   ProgressDashboard: undefined;
   ProfileGoals: undefined;
 };
@@ -25,7 +26,6 @@ export type AppStackParamList = {
   Tabs: undefined;
   Inventory: undefined;
   HydrationTracking: undefined;
-  Leaderboard: undefined;
   Friends: undefined;
   ScoreBreakdown: { period: LeaderboardPeriod; periodStart: string };
   BloodTestUpload: undefined;

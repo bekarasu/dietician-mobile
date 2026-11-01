@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppButton } from '../components/AppButton';
@@ -10,6 +10,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { DIETARY_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
+import { friendService } from '../services/friendService';
 import { useAuthStore } from '../store/useAuthStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
@@ -45,6 +46,18 @@ export function ProfileGoalsScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [mealReminders, setMealReminders] = useState(true);
   const [safeGuidanceMode, setSafeGuidanceMode] = useState(true);
+  const [incomingRequestCount, setIncomingRequestCount] = useState(0);
+
+  // Runs on focus so the count is current after returning from the friends screen.
+  // A failure only hides the count, because the friends screen reports its own errors.
+  useFocusEffect(
+    useCallback(() => {
+      friendService
+        .listRequests()
+        .then(({ incoming }) => setIncomingRequestCount(incoming.length))
+        .catch(() => setIncomingRequestCount(0));
+    }, []),
+  );
 
   const { control, handleSubmit, reset, watch, setValue } = useForm<ProfileFormValues>({
     defaultValues: profile
@@ -189,6 +202,16 @@ export function ProfileGoalsScreen() {
       <SectionHeader title="Medical Data" subtitle="Manage your uploaded medical and blood test results." />
       <AppCard style={styles.form}>
         <AppButton title="Manage Blood Test Results" variant="secondary" onPress={() => navigation.navigate('BloodTestUpload')} />
+      </AppCard>
+
+      <SectionHeader title="Friends" subtitle="Send and answer friend requests, and manage who you compare progress with." />
+      <AppCard style={styles.form}>
+        {incomingRequestCount > 0 ? (
+          <Text style={styles.settingTitle}>
+            {incomingRequestCount} friend {incomingRequestCount === 1 ? 'request' : 'requests'} waiting
+          </Text>
+        ) : null}
+        <AppButton title="Manage Friends" variant="secondary" onPress={() => navigation.navigate('Friends')} />
       </AppCard>
 
       <SectionHeader title="Settings" subtitle="Manage your app preferences and account settings." />

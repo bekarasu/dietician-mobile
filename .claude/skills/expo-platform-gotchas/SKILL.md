@@ -47,7 +47,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 - `ScreenContainer` is scrollable by default. Pass `scrollable={false}` when the screen owns a scroll view. **Open:** `WeightProgressScreen` nests two vertical scroll views.
 - **Open:** `WeightProgressScreen` is the only `KeyboardAvoidingView`, and it sits under a native stack header with no `keyboardVerticalOffset`. Use `useHeaderHeight()` on iOS.
 - Android has `adjustResize` together with edge-to-edge. Do not assume keyboard behavior from the manifest alone; test on a device or emulator.
-- **Open: `AppTabNavigator` ignores the bottom inset.** `tabBarStyle` is applied after React Navigation's defaults, and a numeric `height` disables its inset math. `height: 74` with `paddingBottom: 10` can collide with the iPhone home indicator and the Android 3-button bar. Derive both from `useSafeAreaInsets()`.
+- `AppTabNavigator` sets a numeric `height` in `tabBarStyle`, which disables React Navigation's inset math, so it derives `height` and `paddingBottom` from `useSafeAreaInsets()`. Change them together, or the tabs collide with the iPhone home indicator and the Android 3-button bar.
 
 ## Biometrics and secure storage
 

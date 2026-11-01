@@ -1,10 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
+import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { ProfileGoalsScreen } from '../screens/ProfileGoalsScreen';
 import { ProgressDashboardScreen } from '../screens/ProgressDashboardScreen';
 import { theme } from '../theme/theme';
@@ -13,9 +15,14 @@ import { useOnboardingStore } from '../store/useOnboardingStore';
 
 const Tab = createBottomTabNavigator<AppTabParamList>();
 
+const TAB_BAR_CONTENT_HEIGHT = 54;
+
 export function AppTabNavigator() {
+  const insets = useSafeAreaInsets();
   const justCompletedOnboarding = useOnboardingStore((state) => state.justCompletedOnboarding);
   const clearJustCompletedOnboarding = useOnboardingStore((state) => state.clearJustCompletedOnboarding);
+  // A numeric height turns off React Navigation's own inset handling, so both values account for it here.
+  const tabBarPaddingBottom = Math.max(insets.bottom, theme.spacing.sm);
 
   useEffect(() => {
     if (justCompletedOnboarding) {
@@ -31,8 +38,8 @@ export function AppTabNavigator() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.muted,
         tabBarStyle: {
-          height: 74,
-          paddingBottom: theme.spacing.sm,
+          height: TAB_BAR_CONTENT_HEIGHT + theme.spacing.sm + tabBarPaddingBottom,
+          paddingBottom: tabBarPaddingBottom,
           paddingTop: theme.spacing.sm,
           borderTopColor: theme.colors.border,
           backgroundColor: theme.colors.surface,
@@ -56,6 +63,16 @@ export function AppTabNavigator() {
           title: 'Diet Plan',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        component={LeaderboardScreen}
+        name="Leaderboard"
+        options={{
+          title: 'Leaderboard',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'trophy' : 'trophy-outline'} size={size} color={color} />
           ),
         }}
       />

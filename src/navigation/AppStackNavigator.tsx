@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BloodTestUploadScreen } from '../screens/BloodTestUploadScreen';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { HydrationTrackingScreen } from '../screens/HydrationTrackingScreen';
-import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { ScoreBreakdownScreen } from '../screens/ScoreBreakdownScreen';
 import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
@@ -19,6 +18,8 @@ export function AppStackNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerTintColor: theme.colors.text,
+        // The previous screen is a tab, so the back label would always read as the "Tabs" route's title.
+        headerBackButtonDisplayMode: 'minimal',
         headerStyle: { backgroundColor: theme.colors.surface },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: theme.colors.background },
@@ -27,7 +28,6 @@ export function AppStackNavigator() {
       <Stack.Screen component={AppTabNavigator} name="Tabs" options={{ headerShown: false, title: 'Home' }} />
       <Stack.Screen component={InventoryScreen} name="Inventory" options={{ title: 'My Fridge' }} />
       <Stack.Screen component={HydrationTrackingScreen} name="HydrationTracking" options={{ title: 'Water & Coffee' }} />
-      <Stack.Screen component={LeaderboardScreen} name="Leaderboard" options={{ title: 'Leaderboard' }} />
       <Stack.Screen component={FriendsScreen} name="Friends" options={{ title: 'Friends' }} />
       <Stack.Screen component={ScoreBreakdownScreen} name="ScoreBreakdown" options={{ title: 'Your Score' }} />
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood Test Upload' }} />
