@@ -1,8 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { BloodTestUploadScreen } from '../screens/BloodTestUploadScreen';
-import { FriendCompetitionScreen } from '../screens/FriendCompetitionScreen';
+import { FriendsScreen } from '../screens/FriendsScreen';
 import { HydrationTrackingScreen } from '../screens/HydrationTrackingScreen';
+import { LeaderboardScreen } from '../screens/LeaderboardScreen';
+import { ScoreBreakdownScreen } from '../screens/ScoreBreakdownScreen';
 import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
 import { InventoryScreen } from '../screens/InventoryScreen';
@@ -25,7 +27,9 @@ export function AppStackNavigator() {
       <Stack.Screen component={AppTabNavigator} name="Tabs" options={{ headerShown: false, title: 'Home' }} />
       <Stack.Screen component={InventoryScreen} name="Inventory" options={{ title: 'My Fridge' }} />
       <Stack.Screen component={HydrationTrackingScreen} name="HydrationTracking" options={{ title: 'Water & Coffee' }} />
-      <Stack.Screen component={FriendCompetitionScreen} name="FriendCompetition" options={{ title: 'Friend Challenge' }} />
+      <Stack.Screen component={LeaderboardScreen} name="Leaderboard" options={{ title: 'Leaderboard' }} />
+      <Stack.Screen component={FriendsScreen} name="Friends" options={{ title: 'Friends' }} />
+      <Stack.Screen component={ScoreBreakdownScreen} name="ScoreBreakdown" options={{ title: 'Your Score' }} />
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood Test Upload' }} />
       <Stack.Screen component={WeightProgressScreen} name="WeightProgress" options={{ title: 'Weight Progress' }} />
       <Stack.Screen component={FoodSelectionScreen} name="FoodSelection" options={{ title: 'Select Foods' }} />

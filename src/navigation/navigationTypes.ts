@@ -1,3 +1,5 @@
+import { LeaderboardPeriod } from '../types/models';
+
 export type AuthStackParamList = {
   OnboardingIntro: undefined;
   Welcome: undefined;
@@ -23,7 +25,9 @@ export type AppStackParamList = {
   Tabs: undefined;
   Inventory: undefined;
   HydrationTracking: undefined;
-  FriendCompetition: undefined;
+  Leaderboard: undefined;
+  Friends: undefined;
+  ScoreBreakdown: { period: LeaderboardPeriod; periodStart: string };
   BloodTestUpload: undefined;
   WeightProgress: undefined;
   FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };

@@ -1,7 +1,6 @@
 import {
   CoffeeEntry,
   DailyFoodLog,
-  FriendCompetitionEntry,
   HydrationEntry,
   ProgressEntry,
   RefrigeratorItem,
@@ -101,39 +100,6 @@ export const mockProgressEntries: ProgressEntry[] = [
     weeklyConsistency: 84,
     goalProgress: 52,
     note: 'Weekend structure improved and late-night snacking dropped.',
-  },
-];
-
-export const mockFriends: FriendCompetitionEntry[] = [
-  {
-    id: 'friend-1',
-    name: 'Elif',
-    avatarColor: '#7BB661',
-    score: 91,
-    rank: 1,
-    consistency: 88,
-    difficultyRatio: 1.24,
-    progressLabel: 'Strong adherence on a more aggressive cut',
-  },
-  {
-    id: 'friend-2',
-    name: 'Burak',
-    avatarColor: '#C06C48',
-    score: 86,
-    rank: 2,
-    consistency: 84,
-    difficultyRatio: 1.16,
-    progressLabel: 'Steady weight-loss trend with good weekly structure',
-  },
-  {
-    id: 'friend-3',
-    name: 'Mert',
-    avatarColor: '#3A6EA5',
-    score: 80,
-    rank: 3,
-    consistency: 79,
-    difficultyRatio: 1.08,
-    progressLabel: 'High consistency, slower scale movement',
   },
 ];
 

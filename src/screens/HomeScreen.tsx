@@ -96,10 +96,10 @@ export function HomeScreen() {
       <QuickActionGrid
         actions={[
           {
-            id: 'friends',
-            title: 'Friend challenge',
-            description: 'Compare consistency and difficulty-weighted progress.',
-            onPress: () => navigation.navigate('FriendCompetition'),
+            id: 'leaderboard',
+            title: 'Leaderboard',
+            description: 'See how your progress compares with friends and everyone else.',
+            onPress: () => navigation.navigate('Leaderboard'),
           },
         ]}
       />

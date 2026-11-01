@@ -11,12 +11,13 @@ The backend code is not in this repo. This file records what the client shows as
 
 | Env key | Paths | Client |
 | --- | --- | --- |
-| `EXPO_PUBLIC_ACCOUNT_API_URL` | `/auth`, `/profiles` | `authService`, `profileService`, `onboardingService` |
+| `EXPO_PUBLIC_ACCOUNT_API_URL` | `/auth`, `/profiles`, `/friends` | `authService`, `profileService`, `onboardingService`, `friendService` |
 | `EXPO_PUBLIC_MEDICAL_API_URL` | `/uploads` | `bloodTestService` |
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/progress`, `/daily-logs` | `progressService` |
+| `EXPO_PUBLIC_PROGRESS_API_URL` | `/leaderboards`, `/scores` | `leaderboardService` |
 | `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/foods`, `/diet-plans` | `recommendationService` |
 
-Use `fetchWithAuth` for authenticated calls. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
+Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response uses the `{ message, data }` envelope and failures should throw. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
 
 ## Response shapes are not uniform
 
@@ -33,7 +34,7 @@ Use `fetchWithAuth` for authenticated calls. `authService` uses raw `fetch` on p
 
 ## Error handling differs by service
 
-- `profileService`, `bloodTestService`, and `recommendationService` throw.
+- `profileService`, `bloodTestService`, `recommendationService`, `leaderboardService`, and `friendService` throw.
 - **`progressService` catches everything** and returns `null`, `[]`, or `false`. Callers must check the return value, because `try/catch` around it never fires.
 
 Open defects caused by this:
@@ -76,7 +77,7 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Blood test uploads and parsed results | Real |
 | Diet plans, meal take and swap | Real |
 | Onboarding pages | Only `habits` calls the backend; other pages are local with a 250 ms delay |
-| Friend competition | `mockFriends` |
+| Leaderboards, score breakdown, friends | Real |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |
 | `useInventoryStore`, `useDailyLogStore` | Mock, used only by `MealRecommendationScreen`, which is not in any navigator |
@@ -96,6 +97,16 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - Hydration writes spread `rawDailyLog` (including `meals`) back to the server.
 - `DietPlanScreen` logs meals directly with `progressService`, leaving `rawDailyLog` stale.
 - If upsert replaces `meals`, a later water update could drop a meal just logged.
+
+## Leaderboards
+
+- A leaderboard is a 503 rather than a partial list when account-service can't answer. Show the error state, never an empty ranking.
+- Identify the current user with `isCurrentUser` from the response, never with `user.id`.
+- Read previous and next periods from `previousPeriodStart` and `nextPeriodStart`, instead of working out dates on the client. `nextPeriodStart` is null for the current period.
+- Page with a counted offset, not `participants.length`: the server can leave a row out of a page.
+- Ranks can repeat or skip (1, 2, 2, 4) because tied users share a rank.
+- `GET /scores/me/breakdown` holds the user's weights and only ever returns their own data. Never show another user's `statusReason` or breakdown.
+- Leaderboard and friend data stays in screen state, so it doesn't outlive a logout.
 
 ## Dates
 

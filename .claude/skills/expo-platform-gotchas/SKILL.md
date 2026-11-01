@@ -70,7 +70,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 ## Tooling
 
 - `npm run lint` currently fails: ESLint 9 finds no `eslint.config.*`, and `.eslintrc.js` plus `--ext` are legacy. It does not validate anything until migrated.
-- `npm run typecheck` currently reports exactly 9 errors, all `Cannot find name 'process'`. Any other error comes from your change.
+- `npm run typecheck` currently reports exactly 11 errors, all `Cannot find name 'process'`. Any other error comes from your change.
 - `npm run web` is dead: `app.json` targets iOS and Android only, and `react-native-web` is not installed.
 
 ## Charts and animation

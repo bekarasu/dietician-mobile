@@ -1,6 +1,5 @@
-import { FriendCompetitionEntry, ProgressEntry } from '../types/models';
+import { ProgressEntry } from '../types/models';
 import { fetchWithAuth } from './apiClient';
-import { mockFriends } from './mocks/mockData';
 
 const API_URL = `${process.env.EXPO_PUBLIC_PROGRESS_API_URL}/progress`;
 
@@ -79,10 +78,6 @@ export const progressService = {
       console.error('Error removing weight entry:', error);
       return false;
     }
-  },
-
-  async getFriendCompetition(): Promise<FriendCompetitionEntry[]> {
-    return mockFriends;
   },
 
   async getDailyLog(date: string): Promise<any> {

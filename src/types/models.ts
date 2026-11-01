@@ -165,15 +165,95 @@ export interface CoffeeEntry {
   targetCups: number;
 }
 
-export interface FriendCompetitionEntry {
-  id: string;
-  name: string;
-  avatarColor: string;
-  score: number;
+export type LeaderboardScope = 'friends' | 'global';
+
+export type LeaderboardPeriod = 'weekly' | 'monthly';
+
+export type ScoreCalculationStatus = 'CALCULATED' | 'INSUFFICIENT_DATA' | 'INELIGIBLE' | 'NOT_CALCULATED';
+
+export interface LeaderboardStanding {
+  rank: number | null;
+  totalScore: number | null;
+  calculationStatus: ScoreCalculationStatus;
+  statusReason?: string;
+  nextRank: number | null;
+  pointsToNextRank: number | null;
+}
+
+export interface LeaderboardEntry {
+  userId: string;
+  displayName: string;
   rank: number;
-  consistency: number;
-  difficultyRatio: number;
-  progressLabel: string;
+  totalScore: number;
+  scoreDifference: number | null;
+  isCurrentUser: boolean;
+}
+
+export interface Leaderboard {
+  periodType: LeaderboardPeriod;
+  periodStart: string;
+  periodEndExclusive: string;
+  previousPeriodStart: string;
+  nextPeriodStart: string | null;
+  totalParticipants: number;
+  friendCount?: number;
+  lastUpdatedAt: string | null;
+  currentUser: LeaderboardStanding;
+  participants: LeaderboardEntry[];
+  hasMore: boolean;
+}
+
+export interface ScoreBreakdown {
+  periodType: LeaderboardPeriod;
+  periodStart: string;
+  periodEndExclusive: string;
+  totalScore: number | null;
+  calculationStatus: ScoreCalculationStatus;
+  statusReason?: string;
+  calculatedAt?: string;
+  progressScore: number | null;
+  adherenceScore: number | null;
+  difficultyMultiplier?: number;
+  baselineWeightKg?: number;
+  currentWeightKg?: number;
+  expectedLossKg?: number;
+  actualLossKg?: number;
+  windowDays?: number;
+  completedActivities: number;
+  totalActivities: number;
+}
+
+export interface Friend {
+  userId: string;
+  displayName: string;
+  friendsSince: string;
+}
+
+export interface PendingFriendRequest {
+  id: string;
+  userId: string;
+  displayName: string;
+  createdAt: string;
+}
+
+export interface FriendRequestList {
+  incoming: PendingFriendRequest[];
+  outgoing: PendingFriendRequest[];
+}
+
+export type FriendRelationship = 'NONE' | 'FRIEND' | 'OUTGOING_REQUEST' | 'INCOMING_REQUEST';
+
+export interface UserSearchResult {
+  userId: string;
+  displayName: string;
+  relationship: FriendRelationship;
+  requestId?: string;
+}
+
+export interface BlockedUser {
+  userId: string;
+  displayName: string;
+  blockedAt: string;
 }
 
 export interface RecommendationInput {
