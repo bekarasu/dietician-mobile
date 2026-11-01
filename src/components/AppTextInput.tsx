@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TextInputInstance,
   TextInputProps,
   View,
 } from 'react-native';
@@ -14,13 +15,13 @@ interface AppTextInputProps extends TextInputProps {
   error?: string;
 }
 
-export const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextInput(
+export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(function AppTextInput(
   { label, error, style, ...props },
   forwardedRef,
 ) {
-  const internalRef = React.useRef<TextInput>(null);
+  const internalRef = React.useRef<TextInputInstance>(null);
 
-  React.useImperativeHandle(forwardedRef, () => internalRef.current as TextInput);
+  React.useImperativeHandle(forwardedRef, () => internalRef.current as TextInputInstance);
 
   return (
     <View style={styles.wrapper}>

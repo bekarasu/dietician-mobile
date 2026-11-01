@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Animated, Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Image, ScrollViewInstance, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -16,7 +16,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'OnboardingIntro'>;
 
 export function OnboardingIntroScreen({ navigation }: Props) {
   const { width } = useWindowDimensions();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
 

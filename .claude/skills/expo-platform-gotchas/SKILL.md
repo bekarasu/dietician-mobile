@@ -1,11 +1,11 @@
 ---
 name: expo-platform-gotchas
-description: Non-obvious iOS/Android, Expo SDK 57, and build behavior specific to dietician-mobile. Use before touching file uploads, FormData or fetch calls, TextInput/login/OTP/numeric forms, keyboard or safe-area layout, the tab bar, biometrics, SecureStore, env vars, app.json, native folders, charts, or running/building the app, and when something works on one platform but not the other, even if the task does not mention a platform.
+description: Non-obvious iOS/Android, Expo SDK 58, and build behavior specific to dietician-mobile. Use before touching file uploads, FormData or fetch calls, TextInput/login/OTP/numeric forms, keyboard or safe-area layout, the tab bar, biometrics, SecureStore, env vars, app.json, native folders, charts, or running/building the app, and when something works on one platform but not the other, even if the task does not mention a platform.
 ---
 
 # Expo platform gotchas
 
-Stack checked against `node_modules` on 2026-11-01: Expo 57.0.25, RN 0.86.3, New Architecture, Hermes, Android edge-to-edge on. After an SDK bump, re-check the Networking section first.
+Stack checked against `node_modules` on 2026-11-01: Expo 58.0.22, RN 0.88.1, New Architecture, Hermes, Android edge-to-edge on. After an SDK bump, re-check the Networking section first.
 
 Items marked **Open** are current defects. Fix them when working in that area, and do not copy the pattern.
 
