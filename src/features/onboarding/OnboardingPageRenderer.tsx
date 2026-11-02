@@ -9,11 +9,8 @@ import { OnboardingStackParamList } from '../../navigation/navigationTypes';
 import { theme } from '../../theme/theme';
 import { OnboardingDraft } from '../../types/models';
 
-import {
-  OnboardingFieldDefinition,
-  OnboardingPageDefinition,
-  OnboardingSelectFieldDefinition,
-} from './types';
+import { OnboardingPageDefinition, OnboardingSelectFieldDefinition } from './types';
+import { isFieldMissing } from './validation';
 
 interface OnboardingPageRendererProps {
   page: OnboardingPageDefinition;
@@ -21,20 +18,6 @@ interface OnboardingPageRendererProps {
   showValidation: boolean;
   onChange: (field: keyof OnboardingDraft, value: OnboardingDraft[keyof OnboardingDraft]) => void;
   onUploadingChange?: (isUploading: boolean) => void;
-}
-
-function isFieldMissing(field: OnboardingFieldDefinition, draft: OnboardingDraft) {
-  if (!field.required) {
-    return false;
-  }
-
-  const value = draft[field.id];
-
-  if (Array.isArray(value)) {
-    return value.length === 0;
-  }
-
-  return String(value).trim().length === 0;
 }
 
 export function OnboardingPageRenderer({ page, draft, showValidation, onChange, onUploadingChange }: OnboardingPageRendererProps) {
@@ -55,13 +38,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
               multiline={field.multiline}
               onChangeText={(text) => onChange(field.id, text)}
               placeholder={field.placeholder}
-              value={
-                Array.isArray(rawValue)
-                  ? ''
-                  : String(rawValue ?? '') === 'undefined'
-                    ? ''
-                    : String(rawValue ?? '')
-              }
+              value={Array.isArray(rawValue) ? '' : String(rawValue ?? '')}
               error={hasError ? `${field.label} is required.` : undefined}
             />
           );

@@ -8,6 +8,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { HEALTH_NOTICE } from '../constants/health';
 import { OnboardingPageRenderer } from '../features/onboarding/OnboardingPageRenderer';
 import { ONBOARDING_PAGES } from '../features/onboarding/onboardingPages';
+import { isFieldMissing } from '../features/onboarding/validation';
 import { useAuthStore } from '../store/useAuthStore';
 import { useHydrationStore } from '../store/useHydrationStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
@@ -43,24 +44,6 @@ function buildProfileFromDraft(draft: OnboardingDraft, profile: UserProfile | nu
     availableIngredients: [],
     dailyCalorieTarget: Number(draft.dailyCalorieTarget) || profile?.dailyCalorieTarget || 2200,
   } satisfies UserProfile;
-}
-
-function pageIsValid(draft: OnboardingDraft, pageIndex: number) {
-  const page = ONBOARDING_PAGES[pageIndex];
-
-  return page.fields.every((field) => {
-    if (!field.required) {
-      return true;
-    }
-
-    const value = draft[field.id];
-
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    }
-
-    return String(value).trim().length > 0;
-  });
 }
 
 export function OnboardingScreen({ navigation }: Props) {
@@ -104,17 +87,17 @@ export function OnboardingScreen({ navigation }: Props) {
 
     mergeDraft({
       name: user?.name ?? profile?.name ?? '',
-      age: profile ? String(profile.age) : '',
-      heightCm: profile ? String(profile.heightCm) : '',
-      weightKg: profile ? String(profile.weightKg) : '',
-      targetWeightKg: profile ? String(profile.targetWeightKg) : '',
+      age: profile?.age ? String(profile.age) : '',
+      heightCm: profile?.heightCm ? String(profile.heightCm) : '',
+      weightKg: profile?.weightKg ? String(profile.weightKg) : '',
+      targetWeightKg: profile?.targetWeightKg ? String(profile.targetWeightKg) : '',
       gender: profile?.gender ?? '',
       activityLevel: profile?.activityLevel ?? '',
       goalType: profile?.goalType ?? 'habit_building',
       dietaryPreferences: [],
       dislikedFoods: '',
       allergies: '',
-      dailyCalorieTarget: profile ? String(profile.dailyCalorieTarget) : '',
+      dailyCalorieTarget: profile?.dailyCalorieTarget ? String(profile.dailyCalorieTarget) : '',
       targetWaterMl: profile?.targetWaterMl ? String(profile.targetWaterMl) : '',
       targetCoffeeCups: profile?.targetCoffeeCups ? String(profile.targetCoffeeCups) : '',
     });
@@ -127,7 +110,7 @@ export function OnboardingScreen({ navigation }: Props) {
   const handleContinue = async () => {
     setShowValidation(true);
 
-    if (!pageIsValid(draft, currentPageIndex)) {
+    if (currentPage.fields.some((field) => isFieldMissing(field, draft))) {
       return;
     }
 
