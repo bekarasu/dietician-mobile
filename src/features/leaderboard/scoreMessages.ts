@@ -8,7 +8,7 @@ const STATUS_MESSAGES: Record<string, string> = {
   goal_not_weight_loss: 'Leaderboards only score weight-loss goals for now, so your goal isn\'t ranked.',
   no_program: 'Start a diet plan to join the leaderboard.',
   plan_not_started: 'Your score starts counting on the day your diet plan starts.',
-  no_plan_on_day: 'No plan covered this day, so it doesn\'t earn meal points.',
+  no_plan_on_day: 'No plan covered this day, so it doesn\'t earn points.',
   underage: 'Leaderboards are for members aged 18 and over.',
   missing_target: 'Add a target weight to your profile to get a score.',
   unsafe_target: 'Your target weight is below the healthy range for your height, so it can\'t be ranked. You can review it in your profile.',

@@ -41,3 +41,13 @@ export function formatGoalType(goalType: GoalType) {
 export function formatKg(value: number) {
   return `${value.toFixed(1)} kg`;
 }
+
+// Signed, so a loss reads as -0.4 kg and a gain as +0.4 kg.
+export function formatKgChange(value: number) {
+  const rounded = Number(value.toFixed(1));
+  return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)} kg`;
+}
+
+export function formatLitres(ml: number) {
+  return `${(ml / 1000).toFixed(1)} L`;
+}

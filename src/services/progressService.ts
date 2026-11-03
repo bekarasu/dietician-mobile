@@ -19,8 +19,6 @@ export const progressService = {
         id: log.id,
         date: log.loggedAt,
         weightKg: log.weightKg,
-        weeklyConsistency: 0, // Mocked as backend doesn't provide this per log directly
-        goalProgress: 0,      // Mocked as well
         note: log.notes,
       })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } catch (error) {
@@ -53,8 +51,6 @@ export const progressService = {
         id: log.id,
         date: log.loggedAt,
         weightKg: log.weightKg,
-        weeklyConsistency: 0,
-        goalProgress: 0,
         note: log.notes,
       };
     } catch (error) {

@@ -21,12 +21,9 @@ import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
 import { DailyPoints, DayPoints, DietMeal, DietPlan, WeekPoints } from '../types/models';
 import { formatCalendarDate, toCalendarDate } from '../utils/date';
+import { formatLitres } from '../utils/formatters';
 
 const CORE_MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
-
-function formatLitres(ml: number) {
-  return `${(ml / 1000).toFixed(1)} L`;
-}
 
 function getCoffeeDetail(day: DayPoints) {
   if (day.waterMl === 0) {

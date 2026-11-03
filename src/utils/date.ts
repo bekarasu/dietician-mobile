@@ -57,6 +57,10 @@ export function formatMonth(startDate: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(parseCalendarDate(startDate));
 }
 
+export function formatTime(dateString: string) {
+  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(dateString));
+}
+
 export function formatDateTimeLabel(dateString: string) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',

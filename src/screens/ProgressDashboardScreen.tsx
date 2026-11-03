@@ -1,30 +1,206 @@
-import React, { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 
 import { AppCard } from '../components/AppCard';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
+import { getStatusMessage } from '../features/leaderboard/scoreMessages';
+import {
+  getActivityDetail,
+  getActivityReason,
+  getActivityTitle,
+  getGoalProgress,
+  getWeeklyChange,
+} from '../features/progress/progressSummary';
+import { AppStackParamList } from '../navigation/navigationTypes';
+import { leaderboardService } from '../services/leaderboardService';
 import { progressService } from '../services/progressService';
 import { useHydrationStore } from '../store/useHydrationStore';
+import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
 import { theme } from '../theme/theme';
-import { formatDateLabel } from '../utils/date';
-import { formatKg } from '../utils/formatters';
+import { Activity, ActivityDay, WeekActivity } from '../types/models';
+import { addCalendarDays, formatCalendarDate, formatTime, formatWeekRange, toCalendarDate } from '../utils/date';
+import { formatKg, formatKgChange } from '../utils/formatters';
 
 const screenWidth = Dimensions.get('window').width - theme.spacing.lg * 2;
 
+function getDayLabel(date: string) {
+  const today = toCalendarDate(new Date());
+  if (date === today) {
+    return 'Today';
+  }
+  if (date === addCalendarDays(today, -1)) {
+    return 'Yesterday';
+  }
+  return formatCalendarDate(date);
+}
+
+function ActivityRow({ activity, isCounted }: { activity: Activity; isCounted: boolean }) {
+  const detail = getActivityDetail(activity);
+  const reason = isCounted ? getActivityReason(activity) : null;
+
+  // A weigh-in counts towards the week's weight points, and a day that wasn't
+  // scored earns nothing, so neither shows points of its own.
+  let points: string | null = null;
+  if (isCounted && activity.points !== null) {
+    points = activity.points > 0 ? `+${activity.points}` : '0';
+  }
+
+  return (
+    <View style={styles.activityRow}>
+      <Text style={styles.activityTime}>{activity.loggedAt ? formatTime(activity.loggedAt) : 'Day total'}</Text>
+      <View style={styles.activityText}>
+        <Text style={styles.activityTitle}>
+          {getActivityTitle(activity)}
+          {detail ? <Text style={styles.activityDetail}> · {detail}</Text> : null}
+        </Text>
+        {reason ? <Text style={styles.activityReason}>{reason}</Text> : null}
+      </View>
+      {points ? (
+        <Text style={[styles.activityPoints, activity.points === 0 && styles.activityPointsNone]}>{points}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+function DayHistory({ day }: { day: ActivityDay }) {
+  const isCounted = day.status === 'SCORED' || day.status === 'IN_PROGRESS';
+
+  let summary = 'Not scored';
+  if (isCounted) {
+    summary = `${day.points} / ${day.maxPoints}${day.status === 'IN_PROGRESS' ? ' so far' : ''}`;
+  }
+
+  let empty: string | null = null;
+  if (day.activities.length === 0) {
+    empty = day.status === 'IN_PROGRESS' ? 'Nothing logged yet.' : 'Nothing logged.';
+  }
+
+  return (
+    <View style={styles.day}>
+      <View style={styles.dayHeader}>
+        <Text style={styles.dayTitle}>{getDayLabel(day.date)}</Text>
+        <Text style={[styles.daySummary, !isCounted && styles.daySummaryMuted]}>{summary}</Text>
+      </View>
+      {/* Week-wide reasons are shown once, on the week. */}
+      {day.statusReason === 'no_plan_on_day' ? <Text style={styles.activityReason}>{getStatusMessage(day.statusReason)}</Text> : null}
+      {empty ? <Text style={styles.activityReason}>{empty}</Text> : null}
+      {day.activities.map((activity, index) => (
+        <ActivityRow key={`${activity.type}-${activity.loggedAt ?? ''}-${index}`} activity={activity} isCounted={isCounted} />
+      ))}
+    </View>
+  );
+}
+
+function WeekHistory({ activity, isCurrent, onOpen }: { activity: WeekActivity; isCurrent: boolean; onOpen: () => void }) {
+  const { week, finalized } = activity;
+  // Days before the plan with nothing logged would only be noise.
+  const days = activity.days.filter((day) => day.activities.length > 0 || day.status !== 'NOT_SCORED');
+
+  let label = formatWeekRange(week.periodStart, week.periodEndExclusive);
+  if (isCurrent) {
+    label = `This week · ${label}`;
+  }
+
+  return (
+    <AppCard style={styles.weekCard}>
+      <Pressable onPress={onOpen} style={styles.weekHeader}>
+        <View style={styles.weekHeaderText}>
+          <Text style={styles.weekTitle}>{label}</Text>
+          {week.totalScore !== null ? (
+            <Text style={styles.weekSplit}>
+              Weight {week.weightPoints} · Meals {week.mealPoints} · Water {week.waterPoints} · Coffee {week.coffeePoints}
+            </Text>
+          ) : (
+            <Text style={styles.weekSplit}>{getStatusMessage(week.statusReason)}</Text>
+          )}
+        </View>
+        <View style={styles.weekScore}>
+          <Text style={styles.weekScoreValue}>{week.totalScore ?? '–'}</Text>
+          {week.totalScore !== null ? (
+            <Text style={styles.weekScoreLabel}>{finalized ? 'final' : isCurrent ? 'so far' : 'score'}</Text>
+          ) : null}
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={theme.colors.muted} />
+      </Pressable>
+      {days.length === 0 ? <Text style={styles.activityReason}>Nothing logged this week.</Text> : null}
+      {days.map((day) => (
+        <DayHistory key={day.date} day={day} />
+      ))}
+    </AppCard>
+  );
+}
+
 export function ProgressDashboardScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const [activeTab, setActiveTab] = useState<'progress' | 'hydration'>('progress');
   const entries = useProgressStore((state) => state.entries);
   const latestEntry = useProgressStore((state) => state.latestEntry());
-  const previousEntry = entries.length > 1 ? entries[entries.length - 2] : undefined;
-  const weightDelta = latestEntry && previousEntry ? latestEntry.weightKg - previousEntry.weightKg : 0;
+  const targetWeightKg = useProfileStore((state) => state.profile?.targetWeightKg);
+  const weeklyChange = getWeeklyChange(entries);
+  const goalProgress = getGoalProgress(entries, targetWeightKg);
+
+  // Newest week first. The first is always the current week.
+  const [weeks, setWeeks] = useState<WeekActivity[]>([]);
+  const [historyFailed, setHistoryFailed] = useState(false);
+  const [isLoadingEarlier, setIsLoadingEarlier] = useState(false);
+  const [earlierFailed, setEarlierFailed] = useState(false);
+  const currentRequest = useRef(0);
 
   const [weeklyLogs, setWeeklyLogs] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => toCalendarDate(new Date()));
   const rawDailyLog = useHydrationStore((state) => state.rawDailyLog);
+
+  // Earlier weeks rarely change, so only the current one is refreshed. A new
+  // week starting drops the rest, so the list never skips a week.
+  const loadCurrentWeek = useCallback(async () => {
+    const request = ++currentRequest.current;
+    try {
+      const current = await leaderboardService.getWeekActivity();
+      if (request !== currentRequest.current) {
+        return;
+      }
+      setWeeks((loaded) => (loaded[0]?.week.periodStart === current.week.periodStart ? [current, ...loaded.slice(1)] : [current]));
+      setHistoryFailed(false);
+    } catch (e) {
+      if (request === currentRequest.current) {
+        setHistoryFailed(true);
+      }
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCurrentWeek();
+    }, [loadCurrentWeek]),
+  );
+
+  const loadEarlierWeek = async () => {
+    const oldest = weeks[weeks.length - 1];
+    if (!oldest?.previousPeriodStart || isLoadingEarlier) {
+      return;
+    }
+    setIsLoadingEarlier(true);
+    setEarlierFailed(false);
+    try {
+      const earlier = await leaderboardService.getWeekActivity(oldest.previousPeriodStart);
+      setWeeks((loaded) => (loaded[loaded.length - 1]?.week.periodStart === oldest.week.periodStart ? [...loaded, earlier] : loaded));
+    } catch (e) {
+      setEarlierFailed(true);
+    } finally {
+      setIsLoadingEarlier(false);
+    }
+  };
+
+  const openWeek = (periodStart: string) => {
+    navigation.navigate('ScoreBreakdown', { period: 'weekly', periodStart });
+  };
 
   useEffect(() => {
     const fetchWeeklyLogs = async () => {
@@ -35,48 +211,91 @@ export function ProgressDashboardScreen() {
   }, [selectedDate, rawDailyLog]);
 
   const handlePreviousWeek = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 7);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate((date) => addCalendarDays(date, -7));
   };
 
   const handleNextWeek = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 7);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate((date) => addCalendarDays(date, 7));
   };
 
-  const renderProgressTab = () => (
-    <View style={styles.tabContent}>
+  const renderProgressTab = () => {
+    const currentWeek = weeks[0];
+    const consistency = currentWeek?.consistency ?? null;
+    const oldest = weeks[weeks.length - 1];
 
-      <View style={styles.metricsRow}>
-        <AppCard style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Current weight</Text>
-          <Text style={styles.metricValue}>{latestEntry ? formatKg(latestEntry.weightKg) : '--'}</Text>
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.metricsRow}>
+          <AppCard style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Current weight</Text>
+            <Text style={styles.metricValue}>{latestEntry ? formatKg(latestEntry.weightKg) : '--'}</Text>
+          </AppCard>
+          <AppCard style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Last 7 days</Text>
+            <Text style={styles.metricValue}>{weeklyChange === null ? '--' : formatKgChange(weeklyChange)}</Text>
+          </AppCard>
+        </View>
+
+        <AppCard style={styles.stack}>
+          {consistency !== null ? (
+            <ProgressBar label="Weekly consistency" current={Math.round(consistency)} target={100} suffix="%" />
+          ) : (
+            <View style={styles.emptyMetric}>
+              <Text style={styles.emptyMetricLabel}>Weekly consistency</Text>
+              <Text style={styles.emptyMetricValue}>--</Text>
+            </View>
+          )}
+          <Text style={styles.metricHint}>
+            {consistency !== null || !currentWeek
+              ? 'The share of this week\'s meal, water and coffee points you\'ve earned so far.'
+              : getStatusMessage(currentWeek.week.statusReason)}
+          </Text>
+          {goalProgress ? (
+            <ProgressBar label="Goal progress" current={goalProgress.doneKg} target={goalProgress.totalKg} suffix=" kg" />
+          ) : (
+            <View style={styles.emptyMetric}>
+              <Text style={styles.emptyMetricLabel}>Goal progress</Text>
+              <Text style={styles.emptyMetricValue}>{latestEntry ? 'Set a target weight' : 'Log your weight'}</Text>
+            </View>
+          )}
         </AppCard>
-        <AppCard style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Week delta</Text>
-          <Text style={styles.metricValue}>{weightDelta > 0 ? '+' : ''}{weightDelta.toFixed(1)} kg</Text>
-        </AppCard>
+
+        <Text style={styles.sectionTitle}>History</Text>
+        {historyFailed && weeks.length === 0 ? (
+          <AppCard style={styles.stack}>
+            <Text style={styles.activityReason}>Your history couldn't load. Check your connection and try again.</Text>
+            <TouchableOpacity onPress={loadCurrentWeek}>
+              <Text style={styles.linkText}>Try again</Text>
+            </TouchableOpacity>
+          </AppCard>
+        ) : null}
+        {!historyFailed && weeks.length === 0 ? <ActivityIndicator color={theme.colors.primary} /> : null}
+        {weeks.map((week, index) => (
+          <WeekHistory
+            key={week.week.periodStart}
+            activity={week}
+            isCurrent={index === 0}
+            onOpen={() => openWeek(week.week.periodStart)}
+          />
+        ))}
+        {weeks.length > 0 ? (
+          <Text style={styles.metricHint}>
+            Each day earns up to 45 points for meals, water and coffee, and a week's habit points are the average of its days.
+            Weigh-ins count towards the week's weight points.
+          </Text>
+        ) : null}
+        {oldest?.previousPeriodStart ? (
+          <TouchableOpacity style={styles.earlierButton} onPress={loadEarlierWeek} disabled={isLoadingEarlier}>
+            {isLoadingEarlier ? (
+              <ActivityIndicator color={theme.colors.primary} />
+            ) : (
+              <Text style={styles.linkText}>{earlierFailed ? 'Couldn\'t load. Try again' : 'Show earlier week'}</Text>
+            )}
+          </TouchableOpacity>
+        ) : null}
       </View>
-
-      <AppCard style={styles.stack}>
-        <ProgressBar label="Weekly consistency" current={latestEntry?.weeklyConsistency ?? 0} target={100} suffix="%" />
-        <ProgressBar label="Goal progress" current={latestEntry?.goalProgress ?? 0} target={100} suffix="%" />
-      </AppCard>
-
-      {[...entries].reverse().map((entry) => (
-        <AppCard key={entry.id} style={styles.entryCard}>
-          <View style={styles.entryHeader}>
-            <Text style={styles.entryDate}>{formatDateLabel(entry.date)}</Text>
-            <Text style={styles.entryWeight}>{formatKg(entry.weightKg)}</Text>
-          </View>
-          <Text style={styles.entryMeta}>Consistency {entry.weeklyConsistency}% · Goal progress {entry.goalProgress}%</Text>
-          {entry.note ? <Text style={styles.entryNote}>{entry.note}</Text> : null}
-        </AppCard>
-      ))}
-    </View>
-  );
+    );
+  };
 
   const renderHydrationTab = () => {
     const getDaysOfWeek = (dateStr: string) => {
@@ -84,10 +303,10 @@ export function ProgressDashboardScreen() {
       const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d), 12, 0, 0);
       const day = date.getDay();
       const diff = day === 0 ? -6 : 1 - day;
-      
+
       const startOfWeek = new Date(date);
       startOfWeek.setDate(date.getDate() + diff);
-      
+
       const days = [];
       for (let i = 0; i < 7; i++) {
         const current = new Date(startOfWeek);
@@ -250,7 +469,7 @@ export function ProgressDashboardScreen() {
     <ScreenContainer>
       <SectionHeader
         title="Progress dashboard"
-        subtitle="Track your weight progress and hydration history."
+        subtitle="Your weight, your weekly consistency, and the points each thing you log earns."
       />
 
       <View style={styles.tabsContainer}>
@@ -258,7 +477,7 @@ export function ProgressDashboardScreen() {
           style={[styles.tabButton, activeTab === 'progress' && styles.tabButtonActive]}
           onPress={() => setActiveTab('progress')}
         >
-          <Text style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}>Weight</Text>
+          <Text style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}>Progress</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'hydration' && styles.tabButtonActive]}
@@ -290,29 +509,132 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.title.fontSize,
     fontWeight: '800',
   },
+  metricHint: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    lineHeight: theme.typography.caption.lineHeight,
+  },
   stack: {
-    gap: theme.spacing.lg,
+    gap: theme.spacing.md,
   },
-  entryCard: {
-    gap: theme.spacing.sm,
-  },
-  entryHeader: {
+  emptyMetric: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  entryDate: {
+  emptyMetricLabel: {
+    color: theme.colors.text,
+    fontWeight: '700',
+  },
+  emptyMetricValue: {
     color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
   },
-  entryWeight: {
+  sectionTitle: {
+    color: theme.colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  weekCard: {
+    gap: theme.spacing.md,
+  },
+  weekHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  weekHeaderText: {
+    flex: 1,
+    gap: 2,
+  },
+  weekTitle: {
     color: theme.colors.text,
     fontWeight: '800',
   },
-  entryMeta: {
-    color: theme.colors.text,
-  },
-  entryNote: {
+  weekSplit: {
     color: theme.colors.muted,
-    lineHeight: 22,
+    fontSize: theme.typography.caption.fontSize,
+    lineHeight: theme.typography.caption.lineHeight,
+  },
+  weekScore: {
+    alignItems: 'flex-end',
+  },
+  weekScoreValue: {
+    color: theme.colors.primary,
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  weekScoreLabel: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+  },
+  day: {
+    gap: theme.spacing.xs,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border,
+  },
+  dayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dayTitle: {
+    color: theme.colors.text,
+    fontWeight: '700',
+  },
+  daySummary: {
+    color: theme.colors.text,
+    fontWeight: '700',
+  },
+  daySummaryMuted: {
+    color: theme.colors.muted,
+    fontWeight: '500',
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+  },
+  activityTime: {
+    width: 64,
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    lineHeight: 20,
+  },
+  activityText: {
+    flex: 1,
+  },
+  activityTitle: {
+    color: theme.colors.text,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  activityDetail: {
+    color: theme.colors.muted,
+    fontWeight: '500',
+  },
+  activityReason: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    lineHeight: theme.typography.caption.lineHeight,
+  },
+  activityPoints: {
+    color: theme.colors.primary,
+    fontWeight: '800',
+    lineHeight: 20,
+  },
+  activityPointsNone: {
+    color: theme.colors.muted,
+    fontWeight: '600',
+  },
+  linkText: {
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
+  earlierButton: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
   },
   tabsContainer: {
     flexDirection: 'row',

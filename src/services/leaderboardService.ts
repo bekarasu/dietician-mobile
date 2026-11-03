@@ -1,4 +1,4 @@
-import { DailyPoints, Leaderboard, LeaderboardPeriod, LeaderboardScope, ScoreBreakdown } from '../types/models';
+import { DailyPoints, Leaderboard, LeaderboardPeriod, LeaderboardScope, ScoreBreakdown, WeekActivity } from '../types/models';
 import { fetchData } from './apiClient';
 
 const API_URL = process.env.EXPO_PUBLIC_PROGRESS_API_URL;
@@ -23,5 +23,11 @@ export const leaderboardService = {
   getDailyPoints(from: string, to: string): Promise<DailyPoints> {
     const query = new URLSearchParams({ from, to });
     return fetchData<DailyPoints>(`${API_URL}/scores/me/days?${query}`);
+  },
+
+  // Without periodStart (a Monday, YYYY-MM-DD), returns the current week.
+  getWeekActivity(periodStart?: string): Promise<WeekActivity> {
+    const query = periodStart ? `?${new URLSearchParams({ periodStart })}` : '';
+    return fetchData<WeekActivity>(`${API_URL}/scores/me/activity${query}`);
   },
 };

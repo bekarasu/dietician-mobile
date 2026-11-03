@@ -74,6 +74,7 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | --- | --- |
 | Auth, profile, preferences, fridge | Real |
 | Weight, today's hydration and coffee, weekly charts | Real |
+| Progress history, weekly consistency | Real, from `/scores/me/activity` |
 | Blood test uploads and parsed results | Real |
 | Diet plans, meal take and swap | Real |
 | Onboarding pages | Only `habits` calls the backend; other pages are local with a 250 ms delay |
@@ -116,11 +117,17 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
     - Water: up to 10, in proportion to `waterTargetMl`. The target comes from body weight (30 ml/kg, 1.5–3 L), not from the user's `targetWaterMl`.
     - Coffee: 5 for staying within `coffeeLimitCups` (the user's target, at most 4) on a day with water logged.
 - The response also splits each week into `weightPoints`, `mealPoints`, `waterPoints` and `coffeePoints`, which add up to `totalScore`. Show the server's numbers; don't work points out on the client. `DietPlanScreen` and `HydrationTrackingScreen` hide them if the request fails.
+- `GET /scores/me/activity?periodStart` (`getWeekActivity`) gives one week, newest day first, for the Progress tab's history:
+    - Each day's `activities` are its meals and weigh-ins, newest first, then water and coffee as day totals with no `loggedAt`. Their points add up to the day's.
+    - A weigh-in's `points` is null: it counts towards the week's weight points. Anything on a day that isn't `SCORED` or `IN_PROGRESS` earns nothing, and the day's `statusReason` says why. `reason` explains a 0 on a scored day.
+    - `consistency` is the week's habit share without weight. It's the only source of "Weekly consistency", on both Home and Progress. Null until something is due, or when the user isn't scored.
+    - A `finalized` week shows the leaderboard's stored score. Page back with `previousPeriodStart`, which is null when nothing was logged earlier.
+- `ProgressEntry` has no consistency or goal fields. Goal progress is worked out on the client from the first and latest weigh-ins and `profile.targetWeightKg`, because it isn't a score.
 - Leaderboard and friend data stays in screen state, so it doesn't outlive a logout.
 
 ## Dates
 
-- **Open:** `new Date().toISOString().split('T')[0]` yields the UTC date. In Turkey (UTC+3) it returns yesterday between 00:00 and 03:00. It appears in `ProgressDashboardScreen` and `useHydrationStore`. Use `toCalendarDate` from `src/utils/date.ts` instead.
+- **Open:** `new Date().toISOString().split('T')[0]` yields the UTC date. In Turkey (UTC+3) it returns yesterday between 00:00 and 03:00. It still appears in `useHydrationStore`'s initial `date` fields. Use `toCalendarDate` and `addCalendarDays` from `src/utils/date.ts` instead.
 - Hydration uses the literal `'today'` as the date, so the server decides the day: in `Accept-Timezone` if sent, otherwise in the business timezone.
 
 ## Health data and copy

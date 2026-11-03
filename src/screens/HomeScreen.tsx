@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 
 import { AppCard } from '../components/AppCard';
@@ -9,6 +9,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { HEALTH_NOTICE } from '../constants/health';
 import { AppStackParamList } from '../navigation/navigationTypes';
+import { leaderboardService } from '../services/leaderboardService';
 import { useHydrationStore } from '../store/useHydrationStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
@@ -29,6 +30,21 @@ export function HomeScreen() {
   useEffect(() => {
     bootstrapHydration();
   }, [bootstrapHydration]);
+
+  // The same figure as the Progress tab, so the two never disagree.
+  const [consistency, setConsistency] = useState<number | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+      leaderboardService
+        .getWeekActivity()
+        .then((activity) => isActive && setConsistency(activity.consistency))
+        .catch(() => isActive && setConsistency(null));
+      return () => {
+        isActive = false;
+      };
+    }, []),
+  );
 
   useEffect(() => {
     if (profile) {
@@ -67,7 +83,7 @@ export function HomeScreen() {
         </Pressable>
         <AppCard style={styles.metricCard}>
           <Text style={styles.metricLabel}>Weekly consistency</Text>
-          <Text style={styles.metricValue}>{latestEntry?.weeklyConsistency ?? 0}%</Text>
+          <Text style={styles.metricValue}>{consistency === null ? '--' : `${Math.round(consistency)}%`}</Text>
         </AppCard>
       </View>
 

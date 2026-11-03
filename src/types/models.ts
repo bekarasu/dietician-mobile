@@ -161,8 +161,6 @@ export interface ProgressEntry {
   id: string;
   date: string;
   weightKg: number;
-  weeklyConsistency: number;
-  goalProgress: number;
   note?: string;
 }
 
@@ -278,6 +276,44 @@ export interface WeekPoints {
 export interface DailyPoints {
   days: DayPoints[];
   weeks: WeekPoints[];
+}
+
+export type ActivityType = 'MEAL' | 'WEIGHT' | 'WATER' | 'COFFEE';
+
+// One thing the user logged. Water and coffee are the day's totals, so they have
+// no loggedAt. points is null for a weigh-in, which counts towards the week's
+// weight points rather than a day's.
+export interface Activity {
+  type: ActivityType;
+  loggedAt?: string;
+  mealType?: string;
+  name?: string;
+  weightKg?: number;
+  changeKg?: number;
+  waterMl?: number;
+  waterTargetMl?: number;
+  coffeeCups?: number;
+  coffeeLimitCups?: number;
+  points: number | null;
+  maxPoints?: number;
+  // Why something on a scored day earned nothing. A day that wasn't scored says why in its statusReason.
+  reason?: string;
+}
+
+export interface ActivityDay extends DayPoints {
+  activities: Activity[];
+}
+
+// A finalized week shows the score the leaderboard ranked; its days are always worked out from current data.
+export interface WeekActivity {
+  week: WeekPoints;
+  finalized: boolean;
+  // Percentage of the meal, water and coffee points due so far that were earned. Null until something is due.
+  consistency: number | null;
+  previousPeriodStart: string | null;
+  nextPeriodStart: string | null;
+  // Newest day first.
+  days: ActivityDay[];
 }
 
 export interface Friend {
