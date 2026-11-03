@@ -10,7 +10,6 @@ import { OnboardingPageRenderer } from '../features/onboarding/OnboardingPageRen
 import { ONBOARDING_PAGES } from '../features/onboarding/onboardingPages';
 import { isFieldMissing } from '../features/onboarding/validation';
 import { useAuthStore } from '../store/useAuthStore';
-import { useHydrationStore } from '../store/useHydrationStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
@@ -62,9 +61,6 @@ export function OnboardingScreen({ navigation }: Props) {
 
   const profile = useProfileStore((state) => state.profile);
   const setProfile = useProfileStore((state) => state.setProfile);
-  const hydration = useHydrationStore((state) => state.hydration);
-  const coffee = useHydrationStore((state) => state.coffee);
-  const setTargets = useHydrationStore((state) => state.setTargets);
 
   const [showValidation, setShowValidation] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -98,13 +94,11 @@ export function OnboardingScreen({ navigation }: Props) {
       dislikedFoods: '',
       allergies: '',
       dailyCalorieTarget: profile?.dailyCalorieTarget ? String(profile.dailyCalorieTarget) : '',
-      targetWaterMl: profile?.targetWaterMl ? String(profile.targetWaterMl) : '',
-      targetCoffeeCups: profile?.targetCoffeeCups ? String(profile.targetCoffeeCups) : '',
     });
   }, [draft.age.length, draft.name.length, draft.targetWeightKg.length, draft.weightKg.length, mergeDraft, profile, responses, user?.name]);
 
   const latestInsight = useMemo(() => {
-    return responses.habits ?? responses.preferences ?? responses.goals ?? responses.basics ?? null;
+    return responses['blood-test'] ?? responses.preferences ?? responses.goals ?? responses.basics ?? null;
   }, [responses]);
 
   const handleContinue = async () => {
@@ -121,14 +115,12 @@ export function OnboardingScreen({ navigation }: Props) {
     }
 
     if (isLastPage) {
+      // HomeScreen takes the water and coffee targets from the profile.
       if (response.profile) {
         setProfile(response.profile);
       } else {
         setProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
       }
-      const waterTarget = draft.targetWaterMl !== '' ? Number(draft.targetWaterMl) : hydration.targetWaterMl;
-      const coffeeTarget = draft.targetCoffeeCups !== '' ? Number(draft.targetCoffeeCups) : coffee.targetCups;
-      setTargets(waterTarget, coffeeTarget);
       navigation.navigate('PlanStartDate');
       return;
     }

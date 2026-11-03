@@ -69,8 +69,6 @@ export const profileService = {
         dailyCalorieTarget: profile.dailyCalorieTarget,
         activityLevel: profile.activityLevel,
         gender: profile.gender,
-        targetWaterMl: profile.targetWaterMl,
-        targetCoffeeCups: profile.targetCoffeeCups,
       }),
     });
 

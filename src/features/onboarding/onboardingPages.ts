@@ -111,36 +111,14 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
     id: 'blood-test',
     title: 'Upload blood test',
     subtitle: 'Optional. You can upload recent blood test results to personalize your recommendations further.',
-    requestSummary: 'Uploads are securely processed and analyzed.',
+    requestSummary: 'Uploads are securely processed and analyzed. Your water and coffee targets are set for you from your weight and age.',
+    primaryActionLabel: 'Finish onboarding',
     fields: [
       {
         id: 'bloodTestUploaded',
         label: 'Blood Test Results',
         inputType: 'file-upload',
         required: false,
-      },
-    ],
-  },
-  {
-    id: 'habits',
-    title: 'Add habit targets',
-    subtitle: 'Hydration and coffee targets become immediately available in the dashboard after onboarding.',
-    requestSummary: 'This step can sync reminder preferences, hydration goals, or coaching nudges.',
-    primaryActionLabel: 'Finish onboarding',
-    fields: [
-      {
-        id: 'targetWaterMl',
-        label: 'Daily water target (ml)',
-        inputType: 'number',
-        required: true,
-        placeholder: '2500',
-      },
-      {
-        id: 'targetCoffeeCups',
-        label: 'Daily coffee cap (cups)',
-        inputType: 'number',
-        required: true,
-        placeholder: '3',
       },
     ],
   },

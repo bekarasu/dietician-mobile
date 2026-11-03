@@ -31,7 +31,7 @@ This check is repeated in `bootstrap`, `login`, and `verifyOTP`. Change all thre
 
 End of onboarding:
 
-1. The `habits` page posts `/profiles/onboarding`, and `OnboardingScreen` calls `setProfile`.
+1. The last page in `ONBOARDING_PAGES` (now `blood-test`) posts `/profiles/onboarding`, and `OnboardingScreen` calls `setProfile`. `onboardingService` picks the last page from the array, so reordering pages moves the post with it.
 2. `PlanStartDateScreen` asks when to start and passes `startDate` as a route param.
 3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`.
 4. `RootNavigator` switches to `AppStackNavigator`.

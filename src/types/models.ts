@@ -39,6 +39,7 @@ export interface UserProfile {
   dislikedFoods: string[];
   availableIngredients: string[];
   dailyCalorieTarget: number;
+  // Set by the server from weight and age; users can't change them.
   targetWaterMl?: number;
   targetCoffeeCups?: number;
 }
@@ -359,7 +360,7 @@ export interface RecommendationInput {
   coffee: CoffeeEntry;
 }
 
-export type OnboardingPageId = 'basics' | 'goals' | 'preferences' | 'blood-test' | 'habits';
+export type OnboardingPageId = 'basics' | 'goals' | 'preferences' | 'blood-test';
 
 export interface OnboardingDraft {
   name: string;
@@ -374,8 +375,6 @@ export interface OnboardingDraft {
   allergies: string;
   dislikedFoods: string;
   dailyCalorieTarget: string;
-  targetWaterMl: string;
-  targetCoffeeCups: string;
   bloodTestUploaded: boolean;
 }
 

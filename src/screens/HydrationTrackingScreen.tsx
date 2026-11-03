@@ -20,7 +20,8 @@ export function HydrationTrackingScreen() {
   const addCoffee = useHydrationStore((state) => state.addCoffee);
   const [todayPoints, setTodayPoints] = useState<DayPoints | null>(null);
 
-  // The score's water target comes from body weight, so it can differ from the target set above.
+  // The server sets both targets from weight and age. The score uses the latest
+  // weigh-in, so its water target leads the profile's until the profile reloads.
   const loadTodayPoints = useCallback(async () => {
     const today = toCalendarDate(new Date());
     try {
@@ -51,7 +52,7 @@ export function HydrationTrackingScreen() {
     <ScreenContainer>
       <SectionHeader
         title="Water and coffee tracking"
-        subtitle="Simple daily counters for hydration and caffeine. Future versions can connect this to reminders, wearable data, or trend analytics."
+        subtitle="Your targets are set for you: 30 ml of water per kg of body weight, between 1.5 and 3 L, and at most 4 cups of coffee a day, or 1 under 18."
       />
 
       {todayPoints?.status === 'IN_PROGRESS' ? (

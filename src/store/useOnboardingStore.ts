@@ -16,8 +16,6 @@ const initialDraft: OnboardingDraft = {
   dislikedFoods: '',
   allergies: '',
   dailyCalorieTarget: '',
-  targetWaterMl: '',
-  targetCoffeeCups: '',
   bloodTestUploaded: false,
 };
 

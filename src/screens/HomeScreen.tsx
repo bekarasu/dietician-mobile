@@ -54,7 +54,7 @@ export function HomeScreen() {
 
   const onboardingInsight = useOnboardingStore((state) => {
     return (
-      state.responses.habits?.message ??
+      state.responses['blood-test']?.message ??
       state.responses.preferences?.message ??
       state.responses.goals?.message ??
       state.responses.basics?.message ??

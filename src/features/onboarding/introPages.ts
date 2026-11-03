@@ -38,7 +38,7 @@ export const ONBOARDING_INTRO_PAGES: OnboardingIntroPage[] = [
     subtitle: 'Gentle prompts keep water, coffee, and consistency in view without noise.',
     bullets: [
       'Hydration targets and streaks',
-      'Coffee caps that respect your routine',
+      'Water and coffee targets set from your weight and age',
       'Daily check ins that stay light',
     ],
     imageUri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4a7.png',
@@ -46,7 +46,7 @@ export const ONBOARDING_INTRO_PAGES: OnboardingIntroPage[] = [
     accentSoft: '#C7E8FD',
     highlights: [
       { label: 'Water target', value: '2.4 L' },
-      { label: 'Coffee cap', value: '3 cups' },
+      { label: 'Coffee cap', value: '4 cups' },
     ],
   },
   {

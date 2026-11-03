@@ -62,6 +62,7 @@ Preferences (`/profiles/preferences`):
 
 - `availableIngredients` can also arrive on `GET /profiles?include_fridge=true`, and that value wins.
 - `updateProfile` sends two `PUT`s, which are not atomic, and returns its input rather than server data.
+- **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
 - Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings. Verify the backend accepts them.
 
 ## Identity
@@ -77,7 +78,7 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Progress history, weekly consistency | Real, from `/scores/me/activity` |
 | Blood test uploads and parsed results | Real |
 | Diet plans, meal take and swap | Real |
-| Onboarding pages | Only `habits` calls the backend; other pages are local with a 250 ms delay |
+| Onboarding pages | Only the last page calls the backend; other pages are local with a 250 ms delay |
 | Leaderboards, score breakdown, friends | Real |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |
@@ -132,6 +133,6 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 
 ## Health data and copy
 
-- Do not log health data. **Open:** `console.log` of the whole profile in `useProfileStore` and `onboardingService`. Remove them when working there.
+- Do not log health data. **Open:** `console.log` of the whole profile in `useProfileStore`. Remove it when working there.
 - Reuse `HEALTH_NOTICE`, `BLOOD_TEST_DISCLAIMER`, and `AI_GUIDANCE_NOTICE` from `src/constants/health.ts` instead of writing new disclaimers.
 - User-facing guidance must not suggest severe restriction or compensating for overeating. Match the tone of `buildRecoveryRecommendation`. Never present output as diagnosis.
