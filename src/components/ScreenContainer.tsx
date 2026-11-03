@@ -1,4 +1,5 @@
-import { PropsWithChildren } from 'react';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { PropsWithChildren, useContext } from 'react';
 import {
   ScrollView,
   ScrollViewProps,
@@ -7,9 +8,14 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Edge, SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '../theme/theme';
+
+const ALL_EDGES: Edge[] = ['top', 'right', 'bottom', 'left'];
+// The tab bar already pads for the home indicator. Padding again here left an
+// empty strip above it, which made the bar look raised.
+const TAB_SCREEN_EDGES: Edge[] = ['top', 'right', 'left'];
 
 interface ScreenContainerProps extends PropsWithChildren {
   scrollable?: boolean;
@@ -23,6 +29,9 @@ export function ScreenContainer({
   contentStyle,
   scrollViewProps,
 }: ScreenContainerProps) {
+  // Set only inside a bottom tab navigator.
+  const isTabScreen = useContext(BottomTabBarHeightContext) !== undefined;
+
   const body = scrollable ? (
     <ScrollView
       bounces={false}
@@ -36,7 +45,11 @@ export function ScreenContainer({
     <View style={[styles.content, contentStyle]}>{children}</View>
   );
 
-  return <SafeAreaView style={styles.safeArea}>{body}</SafeAreaView>;
+  return (
+    <SafeAreaView edges={isTabScreen ? TAB_SCREEN_EDGES : ALL_EDGES} style={styles.safeArea}>
+      {body}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
