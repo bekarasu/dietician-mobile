@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -29,6 +29,11 @@ const PERIOD_OPTIONS: { label: string; value: LeaderboardPeriod }[] = [
 
 const LOAD_ERROR = 'We couldn\'t load the rankings. Please try again.';
 
+// How often the current period refreshes while it's on screen. Scores change
+// within seconds of anyone logging, and this stays far inside the server's
+// limit of 60 leaderboard requests a minute.
+const LIVE_REFRESH_MS = 20_000;
+
 export function LeaderboardScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const [scope, setScope] = useState<LeaderboardScope>('friends');
@@ -46,7 +51,8 @@ export function LeaderboardScreen() {
   // replace the rankings for a newer selection.
   const latestRequest = useRef(0);
 
-  const load = useCallback(async () => {
+  // A quiet load is a background refresh: if it fails, the rankings on screen stay.
+  const load = useCallback(async ({ quiet = false } = {}) => {
     const request = ++latestRequest.current;
 
     try {
@@ -57,17 +63,42 @@ export function LeaderboardScreen() {
         setFailed(false);
       }
     } catch {
-      if (request === latestRequest.current) {
+      if (request === latestRequest.current && !quiet) {
         setBoard(null);
         setFailed(true);
       }
     }
   }, [scope, period, periodStart]);
 
-  // Runs on focus too, because this tab stays mounted while friends change from Profile.
+  const boardRef = useRef(board);
+  boardRef.current = board;
+
+  // Loads on focus too, because this tab stays mounted while friends change from
+  // Profile. While the current period is on screen and the app is open, it keeps
+  // refreshing, so rankings move as people log. A past period no longer changes,
+  // and a refresh would drop pages loaded with "Show more", so those are left alone.
   useFocusEffect(
     useCallback(() => {
       load();
+
+      const refreshLive = () => {
+        const shown = boardRef.current;
+        const isLive = shown !== null && shown.nextPeriodStart === null;
+        if (isLive && nextOffset.current <= LEADERBOARD_PAGE_SIZE && AppState.currentState === 'active') {
+          load({ quiet: true });
+        }
+      };
+      const timer = setInterval(refreshLive, LIVE_REFRESH_MS);
+      const subscription = AppState.addEventListener('change', (state) => {
+        if (state === 'active') {
+          refreshLive();
+        }
+      });
+
+      return () => {
+        clearInterval(timer);
+        subscription.remove();
+      };
     }, [load]),
   );
 
@@ -175,7 +206,12 @@ export function LeaderboardScreen() {
             <AppButton title="Show more" onPress={loadMore} loading={isLoadingMore} variant="secondary" />
           ) : null}
 
-          {board.lastUpdatedAt ? (
+          {board.nextPeriodStart === null ? (
+            <Text style={styles.caption}>
+              Live: scores update as people log.
+              {board.lastUpdatedAt ? ` Last change ${formatDateTimeLabel(board.lastUpdatedAt)}.` : ''}
+            </Text>
+          ) : board.lastUpdatedAt ? (
             <Text style={styles.caption}>Updated {formatDateTimeLabel(board.lastUpdatedAt)}</Text>
           ) : null}
 

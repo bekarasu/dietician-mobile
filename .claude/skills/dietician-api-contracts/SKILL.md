@@ -107,7 +107,9 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 
 ## Leaderboards
 
-- A leaderboard is a 503 rather than a partial list when account-service can't answer. Show the error state, never an empty ranking.
+- A leaderboard is a 503 rather than a partial list when account-service can't answer. Show the error state, never an empty ranking. A background refresh that fails keeps the rankings already on screen.
+- Scores are live: the server recalculates within seconds of any log or profile change. `LeaderboardScreen` reloads the current period every 20 seconds while it's focused and the app is active, and when the app comes back to the foreground. It doesn't reload past periods, or after "Show more", which a reload would collapse to one page. The limit is 60 leaderboard requests a minute per user, so don't poll faster.
+- A score with no `currentWeightKg` in its breakdown has had no weigh-in since the baseline, so weight counts as 0 for now.
 - Identify the current user with `isCurrentUser` from the response, never with `user.id`.
 - Read previous and next periods from `previousPeriodStart` and `nextPeriodStart`, instead of working out dates on the client. `nextPeriodStart` is null for the current period.
 - Page with a counted offset, not `participants.length`: the server can leave a row out of a page.

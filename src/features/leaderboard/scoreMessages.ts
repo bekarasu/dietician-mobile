@@ -14,6 +14,7 @@ const STATUS_MESSAGES: Record<string, string> = {
   unsafe_target: 'Your target weight is below the healthy range for your height, so it can\'t be ranked. You can review it in your profile.',
   target_reached: 'You\'ve reached your target weight, so there\'s nothing to rank this period. Well done!',
   no_baseline: 'Log your weight to get a score for this period.',
+  // Only on scores from before a missing weigh-in counted as no loss.
   no_current_measurement: 'Log your weight again to get a score for this period.',
   window_too_short: 'There are too few days of logs in this period to give a fair score.',
 };

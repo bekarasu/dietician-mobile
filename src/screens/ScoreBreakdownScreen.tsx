@@ -69,6 +69,10 @@ export function ScoreBreakdownScreen() {
       {isScored ? (
         <AppCard style={styles.stack}>
           <ProgressBar label="Weight progress" current={Math.round(breakdown.progressScore ?? 0)} target={100} />
+          {/* Weight scores 0 until the first weigh-in after the starting weight. */}
+          {breakdown.currentWeightKg === undefined ? (
+            <Text style={styles.note}>No weigh-in yet this period. Log your weight to earn weight points.</Text>
+          ) : null}
           {breakdown.adherenceScore === null ? (
             <Text style={styles.note}>Meal logging: no meals due yet.</Text>
           ) : (
