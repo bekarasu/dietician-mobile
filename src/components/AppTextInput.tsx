@@ -33,7 +33,8 @@ export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(fun
         {...props}
         onChangeText={(text) => {
           if (isNumeric(props)) {
-            const numericText = text.replace(/[^0-9.]/g, '');
+            // The decimal keyboard shows a comma in locales like Turkish.
+            const numericText = text.replace(/,/g, '.').replace(/[^0-9.]/g, '');
             if (numericText !== text) {
               internalRef.current?.setNativeProps({ text: numericText });
             }

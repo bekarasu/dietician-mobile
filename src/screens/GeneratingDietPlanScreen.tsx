@@ -24,7 +24,8 @@ const HEALTHY_TIPS: Tip[] = [
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'GeneratingDietPlan'>;
 
-export function GeneratingDietPlanScreen(_: Props) {
+export function GeneratingDietPlanScreen({ route }: Props) {
+  const { startDate } = route.params;
   const profile = useProfileStore((state) => state.profile);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
   
@@ -65,7 +66,7 @@ export function GeneratingDietPlanScreen(_: Props) {
       }
 
       try {
-        await recommendationService.createDietPlan(profile.id, 7);
+        await recommendationService.createDietPlan(profile.id, startDate, 7);
         await new Promise((resolve) => setTimeout(resolve, 1 * 1000));
       } catch (error) {
         console.error('Failed to create diet plan:', error);
@@ -85,7 +86,7 @@ export function GeneratingDietPlanScreen(_: Props) {
     return () => {
       isMounted = false;
     };
-  }, [profile?.id, completeOnboarding]);
+  }, [profile?.id, startDate, completeOnboarding]);
 
   const currentTip = HEALTHY_TIPS[tipIndex];
 

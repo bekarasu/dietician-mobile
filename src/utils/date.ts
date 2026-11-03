@@ -14,6 +14,37 @@ function parseCalendarDate(value: string) {
   return new Date(year, month - 1, day);
 }
 
+// toISOString() gives the UTC date, which is still yesterday in Turkey until 03:00.
+export function toCalendarDate(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+export function addCalendarDays(value: string, days: number) {
+  const date = parseCalendarDate(value);
+  date.setDate(date.getDate() + days);
+
+  return toCalendarDate(date);
+}
+
+export function calendarDaysBetween(from: string, to: string) {
+  return Math.round((parseCalendarDate(to).getTime() - parseCalendarDate(from).getTime()) / (24 * 60 * 60 * 1000));
+}
+
+export function formatCalendarDate(value: string) {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
+}
+
+export function formatWeekday(value: string) {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parseCalendarDate(value));
+}
+
+export function formatMonthDay(value: string) {
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
+}
+
 export function formatWeekRange(startDate: string, endDateExclusive: string) {
   const format = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
   const lastDay = parseCalendarDate(endDateExclusive);

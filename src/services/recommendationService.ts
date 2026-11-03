@@ -1,6 +1,6 @@
-import { fetchWithAuth } from './apiClient';
+import { fetchData, fetchWithAuth } from './apiClient';
 import { AI_GUIDANCE_NOTICE } from '../constants/health';
-import { FoodResponse, MealRecommendation, RecommendationInput } from '../types/models';
+import { DietPlan, FoodResponse, MealRecommendation, PlanCheckIn, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
 
 function getIngredientFallback(input: RecommendationInput) {
@@ -26,7 +26,7 @@ export const recommendationService = {
     return data.foods;
   },
 
-  async createDietPlan(userId: string, durationDays: number = 7) {
+  async createDietPlan(userId: string, startDate: string, durationDays: number = 7) {
     if (!API_URL) throw new Error('Recommendation API URL is not defined');
 
     const response = await fetchWithAuth(`${API_URL}/diet-plans`, {
@@ -34,7 +34,7 @@ export const recommendationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId,
-        startDate: new Date().toISOString(),
+        startDate,
         durationDays
       }),
     });
@@ -78,6 +78,16 @@ export const recommendationService = {
     }
 
     return response.json();
+  },
+
+  renewDietPlan(checkIn: PlanCheckIn) {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    return fetchData<DietPlan>(`${API_URL}/diet-plans/active/renew`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(checkIn),
+    });
   },
 
 	async markMealAsTaken(mealId: string) {

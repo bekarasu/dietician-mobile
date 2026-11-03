@@ -32,9 +32,10 @@ This check is repeated in `bootstrap`, `login`, and `verifyOTP`. Change all thre
 End of onboarding:
 
 1. The `habits` page posts `/profiles/onboarding`, and `OnboardingScreen` calls `setProfile`.
-2. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`.
-3. `RootNavigator` switches to `AppStackNavigator`.
-4. `AppTabNavigator` reads `justCompletedOnboarding` for `initialRouteName: 'DietPlan'`, then clears it. `initialRouteName` is read only on mount.
+2. `PlanStartDateScreen` asks when to start and passes `startDate` as a route param.
+3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`.
+4. `RootNavigator` switches to `AppStackNavigator`.
+5. `AppTabNavigator` reads `justCompletedOnboarding` for `initialRouteName: 'DietPlan'`, then clears it. `initialRouteName` is read only on mount.
 
 `GeneratingDietPlanScreen` skips plan creation without an error when `profile.id` is missing, so make sure the profile is set in step 1.
 

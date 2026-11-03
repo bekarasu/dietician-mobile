@@ -35,9 +35,9 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 **Open: decimal comma corrupts values.** RN maps `keyboardType="numeric"` to `UIKeyboardTypeDecimalPad` on iOS, which shows `,` under a Turkish or other comma-decimal locale.
 
-- `AppTextInput` strips everything except digits and `.`, so `72,5` becomes `725`.
+- `AppTextInput` already converts `,` to `.`, so use it for decimal fields.
 - `WeightProgressScreen` uses a raw `TextInput` with `parseFloat`, so `72,5` becomes `72`.
-- For decimal fields, convert `,` to `.` before filtering. Test weight entry with an iOS device region that uses a comma.
+- Test weight entry with an iOS device region that uses a comma.
 - `Number(x) || fallback` in `OnboardingScreen` and `ProfileGoalsScreen` hides `NaN` from input like `7.2.5`.
 
 ## Layout

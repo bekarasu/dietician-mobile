@@ -1,4 +1,4 @@
-import { Leaderboard, LeaderboardPeriod, LeaderboardScope, ScoreBreakdown } from '../types/models';
+import { DailyPoints, Leaderboard, LeaderboardPeriod, LeaderboardScope, ScoreBreakdown } from '../types/models';
 import { fetchData } from './apiClient';
 
 const API_URL = process.env.EXPO_PUBLIC_PROGRESS_API_URL;
@@ -17,5 +17,11 @@ export const leaderboardService = {
   getScoreBreakdown(period: LeaderboardPeriod, periodStart: string): Promise<ScoreBreakdown> {
     const query = new URLSearchParams({ period, periodStart });
     return fetchData<ScoreBreakdown>(`${API_URL}/scores/me/breakdown?${query}`);
+  },
+
+  // from and to are YYYY-MM-DD, at most 31 days apart.
+  getDailyPoints(from: string, to: string): Promise<DailyPoints> {
+    const query = new URLSearchParams({ from, to });
+    return fetchData<DailyPoints>(`${API_URL}/scores/me/days?${query}`);
   },
 };

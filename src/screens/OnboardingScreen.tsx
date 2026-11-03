@@ -129,7 +129,7 @@ export function OnboardingScreen({ navigation }: Props) {
       const waterTarget = draft.targetWaterMl !== '' ? Number(draft.targetWaterMl) : hydration.targetWaterMl;
       const coffeeTarget = draft.targetCoffeeCups !== '' ? Number(draft.targetCoffeeCups) : coffee.targetCups;
       setTargets(waterTarget, coffeeTarget);
-      navigation.navigate('GeneratingDietPlan');
+      navigation.navigate('PlanStartDate');
       return;
     }
 

@@ -1,18 +1,129 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState, useMemo } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { ActivityIndicator, Alert, ScrollView, ScrollViewInstance, StyleSheet, Text, View, Pressable } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
+import { SegmentedControl } from '../components/SegmentedControl';
+import { getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
+import { getStatusMessage } from '../features/leaderboard/scoreMessages';
+import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { leaderboardService } from '../services/leaderboardService';
 import { progressService } from '../services/progressService';
 import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
-import { DietMeal } from '../types/models';
+import { DailyPoints, DayPoints, DietMeal, DietPlan, WeekPoints } from '../types/models';
+import { formatCalendarDate, toCalendarDate } from '../utils/date';
+
+const CORE_MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
+
+function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: WeekPoints; takenCoreMeals: number }) {
+  const isCounted = day.status === 'SCORED' || day.status === 'IN_PROGRESS';
+
+  let detail = `${day.mealsLogged} of 3 meals logged · 10 points each`;
+  if (day.status === 'IN_PROGRESS') {
+    detail = `${day.mealsLogged} of 3 meals logged so far today · 10 points each`;
+  } else if (day.status === 'UPCOMING') {
+    detail = 'Log breakfast, lunch and dinner on this day to earn them.';
+  } else if (day.status === 'NOT_SCORED') {
+    detail = getStatusMessage(day.statusReason);
+  }
+
+  let weekLine: string | null = null;
+  let weekNote: string | null = null;
+  if (isCounted && week) {
+    weekLine = week.totalScore !== null
+      ? `This week: ${week.totalScore} points = weight ${week.weightPoints} + meals ${week.mealPoints}`
+      : getStatusMessage(week.statusReason);
+    const today = toCalendarDate(new Date());
+    weekNote = today >= week.periodStart && today < week.periodEndExclusive
+      ? 'Meal points for the week are the average of your days. Today isn\'t counted against you until it ends.'
+      : 'Meal points for the week are the average of your days.';
+  }
+
+  let value = '–';
+  if (isCounted) {
+    value = String(day.points);
+  } else if (day.status === 'UPCOMING') {
+    value = `Up to ${day.maxPoints}`;
+  }
+
+  return (
+    <AppCard style={styles.pointsCard}>
+      <View style={styles.pointsHeader}>
+        <View style={styles.goalsTitleContainer}>
+          <Ionicons name="trophy-outline" size={18} color={theme.colors.primary} />
+          <Text style={styles.pointsTitle}>Meal points</Text>
+        </View>
+        <Text style={styles.pointsValue}>
+          {value}
+          {isCounted ? <Text style={styles.pointsMax}> / {day.maxPoints}</Text> : null}
+        </Text>
+      </View>
+      <Text style={styles.goalsText}>{detail}</Text>
+      {isCounted && takenCoreMeals > day.mealsLogged ? (
+        <Text style={styles.pointsHint}>Meals count on the day you mark them as taken, not the plan day they belong to.</Text>
+      ) : null}
+      {weekLine ? <Text style={styles.pointsWeek}>{weekLine}</Text> : null}
+      {weekNote ? <Text style={styles.pointsHint}>{weekNote}</Text> : null}
+    </AppCard>
+  );
+}
+
+type PlanView = 'current' | 'next';
+
+const PLAN_VIEW_OPTIONS: { label: string; value: PlanView }[] = [
+  { label: 'This plan', value: 'current' },
+  { label: 'Next plan', value: 'next' },
+];
+
+function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestStartDate: string) => void }) {
+  const { phase, startDate, endDate, currentDay, totalDays } = getPlanSchedule(plan);
+  const { earliestRenewalDate, nextPlan } = plan;
+  const nextStart = nextPlan ? getPlanDayDate(nextPlan, 1) : null;
+
+  let title = `Day ${currentDay} of ${totalDays}`;
+  let detail = endDate ? `Ends ${formatCalendarDate(endDate)}` : null;
+
+  if (phase === 'upcoming') {
+    title = `Your plan starts ${formatCalendarDate(startDate)}`;
+    detail = 'Look through your meals now. Logging and scores begin on day 1.';
+  } else if (phase === 'ended' && endDate) {
+    title = `Your plan ended ${formatCalendarDate(endDate)}`;
+    detail = 'Check in to get your next plan.';
+  } else if (currentDay !== null && currentDay === totalDays) {
+    title = 'Last day of your plan';
+    detail = 'Check in now so your next plan is ready in time to shop for it.';
+  }
+
+  if (nextStart) {
+    detail = `Your next plan starts ${formatCalendarDate(nextStart)}.`;
+  }
+
+  if (phase === 'running' && totalDays === null) {
+    return null;
+  }
+
+  return (
+    <AppCard style={styles.statusCard}>
+      <View style={styles.statusRow}>
+        <Ionicons name="calendar-outline" size={22} color={theme.colors.primary} />
+        <View style={styles.statusText}>
+          <Text style={styles.statusTitle}>{title}</Text>
+          {detail ? <Text style={styles.goalsText}>{detail}</Text> : null}
+        </View>
+      </View>
+      {earliestRenewalDate ? <AppButton title="Renew My Plan" onPress={() => onRenew(earliestRenewalDate)} /> : null}
+    </AppCard>
+  );
+}
 
 function GoalsCard({ goalsText }: { goalsText: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -187,7 +298,7 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
   );
 }
 
-function MealCard({ meal, logDate, isLogged, isExtra, onMealLogged }: { meal: DietMeal; logDate: string; isLogged?: boolean; isExtra?: boolean; onMealLogged?: () => void }) {
+function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogged }: { meal: DietMeal; logDate: string; isLogged?: boolean; isExtra?: boolean; canLog?: boolean; onMealLogged?: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const updateActiveDietPlan = useDietPlanStore((state) => state.updateActiveDietPlan);
@@ -305,7 +416,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, onMealLogged }: { meal: Di
                 ) : (
                   <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
                     <AppButton title="Swap Meal" variant="ghost" onPress={handleSwap} style={{ flex: 1 }} />
-                    <AppButton title="Meal Is Taken" onPress={handleLogMeal} style={{ flex: 1 }} />
+                    {canLog && <AppButton title="Meal Is Taken" onPress={handleLogMeal} style={{ flex: 1 }} />}
                   </View>
                 )}
               </>
@@ -371,12 +482,68 @@ function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate: string
 }
 
 export function DietPlanScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { activePlan, isLoading, fetchActivePlan } = useDietPlanStore();
   const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [planView, setPlanView] = useState<PlanView>('current');
 
+  const [dailyPoints, setDailyPoints] = useState<DailyPoints | null>(null);
+  const pointsRequest = useRef(0);
+  const dayScrollRef = useRef<ScrollViewInstance>(null);
+  const dayButtonX = useRef<Record<number, number>>({});
+
+  const nextPlan = activePlan?.nextPlan ?? null;
+  const isNextPlanShown = planView === 'next' && nextPlan !== null;
+  const plan = isNextPlanShown ? nextPlan : activePlan;
+
+  const schedule = plan ? getPlanSchedule(plan) : null;
+  // The day of the plan on screen that is today, while it's running.
+  const todayDay = !isNextPlanShown && schedule?.phase === 'running' ? schedule.currentDay : null;
+
+  const planStart = activePlan?.startDate.slice(0, 10);
+  const planEnd = activePlan?.endDate?.slice(0, 10);
+
+  // Points are extra information, so a failure only hides them.
+  const loadDailyPoints = useCallback(async () => {
+    const request = ++pointsRequest.current;
+    if (!planStart || !planEnd) {
+      setDailyPoints(null);
+      return;
+    }
+    try {
+      const points = await leaderboardService.getDailyPoints(planStart, planEnd);
+      if (request === pointsRequest.current) {
+        setDailyPoints(points);
+      }
+    } catch (e) {
+      if (request === pointsRequest.current) {
+        setDailyPoints(null);
+      }
+    }
+  }, [planStart, planEnd]);
+
+  // The tab stays mounted for days, and which plan applies changes with the date.
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivePlan();
+      loadDailyPoints();
+    }, [fetchActivePlan, loadDailyPoints]),
+  );
+
+  const scrollToDay = (day: number) => {
+    const x = dayButtonX.current[day];
+    if (x !== undefined) {
+      dayScrollRef.current?.scrollTo({ x: Math.max(x - theme.spacing.lg, 0), animated: true });
+    }
+  };
+
+  // Day numbers restart with each plan. Open on today's day while the plan runs.
   useEffect(() => {
-    fetchActivePlan();
-  }, [fetchActivePlan]);
+    setSelectedDay(todayDay ?? 1);
+    if (todayDay !== null) {
+      scrollToDay(todayDay);
+    }
+  }, [plan?.id, todayDay]);
 
   if (isLoading && !activePlan) {
     return (
@@ -386,7 +553,7 @@ export function DietPlanScreen() {
     );
   }
 
-  if (!activePlan) {
+  if (!activePlan || !plan) {
     return (
       <ScreenContainer contentStyle={styles.centered}>
         <Ionicons name="restaurant-outline" size={64} color={theme.colors.muted} />
@@ -397,26 +564,23 @@ export function DietPlanScreen() {
   }
 
   // Find unique days from the meals
-  const days = Array.from(new Set(activePlan.meals.map(m => m.dayOfWeek))).sort((a, b) => a - b);
-  
+  const days = Array.from(new Set(plan.meals.map(m => m.dayOfWeek))).sort((a, b) => a - b);
+
   // If the currently selected day is not in the plan (shouldn't happen, but just in case)
   if (!days.includes(selectedDay) && days.length > 0) {
     setSelectedDay(days[0]);
   }
 
-  const getLogDateForDay = (day: number) => {
-    if (!activePlan) return '';
-    const d = new Date(activePlan.startDate);
-    d.setDate(d.getDate() + (day - 1));
-    return d.toISOString().split('T')[0];
-  };
-  const logDate = getLogDateForDay(selectedDay);
+  const logDate = getPlanDayDate(plan, selectedDay);
+  // Meals before a plan starts wouldn't count towards it, so they can't be logged yet.
+  const canLog = !isNextPlanShown && schedule?.phase !== 'upcoming';
 
   const onMealLogged = () => {
     fetchActivePlan();
+    loadDailyPoints();
   };
 
-  const allMealsForDay = activePlan.meals.filter(m => m.dayOfWeek === selectedDay);
+  const allMealsForDay = plan.meals.filter(m => m.dayOfWeek === selectedDay);
   const planMeals = allMealsForDay.filter(m => !m.isExtra);
   const extraMeals = allMealsForDay.filter(m => m.isExtra);
 
@@ -434,6 +598,13 @@ export function DietPlanScreen() {
 
   const planTotalCalories = planMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
 
+  // The next plan hasn't started, so it has no points yet.
+  const dayPoints = isNextPlanShown ? undefined : dailyPoints?.days.find((day) => day.date === logDate);
+  const weekPoints = dailyPoints?.weeks.find((week) => logDate >= week.periodStart && logDate < week.periodEndExclusive);
+  const takenCoreMeals = new Set(
+    allMealsForDay.filter((meal) => meal.isTaken && CORE_MEAL_TYPES.includes(meal.mealType)).map((meal) => meal.mealType),
+  ).size;
+
   return (
     <ScreenContainer>
       <SectionHeader
@@ -441,17 +612,31 @@ export function DietPlanScreen() {
         subtitle="Stay consistent with your customized nutrition plan."
       />
 
-      <GoalsCard goalsText={activePlan.goals} />
+      <PlanStatusCard
+        plan={activePlan}
+        onRenew={(earliestStartDate) => navigation.navigate('PlanCheckIn', { earliestStartDate })}
+      />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.daySelector} contentContainerStyle={styles.daySelectorContent}>
+      {nextPlan ? <SegmentedControl onChange={setPlanView} options={PLAN_VIEW_OPTIONS} value={planView} /> : null}
+
+      <GoalsCard goalsText={plan.goals} />
+
+      <ScrollView ref={dayScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.daySelector} contentContainerStyle={styles.daySelectorContent}>
         {days.map((day) => (
           <Pressable
             key={day}
             style={[styles.dayButton, selectedDay === day && styles.dayButtonActive]}
             onPress={() => setSelectedDay(day)}
+            onLayout={(event) => {
+              dayButtonX.current[day] = event.nativeEvent.layout.x;
+              // Today can be past the screen edge on first render.
+              if (day === todayDay) {
+                scrollToDay(day);
+              }
+            }}
           >
             <Text style={[styles.dayButtonText, selectedDay === day && styles.dayButtonTextActive]}>
-              Day {day}
+              Day {day}{day === todayDay ? ' · Today' : ''}
             </Text>
           </Pressable>
         ))}
@@ -469,6 +654,8 @@ export function DietPlanScreen() {
         </View>
       </View>
 
+      {dayPoints ? <DayPointsCard day={dayPoints} week={weekPoints} takenCoreMeals={takenCoreMeals} /> : null}
+
       <ShoppingListCard meals={planMeals} />
 
       <View style={styles.mealsContainer}>
@@ -477,7 +664,7 @@ export function DietPlanScreen() {
         ) : (
           planMeals.map((meal) => {
             return (
-              <MealCard key={meal.id} meal={meal} logDate={logDate} isLogged={meal.isTaken} onMealLogged={onMealLogged} />
+              <MealCard key={meal.id} meal={meal} logDate={logDate} isLogged={meal.isTaken} canLog={canLog} onMealLogged={onMealLogged} />
             );
           })
         )}
@@ -495,7 +682,7 @@ export function DietPlanScreen() {
             ))}
           </View>
         )}
-        <ExtraMealForm logDate={logDate} selectedDay={selectedDay} onMealLogged={onMealLogged} />
+        {canLog && <ExtraMealForm logDate={logDate} selectedDay={selectedDay} onMealLogged={onMealLogged} />}
       </View>
     </ScreenContainer>
   );
@@ -519,6 +706,55 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  statusCard: {
+    gap: theme.spacing.md,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  statusText: {
+    flex: 1,
+  },
+  statusTitle: {
+    color: theme.colors.text,
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  pointsCard: {
+    gap: theme.spacing.xs,
+    padding: theme.spacing.md,
+  },
+  pointsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pointsTitle: {
+    color: theme.colors.text,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  pointsValue: {
+    color: theme.colors.primary,
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  pointsMax: {
+    color: theme.colors.muted,
+    fontWeight: '600',
+  },
+  pointsHint: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+  },
+  pointsWeek: {
+    color: theme.colors.text,
+    fontSize: theme.typography.caption.fontSize,
+    fontWeight: '600',
+    marginTop: theme.spacing.xs,
   },
   goalsCard: {
     marginBottom: theme.spacing.lg,

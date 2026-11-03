@@ -114,6 +114,19 @@ export interface DietPlan {
   goals: string;
   status: string;
   meals: DietMeal[];
+  // First day a next plan could start. Null before the plan's last day and once a next plan exists.
+  earliestRenewalDate: string | null;
+  nextPlan?: DietPlan;
+}
+
+export type PlanEffort = 'too_hard' | 'about_right' | 'too_easy';
+
+export type PlanMealChoice = 'keep_favourites' | 'start_fresh';
+
+export interface PlanCheckIn {
+  startDate: string;
+  effort: PlanEffort;
+  mealChoice: PlanMealChoice;
 }
 
 export interface BloodTestResult {
@@ -221,6 +234,34 @@ export interface ScoreBreakdown {
   windowDays?: number;
   completedActivities: number;
   totalActivities: number;
+}
+
+export type DayPointsStatus = 'SCORED' | 'IN_PROGRESS' | 'NOT_SCORED' | 'UPCOMING';
+
+// What one day earned towards the meal part of its weekly score: 10 per breakfast, lunch and dinner.
+export interface DayPoints {
+  date: string;
+  status: DayPointsStatus;
+  statusReason?: string;
+  mealsLogged: number;
+  points: number;
+  maxPoints: number;
+}
+
+// weightPoints and mealPoints add up to totalScore, and are null unless the week is CALCULATED.
+export interface WeekPoints {
+  periodStart: string;
+  periodEndExclusive: string;
+  calculationStatus: ScoreCalculationStatus;
+  statusReason?: string;
+  totalScore: number | null;
+  weightPoints: number | null;
+  mealPoints: number | null;
+}
+
+export interface DailyPoints {
+  days: DayPoints[];
+  weeks: WeekPoints[];
 }
 
 export interface Friend {

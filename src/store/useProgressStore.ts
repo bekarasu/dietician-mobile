@@ -7,7 +7,7 @@ interface ProgressState {
   entries: ProgressEntry[];
   bootstrap: () => Promise<void>;
   latestEntry: () => ProgressEntry | undefined;
-  addWeightLog: (weightKg: number, notes?: string) => Promise<void>;
+  addWeightLog: (weightKg: number, notes?: string) => Promise<boolean>;
   removeWeightLog: (id: string) => Promise<void>;
 }
 
@@ -29,6 +29,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         entries: [...state.entries, newEntry].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       }));
     }
+    return newEntry !== null;
   },
   removeWeightLog: async (id: string) => {
     const success = await progressService.removeWeightEntry(id);
