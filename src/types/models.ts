@@ -234,21 +234,35 @@ export interface ScoreBreakdown {
   windowDays?: number;
   completedActivities: number;
   totalActivities: number;
+  // Missing on scores calculated before water and coffee counted.
+  waterScore?: number | null;
+  coffeeScore?: number | null;
 }
 
 export type DayPointsStatus = 'SCORED' | 'IN_PROGRESS' | 'NOT_SCORED' | 'UPCOMING';
 
-// What one day earned towards the meal part of its weekly score: 10 per breakfast, lunch and dinner.
+// What one day earned towards the habit parts of its weekly score: 10 per breakfast, lunch and dinner,
+// up to 10 for water and 5 for coffee. Only the max fields are set for a day that didn't count.
 export interface DayPoints {
   date: string;
   status: DayPointsStatus;
   statusReason?: string;
-  mealsLogged: number;
   points: number;
   maxPoints: number;
+  mealsLogged: number;
+  mealPoints: number;
+  maxMealPoints: number;
+  waterMl: number;
+  waterTargetMl: number;
+  waterPoints: number;
+  maxWaterPoints: number;
+  coffeeCups: number;
+  coffeeLimitCups: number;
+  coffeePoints: number;
+  maxCoffeePoints: number;
 }
 
-// weightPoints and mealPoints add up to totalScore, and are null unless the week is CALCULATED.
+// The parts add up to totalScore, and are null unless the week is CALCULATED.
 export interface WeekPoints {
   periodStart: string;
   periodEndExclusive: string;
@@ -257,6 +271,8 @@ export interface WeekPoints {
   totalScore: number | null;
   weightPoints: number | null;
   mealPoints: number | null;
+  waterPoints: number | null;
+  coffeePoints: number | null;
 }
 
 export interface DailyPoints {

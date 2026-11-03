@@ -74,6 +74,12 @@ export function ScoreBreakdownScreen() {
           ) : (
             <ProgressBar label="Meal logging" current={Math.round(breakdown.adherenceScore)} target={100} />
           )}
+          {breakdown.waterScore == null ? null : (
+            <ProgressBar label="Water" current={Math.round(breakdown.waterScore)} target={100} />
+          )}
+          {breakdown.coffeeScore == null ? null : (
+            <ProgressBar label="Coffee within your limit" current={Math.round(breakdown.coffeeScore)} target={100} />
+          )}
         </AppCard>
       ) : null}
 
@@ -91,11 +97,14 @@ export function ScoreBreakdownScreen() {
       <AppCard style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>How your score works</Text>
         <Text style={styles.noticeText}>
-          70% comes from your weight progress against a safe expected pace, and 30% from logging breakfast, lunch and
-          dinner. Only you can see these details: others only see your total score.
+          55% comes from your weight progress against a safe expected pace, 30% from logging breakfast, lunch and
+          dinner, 10% from drinking water towards a target based on your weight, and 5% from keeping coffee within
+          your limit on days you log water. Only you can see these details: others only see your total score.
         </Text>
         {multiplier ? <Text style={styles.noticeText}>Your program difficulty adds a bonus of {multiplier}.</Text> : null}
-        <Text style={styles.noticeText}>Losing weight faster than the expected pace doesn't earn extra points.</Text>
+        <Text style={styles.noticeText}>
+          Losing weight faster than the expected pace, or drinking more than your water target, doesn't earn extra points.
+        </Text>
         <Text style={styles.noticeText}>{HEALTH_NOTICE}</Text>
       </AppCard>
     </ScreenContainer>

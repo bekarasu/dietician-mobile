@@ -37,10 +37,13 @@ export const useHydrationStore = create<HydrationState>((set, get) => ({
       console.error('Failed to bootstrap hydration store', e);
     }
   },
+  // Both send only the field they change: the server keeps the rest of the day's
+  // log. Resending the whole log also resent its meals, which logged them again.
+  // progressService returns null rather than throwing, so null means revert.
   addWater: async (amount) => {
-    const { hydration, rawDailyLog } = get();
+    const { hydration } = get();
     const newWaterMl = hydration.waterMl + amount;
-    
+
     // Optimistic update
     set((state) => ({
       hydration: {
@@ -49,25 +52,17 @@ export const useHydrationStore = create<HydrationState>((set, get) => ({
       },
     }));
 
-    // Send to backend
-    try {
-      const updatedLog = await progressService.upsertDailyLog({
-        ...(rawDailyLog || {}),
-        logDate: 'today',
-        waterIntakeMl: newWaterMl,
-      });
-      if (updatedLog) {
-        set({ rawDailyLog: updatedLog });
-      }
-    } catch (e) {
-      // Revert if failed
+    const updatedLog = await progressService.upsertDailyLog({ logDate: 'today', waterIntakeMl: newWaterMl });
+    if (updatedLog) {
+      set({ rawDailyLog: updatedLog });
+    } else {
       set((state) => ({
         hydration: { ...state.hydration, waterMl: hydration.waterMl },
       }));
     }
   },
   addCoffee: async (cups) => {
-    const { coffee, rawDailyLog } = get();
+    const { coffee } = get();
     const newCups = coffee.cups + cups;
 
     // Optimistic update
@@ -78,18 +73,10 @@ export const useHydrationStore = create<HydrationState>((set, get) => ({
       },
     }));
 
-    // Send to backend
-    try {
-      const updatedLog = await progressService.upsertDailyLog({
-        ...(rawDailyLog || {}),
-        logDate: 'today',
-        coffeeCups: newCups,
-      });
-      if (updatedLog) {
-        set({ rawDailyLog: updatedLog });
-      }
-    } catch (e) {
-      // Revert if failed
+    const updatedLog = await progressService.upsertDailyLog({ logDate: 'today', coffeeCups: newCups });
+    if (updatedLog) {
+      set({ rawDailyLog: updatedLog });
+    } else {
       set((state) => ({
         coffee: { ...state.coffee, cups: coffee.cups },
       }));

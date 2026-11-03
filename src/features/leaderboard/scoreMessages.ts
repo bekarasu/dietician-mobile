@@ -1,6 +1,6 @@
 import { Leaderboard, LeaderboardEntry } from '../../types/models';
 
-const LOGGING_NUDGE = 'Logging your meals and weight keeps your score up to date.';
+const LOGGING_NUDGE = 'Logging your meals, water and weight keeps your score up to date.';
 
 // Keyed by the statusReason values progress-service returns.
 const STATUS_MESSAGES: Record<string, string> = {

@@ -24,14 +24,37 @@ import { formatCalendarDate, toCalendarDate } from '../utils/date';
 
 const CORE_MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 
+function formatLitres(ml: number) {
+  return `${(ml / 1000).toFixed(1)} L`;
+}
+
+function getCoffeeDetail(day: DayPoints) {
+  if (day.waterMl === 0) {
+    return 'Log water first';
+  }
+  if (day.coffeeCups > day.coffeeLimitCups) {
+    return `${day.coffeeCups} cups, over your ${day.coffeeLimitCups}`;
+  }
+  return `${day.coffeeCups} of ${day.coffeeLimitCups} cups`;
+}
+
+function PointsRow({ label, detail, points, max }: { label: string; detail: string; points: number; max: number }) {
+  return (
+    <View style={styles.pointsRow}>
+      <Text style={styles.pointsRowLabel}>{label}</Text>
+      <Text style={styles.pointsRowDetail}>{detail}</Text>
+      <Text style={styles.pointsRowValue}>{points} / {max}</Text>
+    </View>
+  );
+}
+
 function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: WeekPoints; takenCoreMeals: number }) {
   const isCounted = day.status === 'SCORED' || day.status === 'IN_PROGRESS';
+  const soFar = day.status === 'IN_PROGRESS' ? ' so far' : '';
 
-  let detail = `${day.mealsLogged} of 3 meals logged · 10 points each`;
-  if (day.status === 'IN_PROGRESS') {
-    detail = `${day.mealsLogged} of 3 meals logged so far today · 10 points each`;
-  } else if (day.status === 'UPCOMING') {
-    detail = 'Log breakfast, lunch and dinner on this day to earn them.';
+  let detail: string | null = null;
+  if (day.status === 'UPCOMING') {
+    detail = 'Log your meals, water and coffee on this day to earn them.';
   } else if (day.status === 'NOT_SCORED') {
     detail = getStatusMessage(day.statusReason);
   }
@@ -40,12 +63,12 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
   let weekNote: string | null = null;
   if (isCounted && week) {
     weekLine = week.totalScore !== null
-      ? `This week: ${week.totalScore} points = weight ${week.weightPoints} + meals ${week.mealPoints}`
+      ? `This week: ${week.totalScore} = weight ${week.weightPoints} + meals ${week.mealPoints} + water ${week.waterPoints} + coffee ${week.coffeePoints}`
       : getStatusMessage(week.statusReason);
     const today = toCalendarDate(new Date());
     weekNote = today >= week.periodStart && today < week.periodEndExclusive
-      ? 'Meal points for the week are the average of your days. Today isn\'t counted against you until it ends.'
-      : 'Meal points for the week are the average of your days.';
+      ? 'Meal, water and coffee points for the week are the average of your days. Today isn\'t counted against you until it ends.'
+      : 'Meal, water and coffee points for the week are the average of your days.';
   }
 
   let value = '–';
@@ -60,14 +83,21 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
       <View style={styles.pointsHeader}>
         <View style={styles.goalsTitleContainer}>
           <Ionicons name="trophy-outline" size={18} color={theme.colors.primary} />
-          <Text style={styles.pointsTitle}>Meal points</Text>
+          <Text style={styles.pointsTitle}>Day points</Text>
         </View>
         <Text style={styles.pointsValue}>
           {value}
           {isCounted ? <Text style={styles.pointsMax}> / {day.maxPoints}</Text> : null}
         </Text>
       </View>
-      <Text style={styles.goalsText}>{detail}</Text>
+      {detail ? <Text style={styles.goalsText}>{detail}</Text> : null}
+      {isCounted ? (
+        <View style={styles.pointsRows}>
+          <PointsRow label="Meals" detail={`${day.mealsLogged} of 3 logged${soFar}`} points={day.mealPoints} max={day.maxMealPoints} />
+          <PointsRow label="Water" detail={`${formatLitres(day.waterMl)} of ${formatLitres(day.waterTargetMl)}${soFar}`} points={day.waterPoints} max={day.maxWaterPoints} />
+          <PointsRow label="Coffee" detail={getCoffeeDetail(day)} points={day.coffeePoints} max={day.maxCoffeePoints} />
+        </View>
+      ) : null}
       {isCounted && takenCoreMeals > day.mealsLogged ? (
         <Text style={styles.pointsHint}>Meals count on the day you mark them as taken, not the plan day they belong to.</Text>
       ) : null}
@@ -749,6 +779,27 @@ const styles = StyleSheet.create({
   pointsHint: {
     color: theme.colors.muted,
     fontSize: theme.typography.caption.fontSize,
+  },
+  pointsRows: {
+    gap: theme.spacing.xs,
+  },
+  pointsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  pointsRowLabel: {
+    width: 56,
+    color: theme.colors.text,
+    fontWeight: '700',
+  },
+  pointsRowDetail: {
+    flex: 1,
+    color: theme.colors.muted,
+  },
+  pointsRowValue: {
+    color: theme.colors.text,
+    fontWeight: '700',
   },
   pointsWeek: {
     color: theme.colors.text,

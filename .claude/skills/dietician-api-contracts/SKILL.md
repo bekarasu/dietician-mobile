@@ -40,7 +40,6 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 
 Open defects caused by this:
 
-- `useHydrationStore.addWater` and `addCoffee` revert the optimistic update in `catch`, which is unreachable. A failed save stays on screen as if it succeeded. Revert when the result is `null`.
 - `MealCard.handleLogMeal` calls `upsertDailyLog`, then `markMealAsTaken`. If the first fails, the meal is still marked taken with no log. The same applies to extra meals with `addExtraMeal`.
 
 ## Field names change between read and write
@@ -97,11 +96,11 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`.
 - After a plan mutation, the UI calls `fetchActivePlan()` rather than patching state.
 
-`POST /daily-logs` is an upsert, but its merge rule is unknown; verify it before changing this flow. It matters because:
+`POST /daily-logs` is an upsert:
 
-- Hydration writes spread `rawDailyLog` (including `meals`) back to the server.
-- `DietPlanScreen` logs meals directly with `progressService`, leaving `rawDailyLog` stale.
-- If upsert replaces `meals`, a later water update could drop a meal just logged.
+- **Fields you leave out keep their value**, so send only what changed. Every meal sent is added as a new log, so never resend a log you read back: resending duplicates its meals.
+- **Water and coffee count towards scores only when `logDate` is today in the business timezone**, because a past day mustn't be filled in later. Hydration sends `logDate: 'today'`. Without an `Accept-Timezone` header, the server resolves that in the business timezone (Europe/Istanbul), which is the day scores use.
+- `DietPlanScreen` logs meals directly with `progressService`, leaving `useHydrationStore.rawDailyLog` stale. That's harmless now that hydration writes don't resend it.
 
 ## Leaderboards
 
@@ -111,13 +110,18 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - Page with a counted offset, not `participants.length`: the server can leave a row out of a page.
 - Ranks can repeat or skip (1, 2, 2, 4) because tied users share a rank.
 - `GET /scores/me/breakdown` holds the user's weights and only ever returns their own data. Never show another user's `statusReason` or breakdown.
-- `GET /scores/me/days?from&to` gives each day's meal points: 10 per breakfast, lunch and dinner, counted by the day they were logged (`logged_at`), not by plan day. It also gives each week's `weightPoints` and `mealPoints`, which add up to `totalScore`. Show the server's numbers; don't work points out on the client. `DietPlanScreen` hides the card if the request fails.
+- The score is 55 weight progress, 30 meals, 10 water and 5 coffee.
+- `GET /scores/me/days?from&to` gives each day's habit points, 45 at most:
+    - Meals: 10 per breakfast, lunch and dinner, counted on the day they were logged (`logged_at`), not by plan day.
+    - Water: up to 10, in proportion to `waterTargetMl`. The target comes from body weight (30 ml/kg, 1.5–3 L), not from the user's `targetWaterMl`.
+    - Coffee: 5 for staying within `coffeeLimitCups` (the user's target, at most 4) on a day with water logged.
+- The response also splits each week into `weightPoints`, `mealPoints`, `waterPoints` and `coffeePoints`, which add up to `totalScore`. Show the server's numbers; don't work points out on the client. `DietPlanScreen` and `HydrationTrackingScreen` hide them if the request fails.
 - Leaderboard and friend data stays in screen state, so it doesn't outlive a logout.
 
 ## Dates
 
 - **Open:** `new Date().toISOString().split('T')[0]` yields the UTC date. In Turkey (UTC+3) it returns yesterday between 00:00 and 03:00. It appears in `ProgressDashboardScreen` and `useHydrationStore`. Use `toCalendarDate` from `src/utils/date.ts` instead.
-- Hydration uses the literal `'today'` as the date, so the server decides the day. Verify which timezone it uses.
+- Hydration uses the literal `'today'` as the date, so the server decides the day: in `Accept-Timezone` if sent, otherwise in the business timezone.
 
 ## Health data and copy
 
