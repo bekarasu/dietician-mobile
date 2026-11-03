@@ -90,8 +90,9 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 
 - **`meal.dayOfWeek` is not a weekday.** It is a 1-based plan day. Get its date from `getPlanDayDate` in `src/features/dietPlan/planSchedule.ts`.
 - **Plan dates are calendar days.** `startDate` and `endDate` arrive as midnight UTC timestamps, and `getPlanSchedule` reads the date part. `POST /diet-plans` and the renew route take `YYYY-MM-DD`, from today up to 14 days ahead; a timestamp is a 400.
-- **`GET /diet-plans/active` chooses by date:** the latest plan to have started, or the soonest upcoming one. The plan can be `upcoming`, `running` or `ended`, so don't assume it's in progress. Meals in an upcoming plan can be swapped but not logged.
-- **Renewal:** `earliestRenewalDate` is set from the plan's last day until a next plan exists, and only then show Renew. `nextPlan` is the renewal waiting for its start date, with its meals, so people can shop for it. A repeat is a 409.
+- **`GET /diet-plans/active` chooses by date:** the plan running today, else the soonest upcoming one, else the latest to have ended. The plan can be `upcoming`, `running` or `ended`, so don't assume it's in progress. Meals in an upcoming plan can be swapped but not logged.
+- **`POST /diet-plans` replaces the current plan.** A plan running today ends yesterday and plans not yet started disappear, so the new plan is always the one shown, with day 1 on its start date. Today and the days until it starts aren't scored. `PlanStartDateScreen` warns about this when a plan is loaded.
+- **Renewal:** `earliestRenewalDate` is set from the plan's last day until a next plan exists, and only then show Renew. `nextPlan` is the renewal waiting for its start date, with its meals, so people can shop for it. It only appears while the current plan is still running; once it ends, the renewal itself is the active plan. A repeat is a 409.
 - `DietPlanScreen` refetches on focus, because the tab stays mounted while the current plan changes with the date.
 - `meal.isTaken` and `meal.isExtra` drive the UI. Extra meals are saved with `addExtraMeal` and always render as logged.
 - `mealType` values are capitalized (`Breakfast`, `Lunch`, `Snack`, `Dinner`) for sorting. Other values sort last.

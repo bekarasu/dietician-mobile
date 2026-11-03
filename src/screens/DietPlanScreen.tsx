@@ -10,7 +10,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
-import { getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
+import { formatStartsIn, getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
@@ -112,16 +112,16 @@ const PLAN_VIEW_OPTIONS: { label: string; value: PlanView }[] = [
 ];
 
 function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestStartDate: string) => void }) {
-  const { phase, startDate, endDate, currentDay, totalDays } = getPlanSchedule(plan);
+  const { phase, startDate, endDate, currentDay, totalDays, daysUntilStart } = getPlanSchedule(plan);
   const { earliestRenewalDate, nextPlan } = plan;
   const nextStart = nextPlan ? getPlanDayDate(nextPlan, 1) : null;
 
   let title = `Day ${currentDay} of ${totalDays}`;
   let detail = endDate ? `Ends ${formatCalendarDate(endDate)}` : null;
 
-  if (phase === 'upcoming') {
-    title = `Your plan starts ${formatCalendarDate(startDate)}`;
-    detail = 'Look through your meals now. Logging and scores begin on day 1.';
+  if (phase === 'upcoming' && daysUntilStart !== null) {
+    title = `Your plan starts ${formatStartsIn(daysUntilStart)}`;
+    detail = `Day 1 is ${formatCalendarDate(startDate)}. Look through your meals now. Logging and scores begin on day 1.`;
   } else if (phase === 'ended' && endDate) {
     title = `Your plan ended ${formatCalendarDate(endDate)}`;
     detail = 'Check in to get your next plan.';
@@ -526,6 +526,9 @@ export function DietPlanScreen() {
   const schedule = plan ? getPlanSchedule(plan) : null;
   // The day of the plan on screen that is today, while it's running.
   const todayDay = !isNextPlanShown && schedule?.phase === 'running' ? schedule.currentDay : null;
+  // Day 1 of a plan that hasn't started says when it does: "Tomorrow", "In 3 days".
+  const startsIn = schedule?.daysUntilStart != null ? formatStartsIn(schedule.daysUntilStart) : null;
+  const startsInLabel = startsIn ? startsIn[0].toUpperCase() + startsIn.slice(1) : null;
 
   const planStart = activePlan?.startDate.slice(0, 10);
   const planEnd = activePlan?.endDate?.slice(0, 10);
@@ -663,7 +666,9 @@ export function DietPlanScreen() {
             }}
           >
             <Text style={[styles.dayButtonText, selectedDay === day && styles.dayButtonTextActive]}>
-              Day {day}{day === todayDay ? ' · Today' : ''}
+              Day {day}
+              {day === todayDay ? ' · Today' : ''}
+              {day === 1 && startsInLabel ? ` · ${startsInLabel}` : ''}
             </Text>
           </Pressable>
         ))}
