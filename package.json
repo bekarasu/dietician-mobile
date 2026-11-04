@@ -7,6 +7,8 @@
     "start": "dotenv -e .env.development -- expo start --port 3000",
     "android": "dotenv -e .env.development -- expo start --android --port 3000",
     "ios": "dotenv -e .env.development -- expo start --ios --port 3000",
+    "android:native": "expo prebuild --platform android && dotenv -e .env.development -- expo run:android --port 3000",
+    "ios:native": "expo prebuild --platform ios && dotenv -e .env.development -- expo run:ios --port 3000",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx"
