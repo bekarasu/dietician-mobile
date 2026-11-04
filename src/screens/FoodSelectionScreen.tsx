@@ -16,7 +16,7 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
   const { selectedFoods: initialSelectedFoods, fieldName, context = 'profile' } = route.params;
   const [selectedFoods, setSelectedFoods] = useState<string[]>(initialSelectedFoods || []);
   const profile = useProfileStore((state) => state.profile);
-  const updateProfile = useProfileStore((state) => state.updateProfile);
+  const updatePreferences = useProfileStore((state) => state.updatePreferences);
   const updateField = useOnboardingStore((state) => state.updateField);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -43,10 +43,8 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
 
     setIsSaving(true);
     try {
-      await updateProfile({
-        ...profile,
-        [fieldName]: selectedFoods,
-      });
+      // Only the list being edited is sent, so the other one stays as it is.
+      await updatePreferences(fieldName === 'allergies' ? { allergies: selectedFoods } : { dislikedFoods: selectedFoods });
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'Failed to save selection.');

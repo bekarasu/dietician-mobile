@@ -9,6 +9,7 @@ const STATUS_MESSAGES: Record<string, string> = {
   no_program: 'Start a diet plan to join the leaderboard.',
   plan_not_started: 'Your score starts counting on the day your diet plan starts.',
   no_plan_on_day: 'No plan covered this day, so it doesn\'t earn points.',
+  plan_replaced: 'You changed your plan later this week, so this day\'s points were reset.',
   underage: 'Leaderboards are for members aged 18 and over.',
   missing_target: 'Add a target weight to your profile to get a score.',
   unsafe_target: 'Your target weight is below the healthy range for your height, so it can\'t be ranked. You can review it in your profile.',

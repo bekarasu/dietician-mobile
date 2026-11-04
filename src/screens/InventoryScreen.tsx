@@ -11,7 +11,7 @@ import { theme } from '../theme/theme';
 
 export function InventoryScreen() {
   const profile = useProfileStore((state) => state.profile);
-  const updateProfile = useProfileStore((state) => state.updateProfile);
+  const updatePreferences = useProfileStore((state) => state.updatePreferences);
 
   const items = profile?.availableIngredients || [];
 
@@ -24,14 +24,14 @@ export function InventoryScreen() {
   const onSubmit = async (values: { ingredient: string }) => {
     if (!profile) return;
     const newItems = [values.ingredient, ...items];
-    await updateProfile({ ...profile, availableIngredients: newItems });
+    await updatePreferences({ availableIngredients: newItems });
     reset({ ingredient: '' });
   };
 
   const removeItem = async (ingredientToRemove: string) => {
     if (!profile) return;
     const newItems = items.filter(item => item !== ingredientToRemove);
-    await updateProfile({ ...profile, availableIngredients: newItems });
+    await updatePreferences({ availableIngredients: newItems });
   };
 
   return (

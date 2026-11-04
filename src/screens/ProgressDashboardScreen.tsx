@@ -89,7 +89,9 @@ function DayHistory({ day }: { day: ActivityDay }) {
         <Text style={[styles.daySummary, !isCounted && styles.daySummaryMuted]}>{summary}</Text>
       </View>
       {/* Week-wide reasons are shown once, on the week. */}
-      {day.statusReason === 'no_plan_on_day' ? <Text style={styles.activityReason}>{getStatusMessage(day.statusReason)}</Text> : null}
+      {day.statusReason === 'no_plan_on_day' || day.statusReason === 'plan_replaced' ? (
+        <Text style={styles.activityReason}>{getStatusMessage(day.statusReason)}</Text>
+      ) : null}
       {empty ? <Text style={styles.activityReason}>{empty}</Text> : null}
       {day.activities.map((activity, index) => (
         <ActivityRow key={`${activity.type}-${activity.loggedAt ?? ''}-${index}`} activity={activity} isCounted={isCounted} />

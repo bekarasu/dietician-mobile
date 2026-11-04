@@ -1,24 +1,85 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { StartDatePicker } from '../components/StartDatePicker';
+import { getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { OnboardingStackParamList } from '../navigation/navigationTypes';
+import { leaderboardService } from '../services/leaderboardService';
 import { useDietPlanStore } from '../store/useDietPlanStore';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import { theme } from '../theme/theme';
+import { ActivityDay } from '../types/models';
 import { toCalendarDate } from '../utils/date';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'PlanStartDate'>;
+
+// The points this week that a new plan starting on startDate takes away: every
+// earlier day's, which the server resets, and today's if the plan starts later,
+// because today then has no plan.
+function getPointsToReset(days: ActivityDay[], today: string, startDate: string) {
+  return days
+    .filter((day) => day.date < today || (day.date === today && startDate > today))
+    .reduce((total, day) => total + day.points, 0);
+}
 
 export function PlanStartDateScreen({ navigation }: Props) {
   const [today] = useState(() => toCalendarDate(new Date()));
   const [startDate, setStartDate] = useState(today);
   // Set when onboarding was restarted with a plan in place, which the new one replaces.
-  const hasPlan = useDietPlanStore((state) => state.activePlan !== null);
+  const activePlan = useDietPlanStore((state) => state.activePlan);
+  const hasPlan = activePlan !== null;
+  // Replacing a running plan resets the plan points earned earlier this week.
+  const isRunning = activePlan !== null && getPlanSchedule(activePlan).phase === 'running';
+  // This week's days, null until they load or if they can't be.
+  const [weekDays, setWeekDays] = useState<ActivityDay[] | null>(null);
+  // The answers are saved by now, so leaving here only skips the new plan.
+  const isRestarting = useOnboardingStore((state) => state.isRestarting);
+  const leaveOnboarding = useOnboardingStore((state) => state.leaveOnboarding);
+
+  useEffect(() => {
+    if (!isRunning) {
+      return;
+    }
+
+    let isMounted = true;
+    leaderboardService
+      .getWeekActivity()
+      .then((activity) => {
+        if (isMounted) setWeekDays(activity.days);
+      })
+      // Unknown points get the general warning instead.
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isRunning]);
+
+  const createPlan = () => navigation.navigate('GeneratingDietPlan', { startDate });
+
+  const handleCreate = () => {
+    const points = weekDays ? getPointsToReset(weekDays, today, startDate) : null;
+    if (!isRunning || points === 0) {
+      createPlan();
+      return;
+    }
+
+    const earned = points === null ? 'the points' : `the ${points} ${points === 1 ? 'point' : 'points'}`;
+    Alert.alert(
+      "Reset this week's points?",
+      `A new plan resets ${earned} you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.`,
+      [
+        { text: 'Swap meals instead', onPress: () => leaveOnboarding('DietPlan') },
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Reset and continue', style: 'destructive', onPress: createPlan },
+      ],
+    );
+  };
 
   return (
     <ScreenContainer>
@@ -30,12 +91,16 @@ export function PlanStartDateScreen({ navigation }: Props) {
       {hasPlan ? (
         <AppCard style={styles.notice}>
           <Text style={styles.noticeText}>
-            Your new plan replaces your current one from today. Points you've already earned stay, and days before
-            the new plan starts aren't scored.
+            {isRunning
+              ? "Your new plan replaces your current one from today. Meal, water and coffee points you've earned this week are reset, and days before the new plan starts aren't scored."
+              : "Your new plan replaces your current one. Points you've already earned stay, and days before the new plan starts aren't scored."}
           </Text>
         </AppCard>
       ) : null}
-      <AppButton title="Create My Plan" onPress={() => navigation.navigate('GeneratingDietPlan', { startDate })} />
+      <AppButton title="Create My Plan" onPress={handleCreate} />
+      {isRestarting ? (
+        <AppButton title={hasPlan ? 'Keep my current plan' : 'Not now'} variant="ghost" onPress={() => leaveOnboarding()} />
+      ) : null}
     </ScreenContainer>
   );
 }

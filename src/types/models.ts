@@ -247,6 +247,7 @@ export type DayPointsStatus = 'SCORED' | 'IN_PROGRESS' | 'NOT_SCORED' | 'UPCOMIN
 
 // What one day earned towards the habit parts of its weekly score: 10 per breakfast, lunch and dinner,
 // up to 10 for water and 5 for coffee. Only the max fields are set for a day that didn't count.
+// A SCORED day with statusReason 'plan_replaced' still counts towards the week, with its points reset.
 export interface DayPoints {
   date: string;
   status: DayPointsStatus;

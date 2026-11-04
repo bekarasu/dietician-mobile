@@ -74,6 +74,7 @@ const ACTIVITY_REASONS: Record<string, string> = {
   not_core_meal: 'Only breakfast, lunch and dinner earn points.',
   meal_already_counted: 'This meal already counted today.',
   plan_not_started: 'Logged before your plan started.',
+  plan_replaced: 'Reset when you changed your plan.',
   no_water_logged: 'Coffee points need water logged the same day.',
 };
 

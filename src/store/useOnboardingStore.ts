@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import type { AppTabParamList } from '../navigation/navigationTypes';
 import { onboardingService } from '../services/onboardingService';
 import { OnboardingDraft, OnboardingPageId, OnboardingPageResponse } from '../types/models';
 
@@ -19,11 +20,22 @@ const initialDraft: OnboardingDraft = {
   bloodTestUploaded: false,
 };
 
+const freshPages = {
+  draft: initialDraft,
+  currentPageIndex: 0,
+  isSubmitting: false,
+  error: null,
+  responses: {},
+};
+
 interface OnboardingState {
   draft: OnboardingDraft;
   currentPageIndex: number;
   isCompleted: boolean;
-  justCompletedOnboarding: boolean;
+  // Onboarding was run again from the profile, so the user can leave it.
+  isRestarting: boolean;
+  // The tab the app opens on when onboarding ends. AppTabNavigator reads it once.
+  landingTab: keyof AppTabParamList | null;
   isSubmitting: boolean;
   error: string | null;
   responses: Partial<Record<OnboardingPageId, OnboardingPageResponse>>;
@@ -34,18 +46,16 @@ interface OnboardingState {
   submitPage: (pageId: OnboardingPageId) => Promise<OnboardingPageResponse | null>;
   completeOnboarding: () => void;
   restoreOnboardingState: () => void;
-  clearJustCompletedOnboarding: () => void;
+  clearLandingTab: () => void;
   restartOnboarding: () => void;
+  leaveOnboarding: (landingTab?: keyof AppTabParamList) => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>((set, get) => ({
-  draft: initialDraft,
-  currentPageIndex: 0,
+  ...freshPages,
   isCompleted: false,
-  justCompletedOnboarding: false,
-  isSubmitting: false,
-  error: null,
-  responses: {},
+  isRestarting: false,
+  landingTab: null,
   updateField: (field, value) => {
     set((state) => ({
       draft: {
@@ -99,23 +109,20 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     }
   },
   completeOnboarding: () => {
-    set({ isCompleted: true, justCompletedOnboarding: true });
+    set({ isCompleted: true, isRestarting: false, landingTab: 'DietPlan' });
   },
   restoreOnboardingState: () => {
-    set({ isCompleted: true, justCompletedOnboarding: false });
+    set({ isCompleted: true, isRestarting: false, landingTab: null });
   },
-  clearJustCompletedOnboarding: () => {
-    set({ justCompletedOnboarding: false });
+  clearLandingTab: () => {
+    set({ landingTab: null });
   },
   restartOnboarding: () => {
-    set({
-      draft: initialDraft,
-      currentPageIndex: 0,
-      isCompleted: false,
-      justCompletedOnboarding: false,
-      isSubmitting: false,
-      error: null,
-      responses: {},
-    });
+    set({ ...freshPages, isCompleted: false, isRestarting: true, landingTab: null });
+  },
+  // Back to the app without a new plan, on the profile unless told otherwise.
+  // Answers are saved only by the last page, so leaving before it changes nothing.
+  leaveOnboarding: (landingTab = 'ProfileGoals') => {
+    set({ ...freshPages, isCompleted: true, isRestarting: false, landingTab });
   },
 }));

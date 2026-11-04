@@ -19,20 +19,20 @@ const TAB_BAR_CONTENT_HEIGHT = 54;
 
 export function AppTabNavigator() {
   const insets = useSafeAreaInsets();
-  const justCompletedOnboarding = useOnboardingStore((state) => state.justCompletedOnboarding);
-  const clearJustCompletedOnboarding = useOnboardingStore((state) => state.clearJustCompletedOnboarding);
+  const landingTab = useOnboardingStore((state) => state.landingTab);
+  const clearLandingTab = useOnboardingStore((state) => state.clearLandingTab);
   // A numeric height turns off React Navigation's own inset handling, so both values account for it here.
   const tabBarPaddingBottom = Math.max(insets.bottom, theme.spacing.sm);
 
   useEffect(() => {
-    if (justCompletedOnboarding) {
-      clearJustCompletedOnboarding();
+    if (landingTab) {
+      clearLandingTab();
     }
-  }, [justCompletedOnboarding, clearJustCompletedOnboarding]);
+  }, [landingTab, clearLandingTab]);
 
   return (
     <Tab.Navigator
-      initialRouteName={justCompletedOnboarding ? 'DietPlan' : 'Home'}
+      initialRouteName={landingTab ?? 'Home'}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,

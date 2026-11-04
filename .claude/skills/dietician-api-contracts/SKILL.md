@@ -40,7 +40,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 
 Open defects caused by this:
 
-- `MealCard.handleLogMeal` calls `upsertDailyLog`, then `markMealAsTaken`. If the first fails, the meal is still marked taken with no log. The same applies to extra meals with `addExtraMeal`.
+- Extra meals: `ExtraMealForm` calls `upsertDailyLog`, then `addExtraMeal`. If the first fails, the meal is still added with no log. Plan meals go through `logPlanMeal` (`src/features/dietPlan/logPlanMeal.ts`), which checks the log first; use it for any new place that marks a plan meal as eaten, as `HomeScreen` does.
 
 ## Field names change between read and write
 
@@ -61,8 +61,12 @@ Preferences (`/profiles/preferences`):
 | Fridge | `availableIngredients[].ingredient` | `availableIngredients: string[]` |
 
 - `availableIngredients` can also arrive on `GET /profiles?include_fridge=true`, and that value wins.
-- `updateProfile` sends two `PUT`s, which are not atomic, and returns its input rather than server data.
+- **Save only what changed.** `useProfileStore.updateDetails` sends just the fields given to `PUT /profiles`, never weight: weigh-ins set it on the server, and the app's copy is often older. `updatePreferences` sends just the lists given to `PUT /profiles/preferences`; the server keeps any list left out, and an empty list clears one. Sending a whole profile used to empty lists the app had loaded wrong, and to roll the weight back.
+- `profileService.getProfile` throws if preferences can't be read, rather than returning empty lists that a later save would write back.
+- `POST /profiles/onboarding` updates the existing profile, so restarting onboarding keeps one profile. Before, each run added a profile and its lists were left on the old one. Accounts from then can still have several rows; the newest is the one read. `OnboardingScreen` fills the draft's diet, disliked foods and allergies from the profile, because onboarding saves them again.
+- The server must be updated before the app: an older account-service treats a list left out of `PUT /profiles/preferences` as empty and deletes it.
 - **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
+- **Answers must agree, on both sides.** account-service returns a translated `400` for: more than one of `omnivore`, `vegetarian`, `vegan`, `pescatarian`; a `weight_loss` target at or above the current weight or below BMI 18.5 for the height; a preference listed twice; or a `gender`, `activityLevel`, goal or preference not in `src/constants/options.ts`, including an empty string, so leave unset fields out. The app applies the same rules from `src/features/profile/profileRules.ts`: picking a base diet replaces the other (`toggleDietaryPreference`), onboarding pages declare cross-field rules as `validate`, which shows under the fields and blocks Continue, and the profile form checks the target. `PUT /profiles` only checks the target when the goal or target changes.
 - Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings. Verify the backend accepts them.
 
 ## Identity
@@ -92,6 +96,7 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - **Plan dates are calendar days.** `startDate` and `endDate` arrive as midnight UTC timestamps, and `getPlanSchedule` reads the date part. `POST /diet-plans` and the renew route take `YYYY-MM-DD`, from today up to 14 days ahead; a timestamp is a 400.
 - **`GET /diet-plans/active` chooses by date:** the plan running today, else the soonest upcoming one, else the latest to have ended. The plan can be `upcoming`, `running` or `ended`, so don't assume it's in progress. Meals in an upcoming plan can be swapped but not logged.
 - **`POST /diet-plans` replaces the current plan.** A plan running today ends yesterday and plans not yet started disappear, so the new plan is always the one shown, with day 1 on its start date. Today and the days until it starts aren't scored. `PlanStartDateScreen` warns about this when a plan is loaded.
+- **Replacing a running plan resets the week's plan points.** Every plan day earlier that week loses its meal, water and coffee points but still counts towards the average; weight points stand. Before creating the plan, `PlanStartDateScreen` adds up those days' points from `getWeekActivity` (plus today's if the new plan starts later) and, if any, asks for confirmation and offers "Swap meals instead", which leaves onboarding for the DietPlan tab. Such days come back as `SCORED` with 0 points and `statusReason: 'plan_replaced'`, and their logs with `reason: 'plan_replaced'`.
 - **Renewal:** `earliestRenewalDate` is set from the plan's last day until a next plan exists, and only then show Renew. `nextPlan` is the renewal waiting for its start date, with its meals, so people can shop for it. It only appears while the current plan is still running; once it ends, the renewal itself is the active plan. A repeat is a 409.
 - `DietPlanScreen` refetches on focus, because the tab stays mounted while the current plan changes with the date.
 - `meal.isTaken` and `meal.isExtra` drive the UI. Extra meals are saved with `addExtraMeal` and always render as logged.

@@ -1,7 +1,27 @@
-import { UserProfile } from '../types/models';
+import { DietaryPreference, GoalType, UserProfile } from '../types/models';
 import { fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
+
+// The profile fields a screen can edit. Weight isn't one: weigh-ins set it, and
+// sending the app's copy back would overwrite a newer one.
+export interface ProfileDetails {
+  name?: string;
+  age?: number;
+  heightCm?: number;
+  targetWeightKg?: number;
+  goalType?: GoalType;
+  activityLevel?: string;
+  gender?: string;
+}
+
+// Lists left out are kept on the server; an empty list clears one.
+export interface PreferenceChanges {
+  dietaryPreferences?: DietaryPreference[];
+  dislikedFoods?: string[];
+  allergies?: string[];
+  availableIngredients?: string[];
+}
 
 export const profileService = {
   async getProfile(): Promise<UserProfile | null> {
@@ -18,17 +38,20 @@ export const profileService = {
     const json = await response.json();
     const data = json.data;
 
-    // We also need to fetch preferences since they aren't included in the base profile endpoint
+    // Preferences live on their own endpoint. If they can't be read, failing is
+    // safer than empty lists, which a later save would write back over the real ones.
     const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
-
-    let prefs: { dietaryPreferences: string[]; dislikedFoods: string[]; allergies: string[]; availableIngredients: string[] } = { dietaryPreferences: [], dislikedFoods: [], allergies: [], availableIngredients: [] };
-    if (prefResponse.ok) {
-      const prefJson = await prefResponse.json();
-      prefs.dietaryPreferences = prefJson.data.preferences?.map((p: any) => p.preference) || [];
-      prefs.dislikedFoods = prefJson.data.dislikedFoods?.map((f: any) => f.foodName) || [];
-      prefs.allergies = prefJson.data.allergies?.map((a: any) => a.allergy) || [];
-      prefs.availableIngredients = prefJson.data.availableIngredients?.map((i: any) => i.ingredient) || [];
+    if (!prefResponse.ok) {
+      throw new Error('Failed to fetch preferences');
     }
+
+    const prefJson = await prefResponse.json();
+    const prefs = {
+      dietaryPreferences: prefJson.data.preferences?.map((p: any) => p.preference) || [],
+      dislikedFoods: prefJson.data.dislikedFoods?.map((f: any) => f.foodName) || [],
+      allergies: prefJson.data.allergies?.map((a: any) => a.allergy) || [],
+      availableIngredients: prefJson.data.availableIngredients?.map((i: any) => i.ingredient) || [],
+    };
 
     // Use availableIngredients from the profile payload if present, otherwise fallback to preferences
     const availableIngredients = data.availableIngredients || prefs.availableIngredients;
@@ -53,46 +76,46 @@ export const profileService = {
     } as UserProfile;
   },
 
-  async updateProfile(profile: UserProfile): Promise<UserProfile> {
+  // Sends only the fields given; the server keeps the rest.
+  async updateDetails(details: ProfileDetails): Promise<void> {
     const response = await fetchWithAuth(`${API_URL}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        displayName: profile.name,
-        age: profile.age,
-        heightCm: profile.heightCm,
-        weightKg: profile.weightKg,
-        targetWeightKg: profile.targetWeightKg,
-        goal: profile.goalType,
-        dailyCalorieTarget: profile.dailyCalorieTarget,
-        activityLevel: profile.activityLevel,
-        gender: profile.gender,
+        displayName: details.name,
+        age: details.age,
+        heightCm: details.heightCm,
+        targetWeightKg: details.targetWeightKg,
+        goal: details.goalType,
+        activityLevel: details.activityLevel,
+        gender: details.gender,
       }),
     });
 
     if (!response.ok) {
       throw new Error('Failed to update profile');
     }
+  },
 
-    const prefResponse = await fetchWithAuth(`${API_URL}/preferences`, {
+  // Sends only the lists given, so saving one list can't empty another.
+  async updatePreferences(changes: PreferenceChanges): Promise<void> {
+    const response = await fetchWithAuth(`${API_URL}/preferences`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        preferences: profile.dietaryPreferences,
-        allergies: profile.allergies?.map(a => ({ allergy: a })) || [],
-        dislikedFoods: profile.dislikedFoods,
-        availableIngredients: profile.availableIngredients || [],
+        preferences: changes.dietaryPreferences,
+        allergies: changes.allergies?.map((allergy) => ({ allergy })),
+        dislikedFoods: changes.dislikedFoods,
+        availableIngredients: changes.availableIngredients,
       }),
     });
 
-    if (!prefResponse.ok) {
+    if (!response.ok) {
       throw new Error('Failed to update preferences');
     }
-
-    return profile;
   },
 };

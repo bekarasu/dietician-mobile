@@ -10,6 +10,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
+import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
 import { formatStartsIn, getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList } from '../navigation/navigationTypes';
@@ -346,18 +347,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
 
   const handleLogMeal = async () => {
     try {
-      await progressService.upsertDailyLog({
-        logDate,
-        meals: [{
-          mealType: meal.mealType,
-          name: meal.name,
-          calories: meal.calories,
-          proteinG: meal.proteinG,
-          carbsG: meal.carbsG,
-          fatG: meal.fatG
-        }]
-      });
-      await recommendationService.markMealAsTaken(meal.id);
+      await logPlanMeal(meal, logDate);
       onMealLogged?.();
     } catch (e) {
       Alert.alert('Error', 'Failed to log meal.');

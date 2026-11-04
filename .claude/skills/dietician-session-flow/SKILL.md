@@ -35,7 +35,9 @@ End of onboarding:
 2. `PlanStartDateScreen` asks when to start and passes `startDate` as a route param.
 3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`.
 4. `RootNavigator` switches to `AppStackNavigator`.
-5. `AppTabNavigator` reads `justCompletedOnboarding` for `initialRouteName: 'DietPlan'`, then clears it. `initialRouteName` is read only on mount.
+5. `AppTabNavigator` uses `landingTab` (`'DietPlan'` here) as `initialRouteName`, then clears it. `initialRouteName` is read only on mount.
+
+"Restart onboarding" on the profile sets `isCompleted: false` and `isRestarting: true`. While restarting, `OnboardingScreen` shows a close button and `PlanStartDateScreen` a "Keep my current plan" button. Both call `leaveOnboarding()`, which sets `isCompleted` back and `landingTab: 'ProfileGoals'`. Leaving before the last page saves nothing; leaving at the start date keeps the saved answers and the current plan. On Android, the back button goes back a page, and on the first page offers to leave.
 
 `GeneratingDietPlanScreen` skips plan creation without an error when `profile.id` is missing, so make sure the profile is set in step 1.
 
