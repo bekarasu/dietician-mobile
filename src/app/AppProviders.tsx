@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { NetworkInspector } from '../features/networkInspector/NetworkInspector';
 import { useAppBootstrap } from '../hooks/useAppBootstrap';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { theme } from '../theme/theme';
@@ -23,10 +24,15 @@ const navigationTheme = {
 export function AppProviders() {
   const isReady = useAppBootstrap();
 
-  if (!isReady) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        {isReady ? (
+          <NavigationContainer theme={navigationTheme}>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </NavigationContainer>
+        ) : (
           <View
             style={{
               flex: 1,
@@ -37,18 +43,10 @@ export function AppProviders() {
           >
             <ActivityIndicator color={theme.colors.primary} size="large" />
           </View>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    );
-  }
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <NavigationContainer theme={navigationTheme}>
-          <StatusBar style="dark" />
-          <RootNavigator />
-        </NavigationContainer>
+        )}
+        {/* Mounted outside the branch so it stays open across bootstrap and
+            can show the startup requests while the spinner is up. */}
+        {__DEV__ ? <NetworkInspector /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
