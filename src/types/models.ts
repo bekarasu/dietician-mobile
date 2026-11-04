@@ -230,6 +230,11 @@ export interface ScoreBreakdown {
   currentWeightKg?: number;
   expectedLossKg?: number;
   actualLossKg?: number;
+  // Weight is typed in, so the loss that scores (countedLossKg) is capped by what the logged meals'
+  // calorie deficit explains. Missing on scores calculated before this rule.
+  deficitKcal?: number;
+  explainedLossKg?: number;
+  countedLossKg?: number;
   windowDays?: number;
   completedActivities: number;
   totalActivities: number;

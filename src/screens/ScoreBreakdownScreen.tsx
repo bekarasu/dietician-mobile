@@ -73,6 +73,15 @@ export function ScoreBreakdownScreen() {
           {breakdown.currentWeightKg === undefined ? (
             <Text style={styles.note}>No weigh-in yet this period. Log your weight to earn weight points.</Text>
           ) : null}
+          {breakdown.countedLossKg !== undefined &&
+          breakdown.actualLossKg !== undefined &&
+          breakdown.countedLossKg < breakdown.actualLossKg ? (
+            <Text style={styles.note}>
+              Your scale shows {formatKg(breakdown.actualLossKg)} lost, and the meals you logged explain{' '}
+              {formatKg(breakdown.explainedLossKg ?? 0)}, so {formatKg(breakdown.countedLossKg)} counts. Log every meal
+              to have more of your loss count.
+            </Text>
+          ) : null}
           {breakdown.adherenceScore === null ? (
             <Text style={styles.note}>Meal logging: no meals due yet.</Text>
           ) : (
@@ -101,7 +110,8 @@ export function ScoreBreakdownScreen() {
       <AppCard style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>How your score works</Text>
         <Text style={styles.noticeText}>
-          55% comes from your weight progress against a safe expected pace, 30% from logging breakfast, lunch and
+          55% comes from your weight progress against a safe expected pace. Your loss counts as far as the calorie
+          deficit of the meals you log can explain it, with some room for water weight. 30% comes from logging breakfast, lunch and
           dinner, 10% from drinking water towards a target based on your weight, and 5% from keeping coffee within
           your limit on days you log water. Only you can see these details: others only see your total score.
         </Text>
@@ -128,7 +138,16 @@ function getDetails(breakdown: ScoreBreakdown) {
     details.push({ label: 'Expected change', value: formatKg(breakdown.expectedLossKg) });
   }
   if (breakdown.actualLossKg !== undefined) {
-    details.push({ label: 'Your change', value: formatKg(breakdown.actualLossKg) });
+    details.push({ label: 'Loss on your scale', value: formatKg(breakdown.actualLossKg) });
+  }
+  if (breakdown.deficitKcal !== undefined) {
+    details.push({ label: 'Calorie deficit logged', value: `${Math.round(breakdown.deficitKcal)} kcal` });
+  }
+  if (breakdown.explainedLossKg !== undefined) {
+    details.push({ label: 'Loss it explains', value: formatKg(breakdown.explainedLossKg) });
+  }
+  if (breakdown.countedLossKg !== undefined) {
+    details.push({ label: 'Loss that counts', value: formatKg(breakdown.countedLossKg) });
   }
   if (breakdown.totalActivities > 0) {
     details.push({ label: 'Meals logged', value: `${breakdown.completedActivities} of ${breakdown.totalActivities}` });
