@@ -218,7 +218,16 @@ export function LeaderboardScreen() {
           />
 
           {board.participants.length > 0 ? (
-            <Rankings board={board} />
+            <Rankings
+              board={board}
+              onOpenProfile={(entry) =>
+                navigation.navigate('UserProfile', {
+                  userId: entry.userId,
+                  displayName: entry.displayName,
+                  standing: { rank: entry.rank, totalScore: entry.totalScore, scope, periodLabel: getPeriodLabel(board) },
+                })
+              }
+            />
           ) : (
             <View style={[styles.card, styles.centeredCard]}>
               <View style={styles.stateIcon}>
@@ -249,8 +258,8 @@ interface PeriodNavigatorProps {
 }
 
 function PeriodNavigator({ board, onChange }: PeriodNavigatorProps) {
-  const { nextPeriodStart, periodType, periodStart, periodEndExclusive, previousPeriodStart } = board;
-  const label = periodType === 'weekly' ? formatWeekRange(periodStart, periodEndExclusive) : formatMonth(periodStart);
+  const { nextPeriodStart, previousPeriodStart } = board;
+  const label = getPeriodLabel(board);
 
   return (
     <View style={styles.periodRow}>
@@ -380,11 +389,18 @@ function LiveBadge() {
   );
 }
 
+interface RankingsProps {
+  board: Leaderboard;
+  onOpenProfile: (entry: LeaderboardEntry) => void;
+}
+
 // The top three stand on a podium once there are enough people to fill it.
-function Rankings({ board }: { board: Leaderboard }) {
+// Everyone but the user opens their profile when pressed.
+function Rankings({ board, onOpenProfile }: RankingsProps) {
   const { participants, totalParticipants } = board;
   const hasPodium = participants.length >= 3;
   const rows = hasPodium ? participants.slice(3) : participants;
+  const getOnPress = (entry: LeaderboardEntry) => (entry.isCurrentUser ? undefined : () => onOpenProfile(entry));
 
   return (
     <View style={styles.card}>
@@ -398,7 +414,12 @@ function Rankings({ board }: { board: Leaderboard }) {
       {hasPodium ? (
         <View style={[styles.podium, rows.length > 0 ? styles.podiumWithRows : undefined]}>
           {PODIUM_ORDER.map((position) => (
-            <PodiumPlace key={participants[position].userId} entry={participants[position]} position={position} />
+            <PodiumPlace
+              key={participants[position].userId}
+              entry={participants[position]}
+              onPress={getOnPress(participants[position])}
+              position={position}
+            />
           ))}
         </View>
       ) : null}
@@ -406,7 +427,7 @@ function Rankings({ board }: { board: Leaderboard }) {
       {rows.length > 0 ? (
         <View style={styles.rows}>
           {rows.map((entry) => (
-            <RankingRow key={entry.userId} entry={entry} />
+            <RankingRow key={entry.userId} entry={entry} onPress={getOnPress(entry)} />
           ))}
         </View>
       ) : null}
@@ -414,13 +435,21 @@ function Rankings({ board }: { board: Leaderboard }) {
   );
 }
 
-function PodiumPlace({ entry, position }: { entry: LeaderboardEntry; position: number }) {
+interface EntryProps {
+  entry: LeaderboardEntry;
+  onPress?: () => void;
+}
+
+function PodiumPlace({ entry, onPress, position }: EntryProps & { position: number }) {
   // A podium position's rank is at most position + 1, so it always has a medal.
   const medal = MEDALS[entry.rank] ?? MEDALS[3];
   const isTop = position === 0;
 
   return (
-    <View accessible accessibilityLabel={getEntryLabel(entry)} style={styles.podiumPlace}>
+    <Pressable
+      {...getEntryPressProps(entry, onPress)}
+      style={({ pressed }) => [styles.podiumPlace, pressed && styles.pressed]}
+    >
       {isTop ? <MaterialCommunityIcons color={MEDALS[1].ring} name="crown" size={26} /> : null}
       <View style={[styles.podiumRing, { borderColor: medal.ring }]}>
         <UserAvatar colors={getAvatarColors(entry.userId)} name={entry.displayName} size={isTop ? 60 : 50} />
@@ -432,19 +461,22 @@ function PodiumPlace({ entry, position }: { entry: LeaderboardEntry; position: n
       <View style={[styles.podiumBlock, { backgroundColor: medal.soft, height: PODIUM_HEIGHTS[position] }]}>
         <Text style={[styles.podiumRank, { color: medal.text }]}>{entry.rank}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
-function RankingRow({ entry }: { entry: LeaderboardEntry }) {
+function RankingRow({ entry, onPress }: EntryProps) {
   const differenceLabel = getDifferenceLabel(entry);
   const medal = MEDALS[entry.rank];
 
   return (
-    <View
-      accessible
-      accessibilityLabel={getEntryLabel(entry)}
-      style={[styles.row, entry.isCurrentUser ? styles.rowCurrentUser : undefined]}
+    <Pressable
+      {...getEntryPressProps(entry, onPress)}
+      style={({ pressed }) => [
+        styles.row,
+        entry.isCurrentUser ? styles.rowCurrentUser : undefined,
+        pressed && styles.rowPressed,
+      ]}
     >
       {medal ? (
         <View style={[styles.rankMedal, { backgroundColor: medal.soft }]}>
@@ -467,7 +499,7 @@ function RankingRow({ entry }: { entry: LeaderboardEntry }) {
         <Text style={[styles.score, entry.isCurrentUser && styles.scoreCurrentUser]}>{entry.totalScore}</Text>
         <Text style={[styles.scoreUnit, entry.isCurrentUser && styles.scoreCurrentUser]}>pts</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -530,6 +562,22 @@ function getNextRankProgress({ currentUser, nextPeriodStart }: Leaderboard) {
 
 function getEntryLabel(entry: LeaderboardEntry) {
   return `Rank ${entry.rank}, ${entry.isCurrentUser ? 'you' : entry.displayName}, ${entry.totalScore} points`;
+}
+
+// An entry without onPress, the user's own, reads as plain text rather than a disabled button.
+function getEntryPressProps(entry: LeaderboardEntry, onPress?: () => void) {
+  return {
+    accessible: true,
+    accessibilityLabel: getEntryLabel(entry),
+    accessibilityRole: onPress ? ('button' as const) : undefined,
+    accessibilityHint: onPress ? 'Opens their profile' : undefined,
+    disabled: !onPress,
+    onPress,
+  };
+}
+
+function getPeriodLabel({ periodType, periodStart, periodEndExclusive }: Leaderboard) {
+  return periodType === 'weekly' ? formatWeekRange(periodStart, periodEndExclusive) : formatMonth(periodStart);
 }
 
 // A score can change between pages and move someone onto the next one.
@@ -836,6 +884,9 @@ const styles = StyleSheet.create({
   },
   rowCurrentUser: {
     backgroundColor: theme.colors.primarySoft,
+  },
+  rowPressed: {
+    backgroundColor: theme.colors.secondarySurface,
   },
   rank: {
     color: theme.colors.muted,

@@ -8,6 +8,7 @@ export type DietaryPreference =
   | 'gluten_free'
   | 'dairy_free';
 
+// Nutrition values are per portion_size grams, which is 100 for every food so far.
 export interface FoodResponse {
   id: string;
   name: string;
@@ -16,7 +17,7 @@ export interface FoodResponse {
   protein: number;
   carbs: number;
   fats: number;
-  portionSize: number;
+  portion_size: number;
 }
 
 export interface User {
@@ -105,6 +106,16 @@ export interface DietMeal {
   ingredients: string[];
   isTaken?: boolean;
   isExtra?: boolean;
+}
+
+// A meal as POST /daily-logs and POST /diet-plans/active/meals both take it.
+export interface MealEntry {
+  mealType: string;
+  name: string;
+  calories: number;
+  proteinG?: number;
+  carbsG?: number;
+  fatG?: number;
 }
 
 export interface DietPlan {
@@ -348,6 +359,15 @@ export interface UserSearchResult {
   displayName: string;
   relationship: FriendRelationship;
   requestId?: string;
+}
+
+// Another user as the viewer sees them. friendsSince is set only for friends.
+export interface PublicProfile {
+  userId: string;
+  displayName: string;
+  relationship: FriendRelationship;
+  requestId?: string;
+  friendsSince?: string;
 }
 
 export interface BlockedUser {

@@ -1,5 +1,5 @@
-import { BlockedUser, Friend, FriendRequestList, UserSearchResult } from '../types/models';
-import { fetchData } from './apiClient';
+import { BlockedUser, Friend, FriendRequestList, PublicProfile, UserSearchResult } from '../types/models';
+import { fetchData, fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/friends`;
 
@@ -28,6 +28,23 @@ export const friendService = {
   async search(query: string): Promise<UserSearchResult[]> {
     const data = await fetchData<{ users: UserSearchResult[] }>(`${API_URL}/search?q=${encodeURIComponent(query)}`);
     return data.users;
+  },
+
+  // Null when the user no longer exists or either of you has blocked the other;
+  // the server gives both the same 404, so a block can't be detected.
+  async getProfile(userId: string): Promise<PublicProfile | null> {
+    const response = await fetchWithAuth(`${API_URL}/users/${userId}`);
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile');
+    }
+
+    const json = await response.json();
+    return json.data;
   },
 
   sendRequest(userId: string) {

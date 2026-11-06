@@ -1,6 +1,6 @@
 import { fetchData, fetchWithAuth } from './apiClient';
 import { AI_GUIDANCE_NOTICE } from '../constants/health';
-import { DietPlan, FoodResponse, MealRecommendation, PlanCheckIn, RecommendationInput } from '../types/models';
+import { DietPlan, FoodResponse, MealEntry, MealRecommendation, PlanCheckIn, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
 
 function getIngredientFallback(input: RecommendationInput) {
@@ -118,7 +118,7 @@ export const recommendationService = {
 		return response.json();
 	},
 
-  async addExtraMeal(dayOfWeek: number, mealType: string, name: string, calories: number) {
+  async addExtraMeal(dayOfWeek: number, meal: MealEntry) {
     if (!API_URL) throw new Error('Recommendation API URL is not defined');
 
     const response = await fetchWithAuth(`${API_URL}/diet-plans/active/meals`, {
@@ -126,9 +126,7 @@ export const recommendationService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         dayOfWeek,
-        mealType,
-        name,
-        calories
+        ...meal,
       }),
     });
 

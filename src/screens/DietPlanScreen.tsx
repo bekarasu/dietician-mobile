@@ -6,11 +6,11 @@ import { ActivityIndicator, ScrollView, ScrollViewInstance, StyleSheet, Text, Vi
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
-import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { showDialog } from '../features/dialog/dialogStore';
+import { ExtraMealForm } from '../features/dietPlan/ExtraMealForm';
 import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
 import { formatStartsIn, getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
@@ -18,7 +18,6 @@ import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { leaderboardService } from '../services/leaderboardService';
-import { progressService } from '../services/progressService';
 import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
 import { DailyPoints, DayPoints, DietMeal, DietPlan, WeekPoints } from '../types/models';
@@ -446,59 +445,6 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
   );
 }
 
-function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate: string; selectedDay: number; onMealLogged?: () => void }) {
-  const [show, setShow] = useState(false);
-  const [mealType, setMealType] = useState('');
-  const [name, setName] = useState('');
-  const [calories, setCalories] = useState('');
-
-  const handleSubmit = async () => {
-    if (!name.trim() || !mealType.trim()) return;
-    try {
-      const cals = parseInt(calories) || 0;
-      await progressService.upsertDailyLog({
-        logDate,
-        meals: [{
-          mealType: mealType,
-          name: name,
-          calories: cals,
-        }]
-      });
-      await recommendationService.addExtraMeal(selectedDay, mealType, name, cals);
-      onMealLogged?.();
-      setShow(false);
-      setMealType('');
-      setName('');
-      setCalories('');
-    } catch (e) {
-      showDialog({ title: 'Error', message: 'Failed to log extra meal.', tone: 'danger' });
-    }
-  };
-
-  if (!show) {
-    return (
-      <View style={{ marginTop: theme.spacing.lg }}>
-        <AppButton title="Add Extra Meal" variant="ghost" onPress={() => setShow(true)} />
-      </View>
-    );
-  }
-
-  return (
-    <AppCard style={{ marginTop: theme.spacing.lg }}>
-      <Text style={styles.mealName}>Log Extra Meal</Text>
-      <View style={{ gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
-        <AppTextInput label="Meal Type" placeholder="e.g. Snack, Dessert" value={mealType} onChangeText={setMealType} />
-        <AppTextInput label="Name" placeholder="e.g. Chocolate Bar" value={name} onChangeText={setName} />
-        <AppTextInput label="Calories (optional)" placeholder="e.g. 250" value={calories} onChangeText={setCalories} keyboardType="numeric" />
-        <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.sm }}>
-          <AppButton title="Cancel" variant="ghost" onPress={() => setShow(false)} style={{ flex: 1 }} />
-          <AppButton title="Save" onPress={handleSubmit} style={{ flex: 1 }} />
-        </View>
-      </View>
-    </AppCard>
-  );
-}
-
 export function DietPlanScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { activePlan, isLoading, fetchActivePlan } = useDietPlanStore();
@@ -627,7 +573,9 @@ export function DietPlanScreen() {
   ).size;
 
   return (
-    <ScreenContainer>
+    // The extra meal form's food suggestions must take a tap while the keyboard
+    // is open, and sit at the bottom of the screen, so iOS scrolls above it.
+    <ScreenContainer scrollViewProps={{ keyboardShouldPersistTaps: 'handled', automaticallyAdjustKeyboardInsets: true }}>
       <SectionHeader
         title="Your Diet Plan"
         subtitle="Stay consistent with your customized nutrition plan."
@@ -694,15 +642,17 @@ export function DietPlanScreen() {
         {extraMeals.length > 0 && (
           <View style={{ marginTop: theme.spacing.md }}>
             <Text style={[styles.detailTitle, { marginBottom: theme.spacing.sm, fontSize: 16 }]}>Additional Meals</Text>
-            {extraMeals.map((meal) => (
-              <MealCard
-                key={meal.id}
-                meal={meal}
-                logDate={logDate}
-                isLogged={true}
-                isExtra={true}
-              />
-            ))}
+            <View style={styles.extraMealsList}>
+              {extraMeals.map((meal) => (
+                <MealCard
+                  key={meal.id}
+                  meal={meal}
+                  logDate={logDate}
+                  isLogged={true}
+                  isExtra={true}
+                />
+              ))}
+            </View>
           </View>
         )}
         {canLog && <ExtraMealForm logDate={logDate} selectedDay={selectedDay} onMealLogged={onMealLogged} />}
@@ -917,6 +867,9 @@ const styles = StyleSheet.create({
   mealsContainer: {
     gap: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
+  },
+  extraMealsList: {
+    gap: theme.spacing.md,
   },
   mealCard: {
     padding: theme.spacing.md,

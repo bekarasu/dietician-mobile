@@ -24,7 +24,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 | Endpoint | Shape | Client behavior |
 | --- | --- | --- |
 | Most endpoints | `{ data: ... }` | Service unwraps `json.data` |
-| `GET /foods` | `{ foods: [...] }` | No `data` wrapper |
+| `GET /foods` | `{ foods: [...] }` | No `data` wrapper. Fields are snake_case (`portion_size`), and `kcal`/`protein`/`carbs`/`fats` are per `portion_size` grams (100 for all foods), so scale them to the amount eaten (`foodToMealEntry`) |
 | `/diet-plans*` | `{ message, data }` | Service returns raw JSON; **the store** unwraps `response?.data` |
 | `POST /diet-plans/active/renew` | `{ message, data }` | Exception: uses `fetchData`, so the check-in can show the server's translated error |
 | `GET /uploads` | `data` can be null | Falls back to `[]` |
@@ -38,9 +38,10 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 - `profileService`, `bloodTestService`, `recommendationService`, `leaderboardService`, and `friendService` throw.
 - **`progressService` catches everything** and returns `null`, `[]`, or `false`. Callers must check the return value, because `try/catch` around it never fires.
 
-Open defects caused by this:
+So anything that logs a meal must check the log first, then touch the plan:
 
-- Extra meals: `ExtraMealForm` calls `upsertDailyLog`, then `addExtraMeal`. If the first fails, the meal is still added with no log. Plan meals go through `logPlanMeal` (`src/features/dietPlan/logPlanMeal.ts`), which checks the log first; use it for any new place that marks a plan meal as eaten, as `HomeScreen` does.
+- Plan meals go through `logPlanMeal` (`src/features/dietPlan/logPlanMeal.ts`); use it for any new place that marks a plan meal as eaten, as `HomeScreen` does.
+- Extra meals: `ExtraMealForm` (`src/features/dietPlan/ExtraMealForm.tsx`) stops if `upsertDailyLog` returns null, before `addExtraMeal`. Fixed 2026-11-06; until then a failed log still added the meal.
 
 ## Field names change between read and write
 
@@ -99,7 +100,7 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - **Replacing a running plan resets the week's plan points.** Every plan day earlier that week loses its meal, water and coffee points but still counts towards the average; weight points stand. Before creating the plan, `PlanStartDateScreen` adds up those days' points from `getWeekActivity` (plus today's if the new plan starts later) and, if any, asks for confirmation and offers "Swap meals instead", which leaves onboarding for the DietPlan tab. Such days come back as `SCORED` with 0 points and `statusReason: 'plan_replaced'`, and their logs with `reason: 'plan_replaced'`.
 - **Renewal:** `earliestRenewalDate` is set from the plan's last day until a next plan exists, and only then show Renew. `nextPlan` is the renewal waiting for its start date, with its meals, so people can shop for it. It only appears while the current plan is still running; once it ends, the renewal itself is the active plan. A repeat is a 409.
 - `DietPlanScreen` refetches on focus, because the tab stays mounted while the current plan changes with the date.
-- `meal.isTaken` and `meal.isExtra` drive the UI. Extra meals are saved with `addExtraMeal` and always render as logged.
+- `meal.isTaken` and `meal.isExtra` drive the UI. Extra meals are saved with `addExtraMeal` and always render as logged. Its body takes `proteinG`, `carbsG` and `fatG` beside `calories`; recommendation-service before 2026-11-06 ignores them.
 - `mealType` values are capitalized (`Breakfast`, `Lunch`, `Snack`, `Dinner`) for sorting. Other values sort last.
 - `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`.
 - After a plan mutation, the UI calls `fetchActivePlan()` rather than patching state.
@@ -134,6 +135,7 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
     - A `finalized` week shows the leaderboard's stored score. Page back with `previousPeriodStart`, which is null when nothing was logged earlier.
 - `ProgressEntry` has no consistency or goal fields. Goal progress is worked out on the client from the first and latest weigh-ins and `profile.targetWeightKg`, because it isn't a score.
 - Leaderboard and friend data stays in screen state, so it doesn't outlive a logout.
+- Pressing anyone else on the leaderboard opens `UserProfileScreen`. `GET /friends/users/:userId` (`friendService.getProfile`) gives their `displayName`, `relationship`, `requestId`, and `friendsSince` for friends only. An unknown user and a block in either direction are the same 404, so `getProfile` returns null and the screen says the profile isn't available. The rank and points shown come from the leaderboard entry through route params: the server has no endpoint for another user's score, and their breakdown stays private.
 
 ## Dates
 
