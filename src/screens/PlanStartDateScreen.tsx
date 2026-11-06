@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { StartDatePicker } from '../components/StartDatePicker';
+import { showDialog } from '../features/dialog/dialogStore';
 import { getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { OnboardingStackParamList } from '../navigation/navigationTypes';
 import { leaderboardService } from '../services/leaderboardService';
@@ -70,15 +71,16 @@ export function PlanStartDateScreen({ navigation }: Props) {
     }
 
     const earned = points === null ? 'the points' : `the ${points} ${points === 1 ? 'point' : 'points'}`;
-    Alert.alert(
-      "Reset this week's points?",
-      `A new plan resets ${earned} you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.`,
-      [
+    showDialog({
+      title: "Reset this week's points?",
+      message: `A new plan resets ${earned} you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.`,
+      icon: 'refresh-outline',
+      buttons: [
+        { text: 'Reset and continue', style: 'destructive', onPress: createPlan },
         { text: 'Swap meals instead', onPress: () => leaveOnboarding('DietPlan') },
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset and continue', style: 'destructive', onPress: createPlan },
       ],
-    );
+    });
   };
 
   return (

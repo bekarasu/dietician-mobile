@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react
 
 import { theme } from '../theme/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 interface AppButtonProps {
   title: string;
@@ -38,7 +38,7 @@ export function AppButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? theme.colors.surface : theme.colors.primary} />
+        <ActivityIndicator color={variant === 'primary' || variant === 'danger' ? theme.colors.surface : theme.colors.primary} />
       ) : (
         <Text style={[styles.text, textStyle]}>{title}</Text>
       )}
@@ -78,6 +78,9 @@ const buttonVariantStyles = StyleSheet.create({
   ghost: {
     backgroundColor: 'transparent',
   },
+  danger: {
+    backgroundColor: theme.colors.danger,
+  },
 });
 
 const textVariantStyles = StyleSheet.create({
@@ -89,5 +92,8 @@ const textVariantStyles = StyleSheet.create({
   },
   ghost: {
     color: theme.colors.primary,
+  },
+  danger: {
+    color: theme.colors.surface,
   },
 });

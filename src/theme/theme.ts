@@ -11,6 +11,7 @@ export const theme = {
 		border: '#E2E8F0',
 		warningSurface: '#FEF3C7',
 		danger: '#EF4444',
+		dangerSoft: '#FDECEC',
 		// Each habit has its own colour wherever its points show.
 		primarySoft: '#E3F2EF',
 		water: '#0284C7',

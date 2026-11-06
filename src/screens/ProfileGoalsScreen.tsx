@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
@@ -11,6 +11,7 @@ import { ChoiceChips } from '../components/ChoiceChips';
 import { FoodPickerRow } from '../components/FoodPickerRow';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
+import { showDialog } from '../features/dialog/dialogStore';
 import { getTargetWeightError, toggleDietaryPreference } from '../features/profile/profileRules';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { friendService } from '../services/friendService';
@@ -158,9 +159,9 @@ export function ProfileGoalsScreen() {
       reset(values);
       // The server sets the coffee limit from age, so reload to show it.
       refreshProfile().catch(() => undefined);
-      Alert.alert('Saved', 'Your profile is up to date.');
+      showDialog({ title: 'Saved', message: 'Your profile is up to date.', icon: 'checkmark-circle-outline' });
     } catch (error) {
-      Alert.alert('Error', 'We couldn\'t save your profile. Please try again.');
+      showDialog({ title: 'Error', message: 'We couldn\'t save your profile. Please try again.', tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -172,10 +173,22 @@ export function ProfileGoalsScreen() {
     try {
       await updatePreferences({ dietaryPreferences: next });
     } catch (error) {
-      Alert.alert('Error', 'We couldn\'t save your diet. Please try again.');
+      showDialog({ title: 'Error', message: 'We couldn\'t save your diet. Please try again.', tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
     }
+  };
+
+  const confirmLogout = () => {
+    showDialog({
+      title: 'Log out',
+      message: 'Are you sure you want to log out?',
+      icon: 'log-out-outline',
+      buttons: [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log out', style: 'destructive', onPress: logout },
+      ],
+    });
   };
 
   const latestWeight = entries[entries.length - 1]?.weightKg ?? profile?.weightKg;
@@ -376,7 +389,7 @@ export function ProfileGoalsScreen() {
 
       <View style={styles.menu}>
         <MenuRow icon="refresh-outline" label="Restart onboarding" detail="Answer the setup questions again" onPress={restartOnboarding} />
-        <MenuRow icon="log-out-outline" label="Log out" danger onPress={logout} />
+        <MenuRow icon="log-out-outline" label="Log out" danger onPress={confirmLogout} />
       </View>
     </ScreenContainer>
   );
@@ -531,7 +544,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primarySoft,
   },
   menuIconDanger: {
-    backgroundColor: '#FDECEC',
+    backgroundColor: theme.colors.dangerSoft,
   },
   menuText: {
     flex: 1,

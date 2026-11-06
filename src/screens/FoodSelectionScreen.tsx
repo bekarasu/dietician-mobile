@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AppButton } from '../components/AppButton';
 import { FoodSelectionList } from '../components/FoodSelectionList';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { showDialog } from '../features/dialog/dialogStore';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
@@ -47,7 +48,7 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
       await updatePreferences(fieldName === 'allergies' ? { allergies: selectedFoods } : { dislikedFoods: selectedFoods });
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save selection.');
+      showDialog({ title: 'Error', message: 'Failed to save selection.', tone: 'danger' });
     } finally {
       setIsSaving(false);
     }

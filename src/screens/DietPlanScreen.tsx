@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { ActivityIndicator, Alert, ScrollView, ScrollViewInstance, StyleSheet, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, ScrollView, ScrollViewInstance, StyleSheet, Text, View, Pressable } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -10,6 +10,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
+import { showDialog } from '../features/dialog/dialogStore';
 import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
 import { formatStartsIn, getPlanDayDate, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
@@ -339,7 +340,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
       await recommendationService.swapMeal(meal.id);
       onMealLogged?.();
     } catch (e) {
-      Alert.alert('Error', 'Failed to swap meal.');
+      showDialog({ title: 'Error', message: 'Failed to swap meal.', tone: 'danger' });
     } finally {
       setIsSwapping(false);
     }
@@ -350,7 +351,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
       await logPlanMeal(meal, logDate);
       onMealLogged?.();
     } catch (e) {
-      Alert.alert('Error', 'Failed to log meal.');
+      showDialog({ title: 'Error', message: 'Failed to log meal.', tone: 'danger' });
     }
   };
 
@@ -470,7 +471,7 @@ function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate: string
       setName('');
       setCalories('');
     } catch (e) {
-      Alert.alert('Error', 'Failed to log extra meal.');
+      showDialog({ title: 'Error', message: 'Failed to log extra meal.', tone: 'danger' });
     }
   };
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
@@ -9,6 +9,7 @@ import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { StartDatePicker } from '../components/StartDatePicker';
 import { HEALTH_NOTICE } from '../constants/health';
+import { showDialog } from '../features/dialog/dialogStore';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -42,7 +43,7 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
   const handleSubmit = async () => {
     const weightKg = parseFloat(weight);
     if (weight !== '' && (isNaN(weightKg) || weightKg <= 0)) {
-      Alert.alert('Check your weight', 'Enter your weight in kilograms, or leave it empty.');
+      showDialog({ title: 'Check your weight', message: 'Enter your weight in kilograms, or leave it empty.', icon: 'scale-outline' });
       return;
     }
 
@@ -50,7 +51,7 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
     try {
       // The weight goes first because the next plan is built from the latest one.
       if (weight !== '' && !(await addWeightLog(weightKg, 'Logged from plan check-in'))) {
-        Alert.alert('Error', 'We couldn\'t save your weight. Please try again.');
+        showDialog({ title: 'Error', message: 'We couldn\'t save your weight. Please try again.', tone: 'danger' });
         return;
       }
 
@@ -59,7 +60,7 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
         navigation.goBack();
       }
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'We couldn\'t create your next plan. Please try again.');
+      showDialog({ title: 'Error', message: e instanceof Error ? e.message : 'We couldn\'t create your next plan. Please try again.', tone: 'danger' });
     } finally {
       setIsSubmitting(false);
     }

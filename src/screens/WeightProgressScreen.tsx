@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Dimensions, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Dimensions, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -7,6 +7,7 @@ import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
+import { showDialog } from '../features/dialog/dialogStore';
 import { useProgressStore } from '../store/useProgressStore';
 import { theme } from '../theme/theme';
 import { formatKg } from '../utils/formatters';
@@ -27,14 +28,15 @@ export function WeightProgressScreen() {
   };
 
   const handleRemove = (id: string) => {
-    Alert.alert(
-      "Remove Weight Log",
-      "Are you sure you want to remove this weight log?",
-      [
+    showDialog({
+      title: "Remove Weight Log",
+      message: "Are you sure you want to remove this weight log?",
+      icon: "trash-outline",
+      buttons: [
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => removeWeightLog(id) }
       ]
-    );
+    });
   };
 
   // Get last 7 entries

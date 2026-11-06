@@ -2,11 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { HEALTH_NOTICE } from '../constants/health';
+import { showDialog } from '../features/dialog/dialogStore';
 import { OnboardingPageRenderer } from '../features/onboarding/OnboardingPageRenderer';
 import { ONBOARDING_PAGES } from '../features/onboarding/onboardingPages';
 import { isFieldMissing } from '../features/onboarding/validation';
@@ -165,10 +166,15 @@ export function OnboardingScreen({ navigation }: Props) {
   };
 
   const handleLeave = useCallback(() => {
-    Alert.alert('Leave setup?', "Answers you changed here won't be saved. Your profile and plan stay as they are.", [
-      { text: 'Keep going', style: 'cancel' },
-      { text: 'Leave', style: 'destructive', onPress: () => leaveOnboarding() },
-    ]);
+    showDialog({
+      title: 'Leave setup?',
+      message: "Answers you changed here won't be saved. Your profile and plan stay as they are.",
+      icon: 'exit-outline',
+      buttons: [
+        { text: 'Keep going', style: 'cancel' },
+        { text: 'Leave', style: 'destructive', onPress: () => leaveOnboarding() },
+      ],
+    });
   }, [leaveOnboarding]);
 
   // The pages are one screen, so Android's back button would otherwise close the

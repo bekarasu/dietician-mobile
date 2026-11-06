@@ -15,7 +15,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bekarasu.dietician-mobile"
+      "bundleIdentifier": "com.bekarasu.dietician-mobile",
+      "appleTeamId": "7NCH5FSTYT",
+      "infoPlist": {
+        "CFBundleDisplayName": "Dietician"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +39,16 @@
         }
       ],
       "expo-font",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/adaptive-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0F766E"
+        }
+      ]
     ]
   }
 }

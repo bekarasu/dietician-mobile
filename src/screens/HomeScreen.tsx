@@ -3,12 +3,13 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SegmentRing } from '../components/SegmentRing';
 import { UserAvatar } from '../components/UserAvatar';
 import { HEALTH_NOTICE } from '../constants/health';
+import { showDialog } from '../features/dialog/dialogStore';
 import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
 import { formatStartsIn, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
@@ -125,7 +126,7 @@ export function HomeScreen() {
       await fetchActivePlan();
       loadActivity();
     } catch (e) {
-      Alert.alert('Error', 'We couldn\'t log this meal. Please try again.');
+      showDialog({ title: 'Error', message: 'We couldn\'t log this meal. Please try again.', tone: 'danger' });
     } finally {
       setLoggingMealId(null);
     }

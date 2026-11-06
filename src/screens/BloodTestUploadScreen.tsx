@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { BLOOD_TEST_DISCLAIMER } from '../constants/health';
+import { showDialog } from '../features/dialog/dialogStore';
 import { bloodTestService } from '../services/bloodTestService';
 import { theme } from '../theme/theme';
 import { BloodTestUpload } from '../types/models';
@@ -47,10 +48,11 @@ export function BloodTestUploadScreen() {
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
       if (!isEnrolled) {
-        Alert.alert(
-          'Security Requirement',
-          'You must set up a screen lock or biometrics on your device to use this feature.'
-        );
+        showDialog({
+          title: 'Security Requirement',
+          message: 'You must set up a screen lock or biometrics on your device to use this feature.',
+          icon: 'lock-closed-outline',
+        });
         return;
       }
 
@@ -69,16 +71,17 @@ export function BloodTestUploadScreen() {
       await bloodTestService.toggleVisibility(id, !isHidden);
     } catch (error: any) {
       console.error('Failed to toggle visibility:', error);
-      Alert.alert('Error', `Failed to toggle visibility: ${error.message || String(error)}`);
+      showDialog({ title: 'Error', message: `Failed to toggle visibility: ${error.message || String(error)}`, tone: 'danger' });
       setUploads(current => current.map(u => u.id === id ? { ...u, isHidden: isHidden } : u));
     }
   };
 
   const handleDeleteUpload = (id: string) => {
-    Alert.alert(
-      'Delete Result',
-      'Are you sure you want to completely remove this blood test result?',
-      [
+    showDialog({
+      title: 'Delete Result',
+      message: 'Are you sure you want to completely remove this blood test result?',
+      icon: 'trash-outline',
+      buttons: [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
@@ -89,10 +92,11 @@ export function BloodTestUploadScreen() {
               const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
               if (!isEnrolled) {
-                Alert.alert(
-                  'Security Requirement',
-                  'You must set up a screen lock or biometrics on your device to use this feature.'
-                );
+                showDialog({
+                  title: 'Security Requirement',
+                  message: 'You must set up a screen lock or biometrics on your device to use this feature.',
+                  icon: 'lock-closed-outline',
+                });
                 return;
               }
 
@@ -111,12 +115,12 @@ export function BloodTestUploadScreen() {
               setUploads(current => current.filter(u => u.id !== id));
             } catch (error: any) {
               console.error('Failed to delete upload:', error);
-              Alert.alert('Error', `Failed to delete upload: ${error.message || String(error)}`);
+              showDialog({ title: 'Error', message: `Failed to delete upload: ${error.message || String(error)}`, tone: 'danger' });
             }
           },
         },
       ]
-    );
+    });
   };
 
   useEffect(() => {
@@ -134,10 +138,11 @@ export function BloodTestUploadScreen() {
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
       if (!isEnrolled) {
-        Alert.alert(
-          'Security Warning',
-          'No screen lock detected. Please set up a device passcode or biometric lock in your phone settings to protect your health data.'
-        );
+        showDialog({
+          title: 'Security Warning',
+          message: 'No screen lock detected. Please set up a device passcode or biometric lock in your phone settings to protect your health data.',
+          icon: 'lock-closed-outline',
+        });
         setIsAuthenticated(false);
         setAuthChecking(false);
         return;

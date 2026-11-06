@@ -5,10 +5,12 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "dotenv -e .env.development -- expo start --port 3000",
+    "start:local": "dotenv -e .env.local -- expo start --port 3000",
     "android": "dotenv -e .env.development -- expo start --android --port 3000",
     "ios": "dotenv -e .env.development -- expo start --ios --port 3000",
     "android:native": "expo prebuild --platform android && dotenv -e .env.development -- expo run:android --port 3000",
     "ios:native": "expo prebuild --platform ios && dotenv -e .env.development -- expo run:ios --port 3000",
+    "ios:release": "expo prebuild --platform ios && expo run:ios --configuration Release --device --no-bundler",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx"
@@ -16,6 +18,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@react-navigation/bottom-tabs": "^7.4.2",
+    "@react-navigation/elements": "^2.9.15",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/native-stack": "^7.3.21",
     "babel-preset-expo": "~58.0.0",
@@ -24,6 +27,7 @@
     "expo-font": "~58.0.11",
     "expo-local-authentication": "~58.0.2",
     "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.13",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
     "react-hook-form": "^7.58.1",
