@@ -11,8 +11,8 @@ interface DietPlanState {
   // shows GeneratingDietPlanScreen until it ends.
   resumedGeneration: PlanGeneration | null;
   fetchActivePlan: () => Promise<void>;
-  // Runs once, at launch.
-  checkGeneration: () => Promise<void>;
+  // Runs once, at launch, and returns the latest generation, in any state.
+  checkGeneration: () => Promise<PlanGeneration | null>;
   clearResumedGeneration: () => void;
   updateActiveDietPlan: (feedback: string, dayToUpdate?: number) => Promise<void>;
   renewActivePlan: (checkIn: PlanCheckIn) => Promise<void>;
@@ -41,9 +41,11 @@ export const useDietPlanStore = create<DietPlanState>((set, get) => ({
     try {
       const generation = await recommendationService.getPlanGeneration();
       set({ resumedGeneration: generation?.status === 'running' ? generation : null });
+      return generation;
     } catch (e) {
       // The app opens as usual, and the plan shows once the server has saved it.
       console.error('Failed to check plan generation', e);
+      return null;
     }
   },
   clearResumedGeneration: () => set({ resumedGeneration: null }),

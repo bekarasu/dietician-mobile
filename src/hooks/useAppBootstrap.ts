@@ -28,7 +28,16 @@ export function useAppBootstrap() {
         // Only here, once per launch. It runs after the rest, which can still log
         // the user out, so a later user never inherits it.
         if (useAuthStore.getState().isAuthenticated && useOnboardingStore.getState().isCompleted) {
-          await useDietPlanStore.getState().checkGeneration();
+          const generation = await useDietPlanStore.getState().checkGeneration();
+          // The plan an onboarding was for ended without one while the app was
+          // closed, or the app was closed on its error. Nothing of that
+          // onboarding is kept then, as when it's left on screen. Reverting
+          // again later in the day changes nothing.
+          if (generation?.kind === 'create' && (generation.status === 'failed' || generation.status === 'cancelled')) {
+            await useOnboardingStore.getState().revertAnswers().catch((error) => {
+              console.error('Failed to revert onboarding answers', error);
+            });
+          }
         }
       } catch (error) {
         console.error('App bootstrap error:', error);

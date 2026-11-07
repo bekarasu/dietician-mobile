@@ -21,6 +21,7 @@ interface OnboardingPageRendererProps {
   showValidation: boolean;
   onChange: (field: keyof OnboardingDraft, value: OnboardingDraft[keyof OnboardingDraft]) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onBloodTestUploaded?: (uploadId: string) => void;
 }
 
 type DraftValue = OnboardingDraft[keyof OnboardingDraft];
@@ -66,7 +67,7 @@ function OptionCards({ options, isSelected, onPress }: { options: OnboardingFiel
   );
 }
 
-export function OnboardingPageRenderer({ page, draft, showValidation, onChange, onUploadingChange }: OnboardingPageRendererProps) {
+export function OnboardingPageRenderer({ page, draft, showValidation, onChange, onUploadingChange, onBloodTestUploaded }: OnboardingPageRendererProps) {
   const navigation = useNavigation<NativeStackNavigationProp<OnboardingStackParamList>>();
 
   const renderField = (field: OnboardingFieldDefinition): ReactNode => {
@@ -96,7 +97,10 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
             <Ionicons name="cloud-upload-outline" size={28} color={theme.colors.primary} />
             <Text style={styles.uploadText}>A PDF or a photo of your lab report</Text>
             <BloodTestUploader
-              onUploadComplete={() => onChange(field.id, true as DraftValue)}
+              onUploadComplete={(upload) => {
+                onChange(field.id, true as DraftValue);
+                onBloodTestUploaded?.(upload.id);
+              }}
               onUploadStateChange={onUploadingChange}
             />
           </View>

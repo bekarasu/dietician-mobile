@@ -6,9 +6,10 @@ import { AppButton } from './AppButton';
 import { AppCard } from './AppCard';
 import { theme } from '../theme/theme';
 import { bloodTestService } from '../services/bloodTestService';
+import { BloodTestUpload } from '../types/models';
 
 interface BloodTestUploaderProps {
-  onUploadComplete?: () => void;
+  onUploadComplete?: (upload: BloodTestUpload) => void;
   onUploadStateChange?: (uploading: boolean) => void;
 }
 
@@ -28,14 +29,14 @@ export function BloodTestUploader({ onUploadComplete, onUploadStateChange }: Blo
         onUploadStateChange?.(true);
         const file = result.assets[0];
         
-        await bloodTestService.uploadBloodTest(
+        const upload = await bloodTestService.uploadBloodTest(
           file.uri,
           file.name,
           file.mimeType || 'application/octet-stream'
         );
         
         setUploaded(true);
-        onUploadComplete?.();
+        onUploadComplete?.(upload);
       }
     } catch (error) {
       console.error('Failed to upload file:', error);

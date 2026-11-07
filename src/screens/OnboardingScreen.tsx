@@ -16,7 +16,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
-import { OnboardingDraft, UserProfile } from '../types/models';
+import { OnboardingDraft } from '../types/models';
 import { formatKg } from '../utils/formatters';
 
 import type { OnboardingStackParamList } from '../navigation/navigationTypes';
@@ -27,32 +27,6 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Onboarding'>;
 const SAFE_WEEKLY_LOSS_RATE = 0.005;
 const MIN_WEEKLY_LOSS_KG = 0.25;
 const MAX_WEEKLY_LOSS_KG = 0.75;
-
-function splitCommaSeparatedList(value: string) {
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function buildProfileFromDraft(draft: OnboardingDraft, profile: UserProfile | null, fallbackName: string) {
-  return {
-    id: profile?.id ?? 'profile-1',
-    name: draft.name.trim() || fallbackName,
-    age: Number(draft.age) || profile?.age || 30,
-    heightCm: Number(draft.heightCm) || profile?.heightCm || 170,
-    weightKg: Number(draft.weightKg) || profile?.weightKg || 70,
-    targetWeightKg: Number(draft.targetWeightKg) || profile?.targetWeightKg || 70,
-    gender: draft.gender || profile?.gender,
-    activityLevel: draft.activityLevel || profile?.activityLevel,
-    goalType: draft.goalType,
-    dietaryPreferences: draft.dietaryPreferences,
-    dislikedFoods: splitCommaSeparatedList(draft.dislikedFoods),
-    allergies: splitCommaSeparatedList(draft.allergies),
-    availableIngredients: [],
-    dailyCalorieTarget: Number(draft.dailyCalorieTarget) || profile?.dailyCalorieTarget || 2200,
-  } satisfies UserProfile;
-}
 
 // Shows what the numbers on the goal step add up to, so an unrealistic or
 // unhealthy target is noticed before the plan is built around it. A weight-loss
@@ -119,9 +93,9 @@ export function OnboardingScreen({ navigation }: Props) {
   const submitPage = useOnboardingStore((state) => state.submitPage);
   const isRestarting = useOnboardingStore((state) => state.isRestarting);
   const leaveOnboarding = useOnboardingStore((state) => state.leaveOnboarding);
+  const addBloodTestUpload = useOnboardingStore((state) => state.addBloodTestUpload);
 
   const profile = useProfileStore((state) => state.profile);
-  const setProfile = useProfileStore((state) => state.setProfile);
 
   const [showValidation, setShowValidation] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -168,7 +142,7 @@ export function OnboardingScreen({ navigation }: Props) {
   const handleLeave = useCallback(() => {
     showDialog({
       title: 'Leave setup?',
-      message: "Answers you changed here won't be saved. Your profile and plan stay as they are.",
+      message: "Nothing you entered here is saved, including a blood test you added. Your profile and plan stay as they are.",
       icon: 'exit-outline',
       buttons: [
         { text: 'Keep going', style: 'cancel' },
@@ -214,12 +188,7 @@ export function OnboardingScreen({ navigation }: Props) {
     }
 
     if (isLastPage) {
-      // HomeScreen takes the water and coffee targets from the profile.
-      if (response.profile) {
-        setProfile(response.profile);
-      } else {
-        setProfile(buildProfileFromDraft(draft, profile, user?.name ?? 'User'));
-      }
+      // The answers are saved once the user creates the plan.
       navigation.navigate('PlanStartDate');
       return;
     }
@@ -283,6 +252,7 @@ export function OnboardingScreen({ navigation }: Props) {
             page={currentPage}
             showValidation={showValidation}
             onUploadingChange={setIsUploadingFile}
+            onBloodTestUploaded={addBloodTestUpload}
           />
 
           {pageError ? (

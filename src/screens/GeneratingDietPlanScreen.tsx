@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { ActivityIndicator, Animated, BackHandler, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,12 +39,17 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
   // opened at launch to wait for the plan an earlier session left generating.
   const startDate = route?.params.startDate;
   const resumedGenerationId = useDietPlanStore((state) => state.resumedGeneration?.id);
+  const resumedGenerationKind = useDietPlanStore((state) => state.resumedGeneration?.kind);
   const clearResumedGeneration = useDietPlanStore((state) => state.clearResumedGeneration);
   const profile = useProfileStore((state) => state.profile);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
+  const revertAnswers = useOnboardingStore((state) => state.revertAnswers);
   
   const [tipIndex, setTipIndex] = useState(0);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Each try again starts the plan afresh.
+  const [attempt, setAttempt] = useState(0);
+  const [hasFailed, setHasFailed] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(true);
   const { confirmCancel, isCancelling } = useCancelGeneration(isGenerating);
 
@@ -72,6 +77,38 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
     return () => clearInterval(interval);
   }, [fadeAnim]);
 
+  // Leaves without a plan, keeping nothing of the onboarding it was for. Only
+  // onboarding creates plans, so at launch a create was for one too, and someone
+  // with no answers before it goes through onboarding again.
+  const leave = useCallback(async () => {
+    const revert = () => revertAnswers().catch((e) => console.error('Failed to revert onboarding answers', e));
+    if (resumedGenerationId) {
+      if (resumedGenerationKind === 'create') {
+        await revert();
+      }
+      // Even if reverting swapped this screen for onboarding, or the
+      // generation would open it again once onboarding ends.
+      clearResumedGeneration();
+    } else {
+      // Back to choosing a start date.
+      await revert();
+      if (navigation?.isFocused()) {
+        navigation.goBack();
+      }
+    }
+  }, [navigation, resumedGenerationId, resumedGenerationKind, revertAnswers, clearResumedGeneration]);
+
+  const leaveAfterFailure = useCallback(() => {
+    setIsLeaving(true);
+    void leave();
+  }, [leave]);
+
+  const tryAgain = () => {
+    setHasFailed(false);
+    setIsGenerating(true);
+    setAttempt((current) => current + 1);
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -92,17 +129,14 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
       } catch (error) {
         if (!isMounted) return;
         if (isGenerationCancelled(error)) {
-          // Back to choosing a start date, or at launch, on into the app.
-          if (resumedGenerationId) {
-            clearResumedGeneration();
-          } else {
-            navigation?.goBack();
-          }
+          await leave();
           return;
         }
+        // It stays here, with the answers saved, until tried again or left.
         console.error('Failed to create diet plan:', error);
         setIsGenerating(false);
-        setErrorMsg('We encountered an issue, but you can still explore the app.');
+        setHasFailed(true);
+        return;
       }
 
       // Add a slight delay to ensure the user sees the loading state for a moment
@@ -120,19 +154,56 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
     return () => {
       isMounted = false;
     };
-  }, [profile?.id, startDate, resumedGenerationId, completeOnboarding, clearResumedGeneration]);
+  }, [attempt, profile?.id, startDate, resumedGenerationId, completeOnboarding, clearResumedGeneration, leave]);
 
   // Back would leave the plan generating unseen, so it offers to stop it instead.
+  // Once it has failed, back leaves as the screen's own button does.
   // The iOS swipe back is off for this screen in OnboardingNavigator.
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (isGenerating && !isCancelling) {
         confirmCancel();
+      } else if (hasFailed && !isLeaving) {
+        leaveAfterFailure();
       }
       return true;
     });
     return () => subscription.remove();
-  }, [isGenerating, isCancelling, confirmCancel]);
+  }, [isGenerating, isCancelling, confirmCancel, hasFailed, isLeaving, leaveAfterFailure]);
+
+  if (hasFailed) {
+    return (
+      <ScreenContainer scrollable={false} contentStyle={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="alert-circle-outline" size={64} color={theme.colors.danger} />
+            </View>
+          </View>
+
+          <Text style={styles.title}>We couldn't prepare your plan</Text>
+          {resumedGenerationId ? (
+            <>
+              <Text style={styles.failureText}>
+                {resumedGenerationKind === 'create'
+                  ? 'Nothing from the onboarding it was for is kept, so you can go through it again.'
+                  : 'Your current plan stays as it is.'}
+              </Text>
+              <AppButton title="Continue" loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.failureText}>
+                Your answers are kept while you're here. Try again, or go back and nothing from this onboarding is saved.
+              </Text>
+              <AppButton title="Try again" disabled={isLeaving} onPress={tryAgain} style={styles.actionButton} />
+              <AppButton title="Go back" variant="ghost" loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
+            </>
+          )}
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   const currentTip = HEALTHY_TIPS[tipIndex];
 
@@ -152,28 +223,22 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
         
         <ActivityIndicator size="small" color={theme.colors.primary} style={styles.spinner} />
         
-        {errorMsg ? (
-          <Text style={styles.errorText}>{errorMsg}</Text>
-        ) : (
-          <Animated.View style={{ opacity: fadeAnim, width: '100%', alignItems: 'center' }}>
-            <Text style={styles.tipText}>{currentTip.text}</Text>
-          </Animated.View>
-        )}
+        <Animated.View style={{ opacity: fadeAnim, width: '100%', alignItems: 'center' }}>
+          <Text style={styles.tipText}>{currentTip.text}</Text>
+        </Animated.View>
 
         {/* Pagination Dots */}
-        {!errorMsg && (
-          <View style={styles.paginationContainer}>
-            {HEALTHY_TIPS.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.dot,
-                  index === tipIndex && styles.activeDot,
-                ]}
-              />
-            ))}
-          </View>
-        )}
+        <View style={styles.paginationContainer}>
+          {HEALTHY_TIPS.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === tipIndex && styles.activeDot,
+              ]}
+            />
+          ))}
+        </View>
 
         {/* AI Warning Message */}
         <View style={styles.aiWarningContainer}>
@@ -250,12 +315,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     minHeight: 60, // Prevent UI jumping
   },
-  errorText: {
-    color: theme.colors.danger,
+  failureText: {
+    color: theme.colors.muted,
     fontSize: theme.typography.body.fontSize,
     lineHeight: 24,
     textAlign: 'center',
-    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+  actionButton: {
+    alignSelf: 'stretch',
+    marginTop: theme.spacing.sm,
   },
   paginationContainer: {
     flexDirection: 'row',

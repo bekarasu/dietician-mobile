@@ -54,7 +54,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 ## Biometrics and secure storage
 
-- `BloodTestUploadScreen` blocks access when `isEnrolledAsync()` is false, so an unenrolled simulator cannot get in. Do not comment out `checkAuth()`. Enroll instead: iOS Simulator > Features > Face ID > Enrolled; on Android, set a screen lock and fingerprint, then `adb -e emu finger touch 1`.
+- `BloodTestUploadScreen` asks for the screen lock (`unlock`) when it opens and before hiding or deleting a result. Any screen lock will do: it checks `getEnrolledLevelAsync()` is above `NONE`, so a phone with only a passcode gets in. A simulator with neither cannot. Do not bypass the check, as was done until 2026-11-08. Enroll instead: iOS Simulator > Features > Face ID > Enrolled; on Android, set a screen lock and fingerprint, then `adb -e emu finger touch 1`.
 - Biometrics here are a client-side UI gate only. The API does not enforce them.
 - `fallbackLabel` applies to iOS only.
 - Face ID needs a native build. Expo Go does not support it, and `expo-dev-client` is not installed, so `npm run ios` targets Expo Go.

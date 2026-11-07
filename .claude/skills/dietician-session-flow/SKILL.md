@@ -18,7 +18,7 @@ isAuthenticated && isCompleted && resumedGeneration -> GeneratingDietPlanScreen 
 isAuthenticated && isCompleted                   -> AppStackNavigator
 ```
 
-`resumedGeneration` (`useDietPlanStore`) is a plan generation an earlier session left running, found once at launch. Without a route, `GeneratingDietPlanScreen` waits for it instead of creating a plan, then calls `completeOnboarding()` (which only sets `landingTab: 'DietPlan'` here) and clears it, so the app opens on the plan.
+`resumedGeneration` (`useDietPlanStore`) is a plan generation an earlier session left running, found once at launch. Without a route, `GeneratingDietPlanScreen` waits for it instead of creating a plan, then calls `completeOnboarding()` (which only sets `landingTab: 'DietPlan'` here) and clears it, so the app opens on the plan. If it's cancelled, or fails and the user presses Continue, and its kind is `create`, which only onboarding starts, the answers are reverted, and someone with none before that onboarding goes through it again.
 
 Do not `navigation.navigate` across these. Change the store and let `RootNavigator` swap. For that reason, `login` and `verifyOTP` load the profile and restore onboarding state *before* setting `isAuthenticated`. Reversing the order flashes onboarding at returning users.
 
@@ -30,19 +30,23 @@ Completion is not stored anywhere. It is recomputed from the profile:
 profile.heightCm && profile.weightKg && profile.goalType
 ```
 
-This check is repeated in `bootstrap`, `login`, and `verifyOTP`. Change all three together, or extract it.
+It is `isOnboardingComplete` in `src/features/onboarding/validation.ts`, used by `bootstrap`, `login`, `verifyOTP`, and `revertAnswers`.
 
 End of onboarding:
 
-1. The last page in `ONBOARDING_PAGES` (now `blood-test`) posts `/profiles/onboarding`, and `OnboardingScreen` calls `setProfile`. `onboardingService` picks the last page from the array, so reordering pages moves the post with it.
-2. `PlanStartDateScreen` asks when to start and passes `startDate` as a route param.
-3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`.
+1. The pages are local. The last one in `ONBOARDING_PAGES` (now `blood-test`) opens `PlanStartDateScreen`. A blood test is the exception: it uploads when picked, and its id goes in `bloodTestUploadIds`.
+2. `PlanStartDateScreen` asks when to start. "Create My Plan" calls `saveAnswers()`, which posts `/profiles/onboarding`, sets `hasSavedAnswers`, and reloads the profile. Then it passes `startDate` as a route param.
+3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`, which logs the onboarding weight now that the answers stay.
 4. `RootNavigator` switches to `AppStackNavigator`.
 5. `AppTabNavigator` uses `landingTab` (`'DietPlan'` here) as `initialRouteName`, then clears it. `initialRouteName` is read only on mount.
 
-"Restart onboarding" on the profile sets `isCompleted: false` and `isRestarting: true`. While restarting, `OnboardingScreen` shows a close button and `PlanStartDateScreen` a "Keep my current plan" button. Both call `leaveOnboarding()`, which sets `isCompleted` back and `landingTab: 'ProfileGoals'`. Leaving before the last page saves nothing; leaving at the start date keeps the saved answers and the current plan. On Android, the back button goes back a page, and on the first page offers to leave.
+"Restart onboarding" on the profile sets `isCompleted: false` and `isRestarting: true`. While restarting, `OnboardingScreen` shows a close button and `PlanStartDateScreen` a "Keep my current plan" button. Both call `leaveOnboarding()`, which sets `isCompleted` back and `landingTab: 'ProfileGoals'`. Leaving saves nothing at any point, and removes the blood tests uploaded on the way. On Android, the back button goes back a page, and on the first page offers to leave.
 
-`GeneratingDietPlanScreen` skips plan creation without an error when `profile.id` is missing, so make sure the profile is set in step 1.
+Cancelling the plan undoes the onboarding too. `GeneratingDietPlanScreen` calls `revertAnswers()`, which asks account-service to put the profile back as it was before `saveAnswers`, then goes back to the start date with the answers still in the draft. If the revert fails, `hasSavedAnswers` stays set: the next `saveAnswers` reverts first, and `leaveOnboarding` tries again. The weight is logged only once a plan is created.
+
+A failed generation stays on `GeneratingDietPlanScreen`, with the answers saved, until the user presses Try again, which creates the plan again, or Go back (or Android back), which reverts as cancelling does. If the app is closed meanwhile, startup reverts instead (step 3 below).
+
+`GeneratingDietPlanScreen` skips plan creation without an error when `profile.id` is missing. Registration makes the profile, and login loads it before onboarding opens.
 
 ## Startup
 
@@ -50,7 +54,7 @@ End of onboarding:
 
 1. `useAuthStore.bootstrap()`: reads the token, loads the profile (errors swallowed), sets `isAuthenticated: true`.
 2. `Promise.all` of profile, daily log, inventory, and progress `bootstrap()`.
-3. If signed in with onboarding complete, `useDietPlanStore.checkGeneration()`: the app's only check for a running generation (`GET /diet-plans/generation`). It comes after step 2, which can still log out, so a stale result never reaches the next user. Its errors are swallowed.
+3. If signed in with onboarding complete, `useDietPlanStore.checkGeneration()`: the app's only check for a running generation (`GET /diet-plans/generation`). It comes after step 2, which can still log out, so a stale result never reaches the next user. Its errors are swallowed. If the latest generation is a `create` that failed or was cancelled, the app was closed before leaving it, so `revertAnswers()` runs. The server keeps a generation for a day, and reverting again changes nothing, as the snapshot goes with the first revert.
 4. Any rejection: `logout()`.
 
 `useProfileStore.bootstrap` exits early only when a profile is loaded, so a missing profile is fetched again in step 2. Hydration is not part of startup; `HomeScreen` loads it.

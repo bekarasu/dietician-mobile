@@ -38,9 +38,11 @@ export function PlanStartDateScreen({ navigation }: Props) {
   const isRunning = activePlan !== null && getPlanSchedule(activePlan).phase === 'running';
   // This week's days, null until they load or if they can't be.
   const [weekDays, setWeekDays] = useState<ActivityDay[] | null>(null);
-  // The answers are saved by now, so leaving here only skips the new plan.
+  // Nothing is saved before the plan is created, so leaving here changes nothing.
   const isRestarting = useOnboardingStore((state) => state.isRestarting);
   const leaveOnboarding = useOnboardingStore((state) => state.leaveOnboarding);
+  const saveAnswers = useOnboardingStore((state) => state.saveAnswers);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!isRunning) {
@@ -61,7 +63,20 @@ export function PlanStartDateScreen({ navigation }: Props) {
     };
   }, [isRunning]);
 
-  const createPlan = () => navigation.navigate('GeneratingDietPlan', { startDate });
+  // The answers are saved only now, for the plan built from them. Cancelling it,
+  // or leaving after it fails, puts the profile back as it was.
+  const createPlan = async () => {
+    setIsSaving(true);
+    try {
+      await saveAnswers();
+      navigation.navigate('GeneratingDietPlan', { startDate });
+    } catch (error) {
+      console.error('Failed to save onboarding answers', error);
+      showDialog({ title: "We couldn't save your answers", message: 'Check your connection and try again.', tone: 'danger' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleCreate = () => {
     const points = weekDays ? getPointsToReset(weekDays, today, startDate) : null;
@@ -99,9 +114,14 @@ export function PlanStartDateScreen({ navigation }: Props) {
           </Text>
         </AppCard>
       ) : null}
-      <AppButton title="Create My Plan" onPress={handleCreate} />
+      <AppButton title="Create My Plan" loading={isSaving} onPress={handleCreate} />
       {isRestarting ? (
-        <AppButton title={hasPlan ? 'Keep my current plan' : 'Not now'} variant="ghost" onPress={() => leaveOnboarding()} />
+        <AppButton
+          title={hasPlan ? 'Keep my current plan' : 'Not now'}
+          variant="ghost"
+          disabled={isSaving}
+          onPress={() => leaveOnboarding()}
+        />
       ) : null}
     </ScreenContainer>
   );

@@ -33,7 +33,7 @@ export function AppStackNavigator() {
       <Stack.Screen component={FriendsScreen} name="Friends" options={{ title: 'Friends' }} />
       <Stack.Screen component={UserProfileScreen} name="UserProfile" options={{ title: 'Profile' }} />
       <Stack.Screen component={ScoreBreakdownScreen} name="ScoreBreakdown" options={{ title: 'Your Score' }} />
-      <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood Test Upload' }} />
+      <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood tests' }} />
       <Stack.Screen component={WeightProgressScreen} name="WeightProgress" options={{ title: 'Weight Progress' }} />
       <Stack.Screen component={PlanCheckInScreen} name="PlanCheckIn" options={{ title: 'Plan Check-In' }} />
       <Stack.Screen component={FoodSelectionScreen} name="FoodSelection" options={{ title: 'Select Foods' }} />

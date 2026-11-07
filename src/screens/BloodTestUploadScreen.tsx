@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -12,300 +14,301 @@ import { theme } from '../theme/theme';
 import { BloodTestUpload } from '../types/models';
 import { formatDateLabel } from '../utils/date';
 
-export function BloodTestUploadScreen() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
-  const [uploads, setUploads] = useState<BloodTestUpload[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedUploadId, setExpandedUploadId] = useState<string | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [uploadDetails, setUploadDetails] = useState<Record<string, BloodTestUpload>>({});
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Reading results',
+  completed: 'Results read',
+  parse_failed: 'Results not read',
+};
 
-  const toggleExpand = async (id: string) => {
-    if (expandedUploadId === id) {
-      setExpandedUploadId(null);
+// The screen lock, by biometrics or passcode, guards the results. The server
+// doesn't ask for it, so it only keeps out someone else holding the phone.
+async function unlock(promptMessage: string) {
+  const level = await LocalAuthentication.getEnrolledLevelAsync();
+  if (level === LocalAuthentication.SecurityLevel.NONE) {
+    showDialog({
+      title: 'Set up a screen lock',
+      message: 'Your blood test results are protected by your screen lock. Set up a passcode or biometrics in your phone settings to use this.',
+      icon: 'lock-closed-outline',
+    });
+    return false;
+  }
+
+  const result = await LocalAuthentication.authenticateAsync({ promptMessage, fallbackLabel: 'Use Passcode' });
+  return result.success;
+}
+
+export function BloodTestUploadScreen() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(true);
+  // Undefined while loading.
+  const [uploads, setUploads] = useState<BloodTestUpload[]>();
+  const [failed, setFailed] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setUploads(await bloodTestService.listUploads());
+      setFailed(false);
+    } catch (error) {
+      console.error('Failed to load blood tests', error);
+      setFailed(true);
+    }
+  }, []);
+
+  const tryUnlock = useCallback(async () => {
+    setIsUnlocking(true);
+    try {
+      if (await unlock('Unlock your blood test results')) {
+        setIsUnlocked(true);
+        void load();
+      }
+    } catch (error) {
+      console.error('Failed to unlock blood tests', error);
+    } finally {
+      setIsUnlocking(false);
+    }
+  }, [load]);
+
+  useEffect(() => {
+    void tryUnlock();
+  }, [tryUnlock]);
+
+  const retry = () => {
+    setFailed(false);
+    setUploads(undefined);
+    void load();
+  };
+
+  // Hiding, showing and deleting each ask for the screen lock again. A failure
+  // reloads the list, in case the result changed elsewhere.
+  const run = async (id: string, promptMessage: string, failure: string, action: () => Promise<void>) => {
+    try {
+      if (!(await unlock(promptMessage))) {
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to unlock blood tests', error);
       return;
     }
 
-    setExpandedUploadId(id);
-
-    if (!uploadDetails[id]) {
-      setDetailLoading(true);
-      try {
-        const detail = await bloodTestService.getUploadDetail(id);
-        setUploadDetails(prev => ({ ...prev, [id]: detail.upload }));
-      } catch (error) {
-        console.error('Failed to load upload detail:', error);
-      } finally {
-        setDetailLoading(false);
-      }
-    }
-  };
-
-  const handleToggleVisibility = async (id: string, isHidden: boolean) => {
+    setBusyId(id);
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (!isEnrolled) {
-        showDialog({
-          title: 'Security Requirement',
-          message: 'You must set up a screen lock or biometrics on your device to use this feature.',
-          icon: 'lock-closed-outline',
-        });
-        return;
-      }
-
-      if (hasHardware && isEnrolled) {
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: isHidden ? 'Authenticate to unhide result' : 'Authenticate to hide result',
-          fallbackLabel: 'Use Passcode',
-        });
-
-        if (!result.success) {
-          return;
-        }
-      }
-
-      setUploads(current => current.map(u => u.id === id ? { ...u, isHidden: !isHidden } : u));
-      await bloodTestService.toggleVisibility(id, !isHidden);
-    } catch (error: any) {
-      console.error('Failed to toggle visibility:', error);
-      showDialog({ title: 'Error', message: `Failed to toggle visibility: ${error.message || String(error)}`, tone: 'danger' });
-      setUploads(current => current.map(u => u.id === id ? { ...u, isHidden: isHidden } : u));
+      await action();
+    } catch (error) {
+      console.error('Failed to change a blood test', error);
+      showDialog({ title: 'Error', message: failure, tone: 'danger' });
+      await load();
+    } finally {
+      setBusyId(null);
     }
   };
 
-  const handleDeleteUpload = (id: string) => {
+  const toggleVisibility = (upload: BloodTestUpload) => {
+    const isHidden = !upload.isHidden;
+    void run(
+      upload.id,
+      isHidden ? 'Unlock to hide this result' : 'Unlock to show this result',
+      `We couldn't ${isHidden ? 'hide' : 'show'} this result. Please try again.`,
+      async () => {
+        await bloodTestService.toggleVisibility(upload.id, isHidden);
+        setUploads((current) => current?.map((item) => (item.id === upload.id ? { ...item, isHidden } : item)));
+      },
+    );
+  };
+
+  const confirmDelete = (upload: BloodTestUpload) => {
     showDialog({
-      title: 'Delete Result',
-      message: 'Are you sure you want to completely remove this blood test result?',
+      title: 'Delete this result?',
+      message: 'It leaves your results, and your next plans won\'t use it.',
       icon: 'trash-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              const hasHardware = await LocalAuthentication.hasHardwareAsync();
-              const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-              if (!isEnrolled) {
-                showDialog({
-                  title: 'Security Requirement',
-                  message: 'You must set up a screen lock or biometrics on your device to use this feature.',
-                  icon: 'lock-closed-outline',
-                });
-                return;
-              }
-
-              if (hasHardware && isEnrolled) {
-                const result = await LocalAuthentication.authenticateAsync({
-                  promptMessage: 'Authenticate to delete result',
-                  fallbackLabel: 'Use Passcode',
-                });
-
-                if (!result.success) {
-                  return;
-                }
-              }
-
-              await bloodTestService.deleteUpload(id);
-              setUploads(current => current.filter(u => u.id !== id));
-            } catch (error: any) {
-              console.error('Failed to delete upload:', error);
-              showDialog({ title: 'Error', message: `Failed to delete upload: ${error.message || String(error)}`, tone: 'danger' });
-            }
-          },
+          onPress: () => run(upload.id, 'Unlock to delete this result', 'We couldn\'t delete this result. Please try again.', async () => {
+            await bloodTestService.deleteUpload(upload.id);
+            setUploads((current) => current?.filter((item) => item.id !== upload.id));
+          }),
         },
-      ]
+        { text: 'Cancel', style: 'cancel' },
+      ],
     });
   };
 
-  useEffect(() => {
-    setAuthChecking(false);
-
-    // checkAuth();
-    setIsAuthenticated(true);
-    loadUploads();
-  }, []);
-
-  const checkAuth = async () => {
-    setAuthChecking(true);
-    try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (!isEnrolled) {
-        showDialog({
-          title: 'Security Warning',
-          message: 'No screen lock detected. Please set up a device passcode or biometric lock in your phone settings to protect your health data.',
-          icon: 'lock-closed-outline',
-        });
-        setIsAuthenticated(false);
-        setAuthChecking(false);
-        return;
-      }
-
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to view blood test results',
-        fallbackLabel: 'Use Passcode',
-      });
-
-      if (result.success) {
-        setIsAuthenticated(true);
-        loadUploads();
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error('Authentication error:', error);
-      setIsAuthenticated(false);
-    } finally {
-      setAuthChecking(false);
-    }
-  };
-
-  const loadUploads = async () => {
-    try {
-      const data = await bloodTestService.listUploads();
-      setUploads(data || []);
-    } catch (error) {
-      console.error('Failed to load uploads:', error);
-      setUploads([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (authChecking) {
+  if (!isUnlocked) {
     return (
       <ScreenContainer>
-        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
+        <SectionHeader title="Blood test results" subtitle="Your results are protected by your screen lock." />
+        {isUnlocking ? (
+          <ActivityIndicator color={theme.colors.primary} size="large" style={styles.loading} />
+        ) : (
+          <AppCard style={styles.stateCard}>
+            <View style={styles.stateIcon}>
+              <Ionicons color={theme.colors.primary} name="lock-closed-outline" size={28} />
+            </View>
+            <Text style={styles.stateText}>Unlock to see your blood test results.</Text>
+            <AppButton title="Unlock" onPress={tryUnlock} />
+          </AppCard>
+        )}
       </ScreenContainer>
     );
   }
 
-  if (!isAuthenticated) {
+  const renderResults = (upload: BloodTestUpload) => {
+    const groups = upload.parsedResults?.testGroups ?? [];
+
+    if (upload.isHidden) {
+      return <Text style={styles.noteText}>This result is hidden. Show it to see what was read from it.</Text>;
+    }
+    if (groups.length === 0) {
+      return (
+        <Text style={styles.noteText}>
+          {upload.status === 'pending' ? 'We\'re still reading this report.' : 'No results could be read from this report.'}
+        </Text>
+      );
+    }
+
+    return groups.map((group, groupIndex) => (
+      <View key={groupIndex} style={styles.tableGroup}>
+        {group.groupName ? <Text style={styles.groupTitle}>{group.groupName}</Text> : null}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.testColumn]}>Test</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>Result</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>Ref</Text>
+        </View>
+        {group.tests.map((test, testIndex) => (
+          <View key={testIndex} style={styles.tableRow}>
+            <Text style={[styles.tableCell, styles.testColumn]} numberOfLines={2}>{test.testName}</Text>
+            <Text style={[styles.tableCell, styles.valueColumn]}>{test.result} {test.resultUnit}</Text>
+            <Text style={[styles.tableCell, styles.valueColumn, styles.referenceCell]}>{test.referenceValue}</Text>
+          </View>
+        ))}
+      </View>
+    ));
+  };
+
+  const renderUpload = (upload: BloodTestUpload) => {
+    const isExpanded = expandedId === upload.id;
+
     return (
-      <ScreenContainer>
-        <SectionHeader
-          title="Protected Content"
-          subtitle="Authentication is required to view your blood test results."
-        />
-        <AppCard style={styles.formCard}>
-          <Text style={styles.warningTitle}>Locked</Text>
-          <Text style={[styles.warningText, { textAlign: 'center', marginBottom: theme.spacing.md }]}>
-            Your health data is protected for your security.
-          </Text>
-          <AppButton title="Unlock" onPress={checkAuth} />
+      <AppCard key={upload.id}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: isExpanded }}
+          onPress={() => setExpandedId(isExpanded ? null : upload.id)}
+          style={({ pressed }) => [styles.uploadHeader, pressed && styles.pressed]}
+        >
+          <View style={styles.uploadIcon}>
+            <Ionicons color={theme.colors.primary} name="document-text-outline" size={18} />
+          </View>
+          <View style={styles.uploadText}>
+            <Text style={[styles.uploadTitle, upload.isHidden && styles.hiddenTitle]}>
+              {upload.isHidden ? 'Hidden blood test' : 'Blood test'}
+            </Text>
+            <Text style={styles.uploadMeta}>
+              {formatDateLabel(upload.createdAt)} · {STATUS_LABELS[upload.status] ?? upload.status}
+            </Text>
+          </View>
+          {busyId === upload.id ? (
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+          ) : (
+            <>
+              <IconButton
+                icon={upload.isHidden ? 'eye-off-outline' : 'eye-outline'}
+                label={upload.isHidden ? 'Show result' : 'Hide result'}
+                disabled={busyId !== null}
+                onPress={() => toggleVisibility(upload)}
+              />
+              <IconButton
+                icon="trash-outline"
+                label="Delete result"
+                color={theme.colors.danger}
+                disabled={busyId !== null}
+                onPress={() => confirmDelete(upload)}
+              />
+            </>
+          )}
+          <Ionicons color={theme.colors.muted} name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} />
+        </Pressable>
+
+        {isExpanded ? <View style={styles.expandedContent}>{renderResults(upload)}</View> : null}
+      </AppCard>
+    );
+  };
+
+  const renderList = () => {
+    if (failed) {
+      return (
+        <AppCard style={styles.stateCard}>
+          <View style={styles.stateIcon}>
+            <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
+          </View>
+          <Text style={styles.stateText}>We couldn't load your blood tests. Please try again.</Text>
+          <AppButton title="Try again" onPress={retry} variant="secondary" />
         </AppCard>
-      </ScreenContainer>
-    );
-  }
+      );
+    }
+
+    if (uploads === undefined) {
+      return <ActivityIndicator color={theme.colors.primary} size="large" style={styles.loading} />;
+    }
+
+    if (uploads.length === 0) {
+      return (
+        <AppCard style={styles.stateCard}>
+          <View style={styles.stateIcon}>
+            <Ionicons color={theme.colors.primary} name="document-text-outline" size={28} />
+          </View>
+          <Text style={styles.stateText}>You haven't added a blood test yet. You can add one by restarting onboarding from your profile.</Text>
+        </AppCard>
+      );
+    }
+
+    return <View style={styles.list}>{uploads.map(renderUpload)}</View>;
+  };
 
   return (
     <ScreenContainer>
-      <SectionHeader
-        title="Blood test results"
-        subtitle="Manage your uploaded blood test results."
-      />
+      <SectionHeader title="Blood test results" subtitle="The reports you've added, and the results read from them." />
 
       <AppCard style={styles.warningCard}>
         <Text style={styles.warningTitle}>Medical disclaimer</Text>
         <Text style={styles.warningText}>{BLOOD_TEST_DISCLAIMER}</Text>
       </AppCard>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
-      ) : (
-        <View style={styles.listContainer}>
-          {(!uploads || uploads.length === 0) ? (
-            <AppCard style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>No records found</Text>
-              <Text style={styles.emptyText}>You haven't uploaded any blood test results yet.</Text>
-            </AppCard>
-          ) : (
-            uploads.map((upload) => {
-              const isExpanded = expandedUploadId === upload.id;
-              const displayData = uploadDetails[upload.id] || upload;
-              return (
-                <TouchableOpacity key={upload.id} onPress={() => toggleExpand(upload.id)} activeOpacity={0.8}>
-                  <AppCard style={styles.uploadCard}>
-                    <View style={styles.uploadHeader}>
-                      <View>
-                        <Text style={[styles.uploadTitle, upload.isHidden && styles.hiddenTitle]}>
-                          Blood Test Report {upload.isHidden ? '(Hidden)' : ''}
-                        </Text>
-                        <Text style={styles.uploadMeta}>
-                          {upload.uploadedAt ? formatDateLabel(upload.uploadedAt) : 'Recent'} · {upload.status}
-                        </Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                        <TouchableOpacity
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            handleDeleteUpload(upload.id);
-                          }}
-                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                          <Text style={{ fontSize: 16 }}>🗑️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            handleToggleVisibility(upload.id, upload.isHidden);
-                          }}
-                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                          <Text style={{ fontSize: 16 }}>{upload.isHidden ? '🙈' : '👁️'}</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
-                      </View>
-                    </View>
-
-                    {isExpanded && (
-                      <View style={styles.expandedContent}>
-                        {upload.isHidden ? (
-                          <Text style={styles.noDataText}>This result is hidden. Unhide it to view details.</Text>
-                        ) : detailLoading && !uploadDetails[upload.id] ? (
-                          <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: theme.spacing.md }} />
-                        ) : displayData.parsedResults?.testGroups && displayData.parsedResults.testGroups.length > 0 ? (
-                          displayData.parsedResults.testGroups.map((group, gIdx) => (
-                            <View key={gIdx} style={styles.tableGroup}>
-                              {group.groupName ? <Text style={styles.groupTitle}>{group.groupName}</Text> : null}
-                              <View style={styles.tableHeader}>
-                                <Text style={[styles.tableCell, styles.tableHeaderCell, { flex: 2 }]}>Test</Text>
-                                <Text style={[styles.tableCell, styles.tableHeaderCell, { flex: 1 }]}>Result</Text>
-                                <Text style={[styles.tableCell, styles.tableHeaderCell, { flex: 1 }]}>Ref</Text>
-                              </View>
-                              {group.tests.map((test, tIdx) => (
-                                <View key={tIdx} style={styles.tableRow}>
-                                  <Text style={[styles.tableCell, { flex: 2 }]} numberOfLines={2}>{test.testName}</Text>
-                                  <Text style={[styles.tableCell, { flex: 1 }]}>{test.result} {test.resultUnit}</Text>
-                                  <Text style={[styles.tableCell, { flex: 1, color: theme.colors.muted }]}>{test.referenceValue}</Text>
-                                </View>
-                              ))}
-                            </View>
-                          ))
-                        ) : (
-                          <Text style={styles.noDataText}>No extracted data available for this report.</Text>
-                        )}
-                      </View>
-                    )}
-                  </AppCard>
-                </TouchableOpacity>
-              );
-            })
-          )}
-        </View>
-      )}
+      {renderList()}
     </ScreenContainer>
   );
 }
 
+interface IconButtonProps {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color?: string;
+  disabled: boolean;
+  onPress: () => void;
+}
+
+function IconButton({ icon, label, color = theme.colors.muted, disabled, onPress }: IconButtonProps) {
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      disabled={disabled}
+      hitSlop={10}
+      onPress={onPress}
+      style={({ pressed }) => [styles.iconButton, (pressed || disabled) && styles.pressed]}
+    >
+      <Ionicons color={color} name={icon} size={20} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  loading: {
+    marginTop: theme.spacing.xl,
+  },
   warningCard: {
     backgroundColor: theme.colors.warningSurface,
   },
@@ -318,13 +321,42 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     lineHeight: 22,
   },
-  formCard: {
-    gap: theme.spacing.md,
+  stateCard: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.lg,
+    gap: theme.spacing.md,
   },
-  uploadCard: {
-    gap: theme.spacing.xs,
+  stateIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primarySoft,
+  },
+  stateText: {
+    color: theme.colors.text,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  list: {
+    gap: theme.spacing.md,
+  },
+  uploadHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  uploadIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primarySoft,
+  },
+  uploadText: {
+    flex: 1,
+    gap: 2,
   },
   uploadTitle: {
     color: theme.colors.text,
@@ -336,35 +368,13 @@ const styles = StyleSheet.create({
   },
   uploadMeta: {
     color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
   },
-  loader: {
-    marginTop: theme.spacing.xl,
+  iconButton: {
+    padding: 4,
   },
-  listContainer: {
-    gap: theme.spacing.md,
-  },
-  emptyCard: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.xl,
-    gap: theme.spacing.sm,
-  },
-  emptyTitle: {
-    color: theme.colors.text,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  emptyText: {
-    color: theme.colors.muted,
-    textAlign: 'center',
-  },
-  uploadHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  expandIcon: {
-    fontSize: 12,
-    color: theme.colors.muted,
+  pressed: {
+    opacity: 0.6,
   },
   expandedContent: {
     marginTop: theme.spacing.md,
@@ -401,10 +411,19 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: 13,
   },
-  noDataText: {
+  testColumn: {
+    flex: 2,
+  },
+  valueColumn: {
+    flex: 1,
+  },
+  referenceCell: {
+    color: theme.colors.muted,
+  },
+  noteText: {
     color: theme.colors.muted,
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: theme.spacing.md,
-  }
+  },
 });

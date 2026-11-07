@@ -28,7 +28,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 | `/diet-plans*` | `{ message, data }` | Service returns raw JSON; **the store** unwraps `response?.data` |
 | `POST /diet-plans/active/renew` | `{ message, data }` | Exception: uses `fetchData`, so the check-in can show the server's translated error |
 | `GET /uploads` | `data` can be null | Falls back to `[]` |
-| `GET /uploads/:id` | `{ data: { upload } }` | Caller reads `detail.upload` |
+| `GET /uploads/:id` | `{ data: { upload } }` | Unused: `GET /uploads` already carries `parsedResults`. The upload date is `createdAt` |
 | `GET /profiles` | 404 means no profile yet | Normal for a first login; return `null` |
 | `GET /diet-plans/active` | 404 means no plan | Return `null` |
 | `GET /diet-plans/generation` | 404 means no generation | Return `null` |
@@ -66,14 +66,16 @@ Preferences (`/profiles/preferences`):
 - **Save only what changed.** `useProfileStore.updateDetails` sends just the fields given to `PUT /profiles`, never weight: weigh-ins set it on the server, and the app's copy is often older. `updatePreferences` sends just the lists given to `PUT /profiles/preferences`; the server keeps any list left out, and an empty list clears one. Sending a whole profile used to empty lists the app had loaded wrong, and to roll the weight back.
 - `profileService.getProfile` throws if preferences can't be read, rather than returning empty lists that a later save would write back.
 - `POST /profiles/onboarding` updates the existing profile, so restarting onboarding keeps one profile. Before, each run added a profile and its lists were left on the old one. Accounts from then can still have several rows; the newest is the one read. `OnboardingScreen` fills the draft's diet, disliked foods and allergies from the profile, because onboarding saves them again.
+- **Onboarding can be undone.** `POST /profiles/onboarding` first keeps what it overwrites, and `DELETE /profiles/onboarding` puts that back once: the profile fields and the three lists, or no answers for a profile onboarding created. The app posts only when the user creates the plan (`saveAnswers`) and reverts only when that generation is cancelled (`revertAnswers`), so the server's snapshot is always that save's. Don't add another caller of `DELETE` without that pairing: the snapshot stays after a plan is created, and reverting later would bring back answers from before an old onboarding.
+- Deploy account-service before an app that reverts. On an older server the `DELETE` fails, and `saveAnswers` then keeps failing, because it reverts an unreverted save first.
 - The server must be updated before the app: an older account-service treats a list left out of `PUT /profiles/preferences` as empty and deletes it.
 - **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
 - **Answers must agree, on both sides.** account-service returns a translated `400` for: more than one of `omnivore`, `vegetarian`, `vegan`, `pescatarian`; a `weight_loss` target at or above the current weight or below BMI 18.5 for the height; a preference listed twice; or a `gender`, `activityLevel`, goal or preference not in `src/constants/options.ts`, including an empty string, so leave unset fields out. The app applies the same rules from `src/features/profile/profileRules.ts`: picking a base diet replaces the other (`toggleDietaryPreference`), onboarding pages declare cross-field rules as `validate`, which shows under the fields and blocks Continue, and the profile form checks the target. `PUT /profiles` only checks the target when the goal or target changes.
-- Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings. Verify the backend accepts them.
+- Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings, and account-service splits them on commas.
 
 ## Identity
 
-Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authService.buildUser` always returns `'user-1'`, and `user.name` is a placeholder. `buildProfileFromDraft` in `OnboardingScreen` can also produce the fake id `'profile-1'`.
+Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authService.buildUser` always returns `'user-1'`, and `user.name` is a placeholder.
 
 ## Mock versus real
 
@@ -82,9 +84,9 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Auth, profile, preferences, fridge | Real |
 | Weight, today's hydration and coffee, weekly charts | Real |
 | Progress history, weekly consistency | Real, from `/scores/me/activity` |
-| Blood test uploads and parsed results | Real |
+| Blood test uploads and parsed results | Real. Only the user's own: another user's upload id is a 404 on read, hide and delete (medical-service from 2026-11-08) |
 | Diet plans, meal take and swap | Real |
-| Onboarding pages | Only the last page calls the backend; other pages are local with a 250 ms delay |
+| Onboarding pages | Local with a 250 ms delay. The answers are posted when the plan is created |
 | Leaderboards, score breakdown, friends | Real |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |

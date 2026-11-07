@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { isOnboardingComplete } from '../features/onboarding/validation';
 import { authService } from '../services/authService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
@@ -63,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             user: { id: profile.id, name: profile.name },
           });
 
-          if (profile.heightCm && profile.weightKg && profile.goalType) {
+          if (isOnboardingComplete(profile)) {
             useOnboardingStore.getState().restoreOnboardingState();
           }
         }
@@ -85,7 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         await useProfileStore.getState().bootstrap();
         const profile = useProfileStore.getState().profile;
-        if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
+        if (isOnboardingComplete(profile)) {
           useOnboardingStore.getState().restoreOnboardingState();
         }
       } catch (err) {
@@ -131,7 +132,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         await useProfileStore.getState().bootstrap();
         const profile = useProfileStore.getState().profile;
-        if (profile && profile.heightCm && profile.weightKg && profile.goalType) {
+        if (isOnboardingComplete(profile)) {
           useOnboardingStore.getState().restoreOnboardingState();
         }
       } catch (err) {

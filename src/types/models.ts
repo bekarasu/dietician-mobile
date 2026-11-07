@@ -173,7 +173,7 @@ export interface BloodTestGroup {
 export interface BloodTestUpload {
   id: string;
   status: string;
-  uploadedAt?: string;
+  createdAt: string;
   parsedResults?: {
     testGroups?: BloodTestGroup[];
   };
@@ -424,5 +424,4 @@ export interface OnboardingPageResponse {
   pageId: OnboardingPageId;
   message: string;
   patch?: Partial<OnboardingDraft>;
-  profile?: UserProfile;
 }
