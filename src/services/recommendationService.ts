@@ -1,6 +1,6 @@
 import { fetchData, fetchWithAuth } from './apiClient';
 import { AI_GUIDANCE_NOTICE } from '../constants/health';
-import { DietPlan, FoodResponse, MealEntry, MealRecommendation, PlanCheckIn, RecommendationInput } from '../types/models';
+import { DietPlan, FoodResponse, MealEntry, MealRecommendation, PlanCheckIn, PlanGeneration, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
 
 function getIngredientFallback(input: RecommendationInput) {
@@ -78,6 +78,40 @@ export const recommendationService = {
     }
 
     return response.json();
+  },
+
+  // The user's latest plan generation, or null if they have none.
+  async getPlanGeneration(): Promise<PlanGeneration | null> {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/generation`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error('Failed to fetch plan generation');
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
+  // Stops the user's running plan generation, so it saves nothing. False if none
+  // is running, which includes one already saving its plan.
+  async cancelPlanGeneration(): Promise<boolean> {
+    if (!API_URL) throw new Error('Recommendation API URL is not defined');
+
+    const response = await fetchWithAuth(`${API_URL}/diet-plans/generation/cancel`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      if (response.status === 409) return false;
+      throw new Error('Failed to cancel plan generation');
+    }
+
+    return true;
   },
 
   renewDietPlan(checkIn: PlanCheckIn) {

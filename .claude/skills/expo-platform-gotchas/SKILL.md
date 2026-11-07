@@ -37,7 +37,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 - `AppTextInput` already converts `,` to `.`, so use it for decimal fields.
 - `inputMode="numeric"` gives a number pad with no decimal key on iOS, so `72.5` can't be typed. Use `inputMode="decimal"` for weights and heights, as the onboarding fields do.
-- `WeightProgressScreen` uses a raw `TextInput` with `parseFloat`, so `72,5` becomes `72`.
+- `WeightProgressScreen` used a raw `TextInput` with `parseFloat`, so `72,5` became `72`. Fixed 2026-11-07: it uses `AppTextInput` with `inputMode="decimal"` and `Number()`.
 - Test weight entry with an iOS device region that uses a comma.
 - `Number(x) || fallback` in `OnboardingScreen` and `ProfileGoalsScreen` hides `NaN` from input like `7.2.5`.
 
@@ -45,8 +45,8 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 - **`ScreenContainer` has no keyboard handling.** Its `ScrollView` uses the default `keyboardShouldPersistTaps`, so with the keyboard open, the first tap on "Log in" only closes the keyboard. Pass `scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}` on form screens, or fix it in the component.
 - `ScreenContainer` sets `bounces={false}`, so iOS pull-to-refresh needs `scrollViewProps={{ bounces: true }}`.
-- `ScreenContainer` is scrollable by default. Pass `scrollable={false}` when the screen owns a scroll view. **Open:** `WeightProgressScreen` nests two vertical scroll views.
-- **Open:** `WeightProgressScreen` is the only `KeyboardAvoidingView`, and it sits under a native stack header with no `keyboardVerticalOffset`. Use `useHeaderHeight()` on iOS.
+- `ScreenContainer` is scrollable by default. Pass `scrollable={false}` when the screen owns a scroll view.
+- No screen uses `KeyboardAvoidingView`. To keep a field above the keyboard on iOS, pass `automaticallyAdjustKeyboardInsets: true` in `scrollViewProps`, as `DietPlanScreen` and `WeightProgressScreen` do. If one is ever added under a native stack header, it needs `keyboardVerticalOffset` from `useHeaderHeight()`.
 - Android has `adjustResize` together with edge-to-edge. Do not assume keyboard behavior from the manifest alone; test on a device or emulator.
 - `AppTabNavigator` sets a numeric `height` in `tabBarStyle`, which disables React Navigation's inset math, so it derives `height` and `paddingBottom` from `useSafeAreaInsets()`. Change them together, or the tabs collide with the iPhone home indicator and the Android 3-button bar.
 - Inside the tab navigator, `ScreenContainer` drops the bottom safe-area edge, detected through `BottomTabBarHeightContext`, because the tab bar already pads for the home indicator. Padding twice left an empty strip of about 34pt above the bar, which made it look raised. Screens that build their own `SafeAreaView` inside a tab need the same `edges`.
@@ -78,6 +78,6 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 ## Charts and animation
 
-- `WeightProgressScreen` renders `LineChart` only when `entries.length > 1`. Single-point data caused crashes (commit 7ba0a07), so keep the guard.
-- `react-native-chart-kit` needs a numeric `width`, computed by hand from `Dimensions` minus card padding. Update it when card padding changes.
+- The weight trend is `WeightTrendChart` (`src/features/progress/`), drawn with `react-native-svg`. It measures its width with `onLayout` and renders nothing under two entries. Single-point data crashed the old chart-kit `LineChart` (commit 7ba0a07), so keep that guard.
+- `react-native-chart-kit` (still used by `ProgressDashboardScreen`) needs a numeric `width`, computed by hand from `Dimensions` minus card padding. Update it when card padding changes.
 - Reanimated is installed and in `babel.config.js`, but nothing in `src` imports it, despite the README. Existing animation uses core `Animated`; match that unless the task needs Reanimated.

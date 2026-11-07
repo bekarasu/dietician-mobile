@@ -9,13 +9,16 @@ All Zustand stores are in memory, with no `persist` middleware. Only the tokens 
 
 ## Screens are chosen by state
 
-`RootNavigator` picks one of three navigators:
+`RootNavigator` picks one of three navigators, or the generating screen:
 
 ```
-!isAuthenticated              -> AuthNavigator
-isAuthenticated && !isCompleted -> OnboardingNavigator
-isAuthenticated && isCompleted  -> AppStackNavigator
+!isAuthenticated                                 -> AuthNavigator
+isAuthenticated && !isCompleted                  -> OnboardingNavigator
+isAuthenticated && isCompleted && resumedGeneration -> GeneratingDietPlanScreen (no navigator, no route)
+isAuthenticated && isCompleted                   -> AppStackNavigator
 ```
+
+`resumedGeneration` (`useDietPlanStore`) is a plan generation an earlier session left running, found once at launch. Without a route, `GeneratingDietPlanScreen` waits for it instead of creating a plan, then calls `completeOnboarding()` (which only sets `landingTab: 'DietPlan'` here) and clears it, so the app opens on the plan.
 
 Do not `navigation.navigate` across these. Change the store and let `RootNavigator` swap. For that reason, `login` and `verifyOTP` load the profile and restore onboarding state *before* setting `isAuthenticated`. Reversing the order flashes onboarding at returning users.
 
@@ -47,7 +50,8 @@ End of onboarding:
 
 1. `useAuthStore.bootstrap()`: reads the token, loads the profile (errors swallowed), sets `isAuthenticated: true`.
 2. `Promise.all` of profile, daily log, inventory, and progress `bootstrap()`.
-3. Any rejection: `logout()`.
+3. If signed in with onboarding complete, `useDietPlanStore.checkGeneration()`: the app's only check for a running generation (`GET /diet-plans/generation`). It comes after step 2, which can still log out, so a stale result never reaches the next user. Its errors are swallowed.
+4. Any rejection: `logout()`.
 
 `useProfileStore.bootstrap` exits early only when a profile is loaded, so a missing profile is fetched again in step 2. Hydration is not part of startup; `HomeScreen` loads it.
 

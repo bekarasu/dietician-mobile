@@ -8,7 +8,7 @@ interface ProgressState {
   bootstrap: () => Promise<void>;
   latestEntry: () => ProgressEntry | undefined;
   addWeightLog: (weightKg: number, notes?: string) => Promise<boolean>;
-  removeWeightLog: (id: string) => Promise<void>;
+  removeWeightLog: (id: string) => Promise<boolean>;
 }
 
 export const useProgressStore = create<ProgressState>((set, get) => ({
@@ -38,5 +38,6 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         entries: state.entries.filter((entry) => entry.id !== id),
       }));
     }
+    return success;
   },
 }));

@@ -1,9 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, BackHandler, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
+import { AppButton } from '../components/AppButton';
 import { ScreenContainer } from '../components/ScreenContainer';
+import {
+  GENERATION_DETAIL,
+  isGenerationCancelled,
+  runPlanGeneration,
+  waitForGeneration,
+} from '../features/dietPlan/planGeneration';
+import { useCancelGeneration } from '../features/dietPlan/useCancelGeneration';
+import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { recommendationService } from '../services/recommendationService';
@@ -22,16 +31,23 @@ const HEALTHY_TIPS: Tip[] = [
   { text: 'Consistency is more important than perfection in your diet.', icon: 'calendar-outline' },
 ];
 
-type Props = NativeStackScreenProps<OnboardingStackParamList, 'GeneratingDietPlan'>;
+// RootNavigator also shows this outside the onboarding stack, with no route.
+type Props = Partial<NativeStackScreenProps<OnboardingStackParamList, 'GeneratingDietPlan'>>;
 
-export function GeneratingDietPlanScreen({ route }: Props) {
-  const { startDate } = route.params;
+export function GeneratingDietPlanScreen({ navigation, route }: Props) {
+  // Onboarding passes a start date for a new plan. Without a route, this was
+  // opened at launch to wait for the plan an earlier session left generating.
+  const startDate = route?.params.startDate;
+  const resumedGenerationId = useDietPlanStore((state) => state.resumedGeneration?.id);
+  const clearResumedGeneration = useDietPlanStore((state) => state.clearResumedGeneration);
   const profile = useProfileStore((state) => state.profile);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
   
   const [tipIndex, setTipIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
+  const [isGenerating, setIsGenerating] = useState(true);
+  const { confirmCancel, isCancelling } = useCancelGeneration(isGenerating);
+
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -60,25 +76,43 @@ export function GeneratingDietPlanScreen({ route }: Props) {
     let isMounted = true;
 
     const generatePlan = async () => {
-      if (!profile?.id) {
+      if (!resumedGenerationId && !profile?.id) {
         if (isMounted) completeOnboarding();
         return;
       }
 
       try {
-        await recommendationService.createDietPlan(profile.id, startDate, 7);
+        if (resumedGenerationId) {
+          await waitForGeneration(resumedGenerationId);
+        } else if (profile?.id && startDate) {
+          await runPlanGeneration(() => recommendationService.createDietPlan(profile.id, startDate, 7));
+        }
+        if (isMounted) setIsGenerating(false);
         await new Promise((resolve) => setTimeout(resolve, 1 * 1000));
       } catch (error) {
-        console.error('Failed to create diet plan:', error);
-        if (isMounted) setErrorMsg('We encountered an issue, but you can still explore the app.');
-      } finally {
-        // Add a slight delay to ensure the user sees the loading state for a moment
-        setTimeout(() => {
-          if (isMounted) {
-            completeOnboarding();
+        if (!isMounted) return;
+        if (isGenerationCancelled(error)) {
+          // Back to choosing a start date, or at launch, on into the app.
+          if (resumedGenerationId) {
+            clearResumedGeneration();
+          } else {
+            navigation?.goBack();
           }
-        }, 3000);
+          return;
+        }
+        console.error('Failed to create diet plan:', error);
+        setIsGenerating(false);
+        setErrorMsg('We encountered an issue, but you can still explore the app.');
       }
+
+      // Add a slight delay to ensure the user sees the loading state for a moment
+      setTimeout(() => {
+        if (isMounted) {
+          // At launch onboarding is already complete, so this only opens the plan tab.
+          completeOnboarding();
+          clearResumedGeneration();
+        }
+      }, 3000);
     };
 
     generatePlan();
@@ -86,7 +120,19 @@ export function GeneratingDietPlanScreen({ route }: Props) {
     return () => {
       isMounted = false;
     };
-  }, [profile?.id, startDate, completeOnboarding]);
+  }, [profile?.id, startDate, resumedGenerationId, completeOnboarding, clearResumedGeneration]);
+
+  // Back would leave the plan generating unseen, so it offers to stop it instead.
+  // The iOS swipe back is off for this screen in OnboardingNavigator.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (isGenerating && !isCancelling) {
+        confirmCancel();
+      }
+      return true;
+    });
+    return () => subscription.remove();
+  }, [isGenerating, isCancelling, confirmCancel]);
 
   const currentTip = HEALTHY_TIPS[tipIndex];
 
@@ -102,6 +148,7 @@ export function GeneratingDietPlanScreen({ route }: Props) {
         </Animated.View>
         
         <Text style={styles.title}>Generating your plan...</Text>
+        <Text style={styles.subtitle}>{GENERATION_DETAIL}</Text>
         
         <ActivityIndicator size="small" color={theme.colors.primary} style={styles.spinner} />
         
@@ -135,6 +182,16 @@ export function GeneratingDietPlanScreen({ route }: Props) {
             Our AI is carefully crafting your plan! It's always learning, so please take a moment to review the plan before applying it.
           </Text>
         </View>
+
+        {isGenerating ? (
+          <AppButton
+            title="Cancel"
+            variant="ghost"
+            loading={isCancelling}
+            onPress={confirmCancel}
+            style={styles.cancelButton}
+          />
+        ) : null}
       </View>
     </ScreenContainer>
   );
@@ -169,6 +226,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 5,
+  },
+  subtitle: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
   },
   spinner: {
     marginBottom: theme.spacing.lg,
@@ -218,6 +281,10 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     borderRadius: 12,
     marginTop: 40,
+  },
+  cancelButton: {
+    alignSelf: 'stretch',
+    marginTop: theme.spacing.md,
   },
   aiWarningText: {
     flex: 1,

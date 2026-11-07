@@ -131,6 +131,22 @@ export interface DietPlan {
   nextPlan?: DietPlan;
 }
 
+export type PlanGenerationKind = 'create' | 'renew' | 'update';
+
+export type PlanGenerationStatus = 'running' | 'completed' | 'failed' | 'cancelled';
+
+// An AI run building a plan. The server finishes it even after the app closes,
+// and keeps the latest one for a day.
+export interface PlanGeneration {
+  id: string;
+  kind: PlanGenerationKind;
+  status: PlanGenerationStatus;
+  // The plan it saved, once completed.
+  dietPlanId: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+}
+
 export type PlanEffort = 'too_hard' | 'about_right' | 'too_easy';
 
 export type PlanMealChoice = 'keep_favourites' | 'start_fresh';

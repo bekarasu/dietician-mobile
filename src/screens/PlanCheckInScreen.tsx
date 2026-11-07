@@ -10,6 +10,8 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import { StartDatePicker } from '../components/StartDatePicker';
 import { HEALTH_NOTICE } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
+import { GENERATION_DETAIL, isGenerationCancelled } from '../features/dietPlan/planGeneration';
+import { useCancelGeneration } from '../features/dietPlan/useCancelGeneration';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -39,6 +41,7 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
   const [mealChoice, setMealChoice] = useState<PlanMealChoice>('keep_favourites');
   const [startDate, setStartDate] = useState(earliestStartDate);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { confirmCancel, isCancelling } = useCancelGeneration(isSubmitting);
 
   const handleSubmit = async () => {
     const weightKg = parseFloat(weight);
@@ -60,6 +63,10 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
         navigation.goBack();
       }
     } catch (e) {
+      // Cancelled, so the answers stay here to change and send again.
+      if (isGenerationCancelled(e)) {
+        return;
+      }
       showDialog({ title: 'Error', message: e instanceof Error ? e.message : 'We couldn\'t create your next plan. Please try again.', tone: 'danger' });
     } finally {
       setIsSubmitting(false);
@@ -102,7 +109,12 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
       </View>
 
       <AppButton loading={isSubmitting} onPress={handleSubmit} title="Create My Next Plan" />
-      {isSubmitting ? <Text style={styles.hint}>This can take a minute.</Text> : null}
+      {isSubmitting ? (
+        <>
+          <Text style={styles.hint}>{GENERATION_DETAIL}</Text>
+          <AppButton loading={isCancelling} onPress={confirmCancel} title="Cancel" variant="ghost" />
+        </>
+      ) : null}
       <Text style={styles.notice}>{HEALTH_NOTICE}</Text>
     </ScreenContainer>
   );

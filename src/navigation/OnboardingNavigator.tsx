@@ -20,7 +20,8 @@ export function OnboardingNavigator() {
 		>
 			<Stack.Screen component={OnboardingScreen} name="Onboarding" />
 			<Stack.Screen component={PlanStartDateScreen} name="PlanStartDate" />
-			<Stack.Screen component={GeneratingDietPlanScreen} name="GeneratingDietPlan" />
+			{/* Leaving goes through its Cancel button, which stops the generation. */}
+			<Stack.Screen component={GeneratingDietPlanScreen} name="GeneratingDietPlan" options={{ gestureEnabled: false }} />
 			<Stack.Screen component={FoodSelectionScreen} name="FoodSelection" />
 		</Stack.Navigator>
 	)
