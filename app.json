@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Dietician Mobile",
-    "slug": "dietician-mobile",
+    "name": "Eativio",
+    "slug": "eativio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,10 +15,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bekarasu.dietician-mobile",
+      "bundleIdentifier": "com.forvuno.eativio",
       "appleTeamId": "7NCH5FSTYT",
       "infoPlist": {
-        "CFBundleDisplayName": "Dietician"
+        "CFBundleDisplayName": "Eativio"
       }
     },
     "android": {
@@ -28,7 +28,7 @@
         "monochromeImage": "./assets/adaptive-icon-monochrome.png",
         "backgroundColor": "#0F766E"
       },
-      "package": "com.bekarasu.dieticianmobile"
+      "package": "com.forvuno.eativio"
     },
     "plugins": [
       "expo-secure-store",

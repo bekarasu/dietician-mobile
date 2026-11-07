@@ -1,6 +1,6 @@
 ---
 name: expo-platform-gotchas
-description: Non-obvious iOS/Android, Expo SDK 58, and build behavior specific to dietician-mobile. Use before touching file uploads, FormData or fetch calls, TextInput/login/OTP/numeric forms, keyboard or safe-area layout, the tab bar, biometrics, SecureStore, env vars, app.json, native folders, charts, or running/building the app, and when something works on one platform but not the other, even if the task does not mention a platform.
+description: Non-obvious iOS/Android, Expo SDK 58, and build behavior specific to eativio. Use before touching file uploads, FormData or fetch calls, TextInput/login/OTP/numeric forms, keyboard or safe-area layout, the tab bar, biometrics, SecureStore, env vars, app.json, native folders, charts, or running/building the app, and when something works on one platform but not the other, even if the task does not mention a platform.
 ---
 
 # Expo platform gotchas
@@ -65,7 +65,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 - `ios/` and `android/` are gitignored prebuild output. Native edits there are lost and never reach teammates. Change `app.json` or a config plugin, then run `npx expo prebuild --clean`.
 - For a native build on the project port: `npx dotenv -e .env.development -- npx expo run:ios --port 3000`.
-- The two app identifiers differ on purpose: iOS `com.bekarasu.dietician-mobile`, Android `com.bekarasu.dieticianmobile`. Android forbids hyphens. Do not "align" them; changing either creates a new app identity.
+- The two app identifiers differ on purpose: iOS `com.forvuno.eativio`, Android `com.forvuno.eativio`. Android forbids hyphens. Do not "align" them; changing either creates a new app identity.
 - `EXPO_PUBLIC_*` values are inlined at bundle time, so use static `process.env.EXPO_PUBLIC_X` access, never `process.env[key]`. After changing env files, restart with `npm start -- --clear`. Everything with this prefix ships in the bundle, so no secrets.
 - `.env` defines only `ACCOUNT` and `MEDICAL` URLs. `PROGRESS` and `RECOMMENDATION` exist only in `.env.development`, so a production bundle gets literal `undefined/progress` URLs. Add them before any production build. There is no `eas.json` yet.
 - Refer to env keys by name. Tasks here do not need the values.
