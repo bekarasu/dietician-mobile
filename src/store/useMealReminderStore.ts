@@ -21,6 +21,7 @@ interface MealReminderState {
   // Turning on asks for permission first, and stays off without it. Returns the permission.
   setEnabled: (enabled: boolean) => Promise<ReminderPermission>;
   updateMeal: (mealType: ReminderMealType, change: Partial<MealReminderTime>) => void;
+  setAwayReminder: (awayReminder: boolean) => void;
 }
 
 function persist(settings: MealReminderSettings) {
@@ -63,6 +64,11 @@ export const useMealReminderStore = create<MealReminderState>((set, get) => ({
   updateMeal: (mealType, change) => {
     const current = get().settings;
     const settings = { ...current, meals: { ...current.meals, [mealType]: { ...current.meals[mealType], ...change } } };
+    set({ settings });
+    persist(settings);
+  },
+  setAwayReminder: (awayReminder) => {
+    const settings = { ...get().settings, awayReminder };
     set({ settings });
     persist(settings);
   },

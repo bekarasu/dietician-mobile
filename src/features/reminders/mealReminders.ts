@@ -4,7 +4,14 @@ import { Platform } from 'react-native';
 
 import { DietPlan } from '../../types/models';
 import { MealReminderSettings } from './mealReminderSettings';
-import { MEAL_REMINDER_KIND, planMealReminders } from './planMealReminders';
+import {
+  AWAY_REMINDER_KIND,
+  MEAL_REMINDER_KIND,
+  planAwayReminder,
+  planMealReminders,
+  PlannedReminder,
+  ReminderKind,
+} from './planMealReminders';
 
 // expo-notifications throws on import in a native build made before it was
 // added, so it loads only when its native side is there. Without it, reminders
@@ -14,23 +21,32 @@ const Notifications: typeof NotificationsModule | null = requireOptionalNativeMo
     require('expo-notifications')
   : null;
 
-const CHANNEL_ID = 'meal-reminders';
+// Separate Android channels, so either kind can be muted in the system settings.
+const CHANNELS: Record<ReminderKind, { id: string; name: string; description: string }> = {
+  [MEAL_REMINDER_KIND]: { id: 'meal-reminders', name: 'Meal reminders', description: 'A nudge at each meal in your plan.' },
+  [AWAY_REMINDER_KIND]: { id: 'away-reminders', name: 'Away reminders', description: 'A nudge after a few days without opening the app.' },
+};
 
 // 'ask' can still show the system prompt; 'blocked' needs the Settings app.
 export type ReminderPermission = 'granted' | 'ask' | 'blocked' | 'unavailable';
 
 // Syncs and cancels run one at a time, in order, so a cancel at logout can't be
-// overtaken by a sync that started before it.
-// The queue never rejects, so one failure doesn't stop the next task.
+// overtaken by a sync that started before it. The queue never rejects, so one
+// failure doesn't stop the next task.
 let queue: Promise<void> = Promise.resolve();
 
 function enqueue(task: () => Promise<void>) {
-  queue = queue.then(task).catch((error) => console.warn('Meal reminders failed', error));
+  queue = queue.then(task).catch((error) => console.warn('Reminders failed', error));
   return queue;
 }
 
-function isMealReminder(request: NotificationsModule.NotificationRequest) {
-  return request.content.data?.kind === MEAL_REMINDER_KIND;
+function kindOf(request: NotificationsModule.NotificationRequest) {
+  return request.content.data?.kind as ReminderKind | undefined;
+}
+
+function isAppReminder(request: NotificationsModule.NotificationRequest) {
+  const kind = kindOf(request);
+  return kind === MEAL_REMINDER_KIND || kind === AWAY_REMINDER_KIND;
 }
 
 function toPermission(status: NotificationsModule.NotificationPermissionsStatus): ReminderPermission {
@@ -40,15 +56,43 @@ function toPermission(status: NotificationsModule.NotificationPermissionsStatus)
   return status.canAskAgain ? 'ask' : 'blocked';
 }
 
-async function ensureChannel() {
+async function ensureChannels() {
   if (!Notifications || Platform.OS !== 'android') {
     return;
   }
-  await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'Meal reminders',
-    description: 'A nudge at each meal in your plan.',
-    importance: Notifications.AndroidImportance.DEFAULT,
-  });
+  for (const channel of Object.values(CHANNELS)) {
+    await Notifications.setNotificationChannelAsync(channel.id, {
+      name: channel.name,
+      description: channel.description,
+      importance: Notifications.AndroidImportance.DEFAULT,
+    });
+  }
+}
+
+async function schedule(notifications: typeof NotificationsModule, reminder: PlannedReminder) {
+  try {
+    await notifications.scheduleNotificationAsync({
+      identifier: reminder.identifier,
+      content: { title: reminder.title, body: reminder.body, data: reminder.data, sound: 'default' },
+      trigger: {
+        type: notifications.SchedulableTriggerInputTypes.DATE,
+        date: reminder.fireAt,
+        channelId: CHANNELS[reminder.data.kind].id,
+      },
+    });
+  } catch (error) {
+    // One that fails, such as a time that passed meanwhile, doesn't stop the rest.
+    console.warn('Failed to schedule a reminder', error);
+  }
+}
+
+async function dismissPresented(notifications: typeof NotificationsModule, shouldDismiss: (request: NotificationsModule.NotificationRequest) => boolean) {
+  const presented = await notifications.getPresentedNotificationsAsync();
+  for (const notification of presented) {
+    if (shouldDismiss(notification.request)) {
+      await notifications.dismissNotificationAsync(notification.request.identifier);
+    }
+  }
 }
 
 export async function getReminderPermission(): Promise<ReminderPermission> {
@@ -64,7 +108,7 @@ export async function requestReminderPermission(): Promise<ReminderPermission> {
     return 'unavailable';
   }
   // Android 13 shows its prompt only once the app has a channel.
-  await ensureChannel();
+  await ensureChannels();
   return toPermission(
     await Notifications.requestPermissionsAsync({ ios: { allowAlert: true, allowSound: true, allowBadge: false } }),
   );
@@ -82,8 +126,8 @@ export function configureReminderPresentation() {
   });
 }
 
-// Brings the scheduled reminders in line with the plan, touching only those
-// that changed: the plan reloads on every visit to Today.
+// Brings the scheduled meal reminders in line with the plan, touching only
+// those that changed: the plan reloads on every visit to Today.
 export function syncMealReminders(plan: DietPlan | null, settings: MealReminderSettings) {
   return enqueue(async () => {
     if (!Notifications) {
@@ -91,7 +135,9 @@ export function syncMealReminders(plan: DietPlan | null, settings: MealReminderS
     }
     const { upcoming, loggedIds } = planMealReminders(plan, settings, new Date());
     const wanted = new Map(upcoming.map((reminder) => [reminder.identifier, reminder]));
-    const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(isMealReminder);
+    const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(
+      (request) => kindOf(request) === MEAL_REMINDER_KIND,
+    );
 
     for (const request of scheduled) {
       const next = wanted.get(request.identifier);
@@ -103,61 +149,71 @@ export function syncMealReminders(plan: DietPlan | null, settings: MealReminderS
     }
 
     if (wanted.size > 0) {
-      await ensureChannel();
+      await ensureChannels();
     }
     for (const reminder of wanted.values()) {
-      try {
-        await Notifications.scheduleNotificationAsync({
-          identifier: reminder.identifier,
-          content: { title: reminder.title, body: reminder.body, data: reminder.data, sound: 'default' },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: reminder.fireAt, channelId: CHANNEL_ID },
-        });
-      } catch (error) {
-        // One that fails, such as a time that passed meanwhile, doesn't stop the rest.
-        console.warn('Failed to schedule a meal reminder', error);
-      }
+      await schedule(Notifications, reminder);
     }
 
     if (loggedIds.length > 0) {
-      const presented = await Notifications.getPresentedNotificationsAsync();
-      for (const notification of presented) {
-        if (loggedIds.includes(notification.request.identifier)) {
-          await Notifications.dismissNotificationAsync(notification.request.identifier);
-        }
-      }
+      await dismissPresented(Notifications, (request) => loggedIds.includes(request.identifier));
     }
   });
 }
 
-// Removes every meal reminder, scheduled or already shown. They name the user's
-// meals, so logout calls this.
-export function cancelMealReminders() {
+// Moves the away reminder to AWAY_REMINDER_DAYS after lastOpenedAt, or removes
+// it when it's turned off. One already shown goes too: the user is back.
+export function syncAwayReminder(settings: MealReminderSettings, lastOpenedAt: Date) {
   return enqueue(async () => {
     if (!Notifications) {
       return;
     }
-    const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(isMealReminder);
+    await dismissPresented(Notifications, (request) => kindOf(request) === AWAY_REMINDER_KIND);
+
+    const planned = planAwayReminder(settings, lastOpenedAt);
+    const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(
+      (request) => kindOf(request) === AWAY_REMINDER_KIND,
+    );
+    let isScheduled = false;
     for (const request of scheduled) {
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
-    }
-    const presented = await Notifications.getPresentedNotificationsAsync();
-    for (const notification of presented) {
-      if (isMealReminder(notification.request)) {
-        await Notifications.dismissNotificationAsync(notification.request.identifier);
+      if (planned && request.identifier === planned.identifier && request.content.data?.signature === planned.data.signature) {
+        isScheduled = true;
+      } else {
+        await Notifications.cancelScheduledNotificationAsync(request.identifier);
       }
+    }
+
+    if (planned && !isScheduled) {
+      await ensureChannels();
+      await schedule(Notifications, planned);
     }
   });
 }
 
-// Calls onOpen when the user taps a meal reminder, including the one that
-// launched the app. Returns the unsubscribe function.
-export function onMealReminderOpened(onOpen: () => void) {
+// Removes every reminder of the app, scheduled or already shown. Meal reminders
+// name the user's meals, so logout calls this.
+export function cancelAllReminders() {
+  return enqueue(async () => {
+    if (!Notifications) {
+      return;
+    }
+    const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(isAppReminder);
+    for (const request of scheduled) {
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    }
+    await dismissPresented(Notifications, isAppReminder);
+  });
+}
+
+// Calls onOpen when the user taps one of the app's reminders, including the one
+// that launched the app. Returns the unsubscribe function.
+export function onReminderOpened(onOpen: () => void) {
   if (!Notifications) {
     return () => undefined;
   }
   const notifications = Notifications;
   const handle = (response: NotificationsModule.NotificationResponse | null) => {
-    if (response && isMealReminder(response.notification.request)) {
+    if (response && isAppReminder(response.notification.request)) {
       // Handled once, so logging in again later doesn't reopen it.
       notifications.clearLastNotificationResponse();
       onOpen();

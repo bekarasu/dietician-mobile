@@ -10,6 +10,7 @@ import {
   REMINDER_MEAL_TYPES,
   ReminderMealType,
 } from '../features/reminders/mealReminderSettings';
+import { AWAY_REMINDER_DAYS } from '../features/reminders/planMealReminders';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useMealReminderStore } from '../store/useMealReminderStore';
 import { theme } from '../theme/theme';
@@ -74,6 +75,7 @@ export function MealRemindersScreen() {
   const settings = useMealReminderStore((state) => state.settings);
   const permission = useMealReminderStore((state) => state.permission);
   const updateMeal = useMealReminderStore((state) => state.updateMeal);
+  const setAwayReminder = useMealReminderStore((state) => state.setAwayReminder);
   const activePlan = useDietPlanStore((state) => state.activePlan);
   const isPlanLoaded = useDietPlanStore((state) => state.planLoadedAt !== null);
 
@@ -136,6 +138,29 @@ export function MealRemindersScreen() {
             </View>
           );
         })}
+      </View>
+
+      <View style={styles.menu}>
+        <View style={styles.mealRow}>
+          <View style={styles.mealHeader}>
+            <View style={styles.mealIcon}>
+              <Ionicons name="notifications-outline" size={18} color={theme.colors.primary} />
+            </View>
+            <View style={styles.mealText}>
+              <Text style={styles.mealLabel}>If you've been away</Text>
+              <Text style={styles.mealDetail}>
+                A nudge when you haven't opened the app for {AWAY_REMINDER_DAYS} days, never at night.
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel="Away reminder"
+              value={settings.awayReminder}
+              onValueChange={setAwayReminder}
+              thumbColor={theme.colors.surface}
+              trackColor={{ true: theme.colors.primary, false: theme.colors.border }}
+            />
+          </View>
+        </View>
       </View>
     </ScreenContainer>
   );

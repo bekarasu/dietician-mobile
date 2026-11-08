@@ -63,12 +63,14 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 
 ## Notifications
 
-Meal reminders (since 2026-11-08) are local notifications from `expo-notifications`, in `src/features/reminders/`. No push yet.
+Meal and away reminders (since 2026-11-08) are local notifications from `expo-notifications`, in `src/features/reminders/`. No push yet.
 
 - The plugin sets `enableRemoteNotifications: false`, so iOS gets no `aps-environment` entitlement and signing is unchanged. Wiring up push (the backend has device registration) means flipping it to `true`, which needs the Push capability on the App ID.
 - Importing `expo-notifications` throws in a native build made before it was added. `mealReminders.ts` loads it only when `ExpoNotificationScheduler` exists, and reports `'unavailable'` otherwise; keep other imports of it behind the same check.
 - `useMealReminderSync` (mounted in `AppTabNavigator`) schedules one-shot date triggers for the next 7 days from the active plan and its `nextPlan`, one per meal type and day, and re-syncs on plan change, settings change and app foreground. It diffs by a `signature` in the notification data, because the plan reloads on every visit to Today. iOS keeps at most 64 pending notifications.
-- It waits for `useDietPlanStore.planLoadedAt` before touching anything, because a null `activePlan` alone doesn't tell "no plan" from "not loaded".
+- It waits for `useDietPlanStore.planLoadedAt` before touching meal reminders, because a null `activePlan` alone doesn't tell "no plan" from "not loaded".
+- The away reminder (`planAwayReminder`) is one notification 6 days after the app last came to the foreground signed in, moved to the next 10:00 if that falls between 20:00 and 10:00. Every foreground reschedules it, independent of the plan, so it fires only after 6 days away, a day before the meal reminders run out. It has its own Android channel, `away-reminders`.
+- `cancelAllReminders` (logout, or reminders off) removes both kinds, scheduled and shown. Identify the app's notifications by `data.kind`.
 - Settings are per device, in SecureStore (`MEAL_REMINDER_SETTINGS`), so on iOS they survive a reinstall while the permission does not. The switch shows on only when both the setting and the permission allow it.
 - Android 13 shows its permission prompt only after a channel exists, so `requestReminderPermission` creates `meal-reminders` first. Without `SCHEDULE_EXACT_ALARM` the alarms are inexact, which is fine for meals; don't add that permission, Play restricts it.
 - The Android small icon is `adaptive-icon-monochrome.png`, generated into `drawable-*/notification_icon.png` at prebuild.

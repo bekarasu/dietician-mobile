@@ -16,6 +16,8 @@ export interface MealReminderTime {
 export interface MealReminderSettings {
   enabled: boolean;
   meals: Record<ReminderMealType, MealReminderTime>;
+  // A nudge after some days without opening the app. Only while `enabled` is on.
+  awayReminder: boolean;
 }
 
 export const MINUTES_PER_DAY = 24 * 60;
@@ -29,6 +31,7 @@ export const DEFAULT_MEAL_REMINDER_SETTINGS: MealReminderSettings = {
     Snack: { enabled: false, minutes: 16 * 60 },
     Dinner: { enabled: true, minutes: 19 * 60 + 30 },
   },
+  awayReminder: true,
 };
 
 const STORAGE_KEY = 'MEAL_REMINDER_SETTINGS';
@@ -59,6 +62,7 @@ function normalize(value: unknown): MealReminderSettings {
   return {
     enabled: typeof saved.enabled === 'boolean' ? saved.enabled : DEFAULT_MEAL_REMINDER_SETTINGS.enabled,
     meals,
+    awayReminder: typeof saved.awayReminder === 'boolean' ? saved.awayReminder : DEFAULT_MEAL_REMINDER_SETTINGS.awayReminder,
   };
 }
 

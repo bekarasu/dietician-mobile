@@ -8,23 +8,41 @@ import { isReminderMealType, MealReminderSettings, ReminderMealType } from './me
 export const REMINDER_DAYS_AHEAD = 7;
 
 export const MEAL_REMINDER_KIND = 'meal-reminder';
+export const AWAY_REMINDER_KIND = 'away-reminder';
 
-export interface MealReminderData {
-  kind: typeof MEAL_REMINDER_KIND;
-  date: string;
-  mealType: ReminderMealType;
+export type ReminderKind = typeof MEAL_REMINDER_KIND | typeof AWAY_REMINDER_KIND;
+
+// Days without opening the app before the away reminder. It comes a day before
+// the meal reminders run out, and opening the app schedules the next ones.
+export const AWAY_REMINDER_DAYS = 6;
+
+// The away reminder is never sent at night: a time outside these hours moves
+// on to the next 10:00, so it never comes early.
+const AWAY_EARLIEST_MINUTES = 10 * 60;
+const AWAY_LATEST_MINUTES = 20 * 60;
+
+export interface ReminderData {
+  kind: ReminderKind;
   // Changes whenever the time or text does, so a sync only replaces what changed.
   signature: string;
   [key: string]: unknown;
 }
 
-export interface PlannedMealReminder {
+export interface MealReminderData extends ReminderData {
+  kind: typeof MEAL_REMINDER_KIND;
+  date: string;
+  mealType: ReminderMealType;
+}
+
+export interface PlannedReminder<Data extends ReminderData = ReminderData> {
   identifier: string;
   fireAt: Date;
   title: string;
   body: string;
-  data: MealReminderData;
+  data: Data;
 }
+
+export type PlannedMealReminder = PlannedReminder<MealReminderData>;
 
 export interface MealReminderPlan {
   upcoming: PlannedMealReminder[];
@@ -127,4 +145,36 @@ export function planMealReminders(plan: DietPlan | null, settings: MealReminderS
 
   upcoming.sort((a, b) => a.fireAt.getTime() - b.fireAt.getTime());
   return { upcoming, loggedIds };
+}
+
+// AWAY_REMINDER_DAYS after the app was last opened, at the same time of day
+// unless that falls at night. Each opening moves it on, so it only arrives
+// after that many days away.
+export function planAwayReminder(settings: MealReminderSettings, lastOpenedAt: Date): PlannedReminder | null {
+  if (!settings.enabled || !settings.awayReminder) {
+    return null;
+  }
+
+  const fireAt = new Date(lastOpenedAt);
+  // Calendar days, so a daylight saving change doesn't shift the hour.
+  fireAt.setDate(fireAt.getDate() + AWAY_REMINDER_DAYS);
+  fireAt.setSeconds(0, 0);
+  const minutes = fireAt.getHours() * 60 + fireAt.getMinutes();
+  if (minutes >= AWAY_LATEST_MINUTES) {
+    fireAt.setDate(fireAt.getDate() + 1);
+  }
+  if (minutes < AWAY_EARLIEST_MINUTES || minutes >= AWAY_LATEST_MINUTES) {
+    fireAt.setHours(Math.floor(AWAY_EARLIEST_MINUTES / 60), AWAY_EARLIEST_MINUTES % 60);
+  }
+
+  // Works whatever state the plan is in by then, since it isn't re-planned while the app is closed.
+  const title = 'Your plan is waiting';
+  const body = 'It\'s been a few days since you opened Eativio. Pick up your plan whenever you\'re ready.';
+  return {
+    identifier: AWAY_REMINDER_KIND,
+    fireAt,
+    title,
+    body,
+    data: { kind: AWAY_REMINDER_KIND, signature: `${fireAt.getTime()}|${title}|${body}` },
+  };
 }
