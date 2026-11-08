@@ -7,6 +7,7 @@ import { authService } from '../services/authService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
 import { useDietPlanStore } from './useDietPlanStore';
+import { useNotificationStore } from './useNotificationStore';
 import { useOnboardingStore } from './useOnboardingStore';
 import { useProfileStore } from './useProfileStore';
 
@@ -171,6 +172,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // The reminders name this user's meals, and the next user would get them
       // from the plan until it reloads.
       useDietPlanStore.getState().reset();
+      useNotificationStore.getState().reset();
       void cancelAllReminders();
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
     }

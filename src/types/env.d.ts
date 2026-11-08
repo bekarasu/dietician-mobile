@@ -7,6 +7,7 @@ declare const process: {
     readonly EXPO_PUBLIC_MEDICAL_API_URL?: string;
     readonly EXPO_PUBLIC_PROGRESS_API_URL?: string;
     readonly EXPO_PUBLIC_RECOMMENDATION_API_URL?: string;
+    readonly EXPO_PUBLIC_NOTIFICATION_API_URL?: string;
     // Set by scripts/with-env.js, not by the env files.
     readonly EXPO_PUBLIC_APP_ENV?: string;
     readonly EXPO_PUBLIC_ENV_FILE?: string;

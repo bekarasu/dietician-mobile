@@ -38,7 +38,7 @@ Each env is one file, listed in `package.json` under `config.envs`:
 | `lan` | `.env.lan` (backend on your Mac, over Wi-Fi) | on |
 | `prod` | `.env.prod` | off |
 
-Create the files from `.env.example`. Every script prints the env, the file and the API URLs before it runs, and the app shows them at the bottom of the Profile screen and in the network inspector.
+Create the files from `.env.example`. Every script prints the env, the file and the API URLs before it runs, and the app shows them at the bottom of the Profile screen and in the network inspector. `EXPO_PUBLIC_NOTIFICATION_API_URL` points at notification-service's API process (port 8087 locally), not its worker.
 
 Do not name a file `.env`, `.env.local`, `.env.development` or `.env.production`. Expo merges those in on its own, so the scripts refuse to run while one exists.
 
@@ -64,6 +64,16 @@ Release builds need HTTPS. Android release refuses plain HTTP, so `lan` is for d
 - `npm run typecheck`: Runs TypeScript compiler check without emitting files
 - `npm run test:push`: Checks push registration, token refresh, logout races, opt-out, permission changes and notification destinations
 - `npm run lint`: Runs ESLint for code formatting and quality
+
+### Notifications
+
+notification-service keeps every notification sent to the user, and the app reads them from its API (`src/services/notificationService.ts`); no other service or the app stores them. The bell next to the avatar on Today opens **Notifications**, newest first, with a badge for the unread count (`useNotificationStore`).
+
+- The badge reads `GET /notifications/unread-count` when Today is focused, when the app returns to the foreground, every minute while Today is open, and when a push arrives in the foreground. Nothing else tells the app a notification arrived, so this works with push off.
+- Opening a notification marks it read and opens the same screen as its push (`openNotification`, the table below). Opening a push marks its notification read too, through the `notificationId` every push carries.
+- The list pages with the server's `nextCursor`, loads once per visit, and refreshes on pull. **Mark all read** is in the header.
+- Titles and bodies come from the server, rendered in the request's language (English, as the app sends no `Accept-Language`).
+- Logout resets the badge, so the next user never sees the previous user's count.
 
 ### iOS push notifications (FCM)
 

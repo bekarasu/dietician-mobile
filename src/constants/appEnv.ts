@@ -13,6 +13,7 @@ export const appEnv = {
     ['Medical', process.env.EXPO_PUBLIC_MEDICAL_API_URL],
     ['Progress', process.env.EXPO_PUBLIC_PROGRESS_API_URL],
     ['Recommendation', process.env.EXPO_PUBLIC_RECOMMENDATION_API_URL],
+    ['Notification', process.env.EXPO_PUBLIC_NOTIFICATION_API_URL],
   ] as const,
 };
 

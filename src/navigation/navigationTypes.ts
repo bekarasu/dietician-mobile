@@ -53,6 +53,7 @@ export type AppStackParamList = {
   WeightProgress: undefined;
   MealReminders: undefined;
   PushNotifications: undefined;
+  Notifications: undefined;
   PlanCheckIn: { earliestStartDate: string };
   FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };

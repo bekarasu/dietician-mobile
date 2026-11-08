@@ -482,3 +482,22 @@ export interface OnboardingPageResponse {
   message: string;
   patch?: Partial<OnboardingDraft>;
 }
+
+// One notification from notification-service's inbox, already in the
+// request's language. data is what a push of it carries, type included.
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, string>;
+  createdAt: string;
+  readAt: string | null;
+}
+
+// A page of the inbox, newest first. nextCursor is null on the last page.
+export interface NotificationPage {
+  notifications: AppNotification[];
+  unreadCount: number;
+  nextCursor: string | null;
+}

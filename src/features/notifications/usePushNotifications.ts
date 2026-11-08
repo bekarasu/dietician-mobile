@@ -4,15 +4,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 
 import { AppStackParamList } from '../../navigation/navigationTypes';
-import { useDietPlanStore } from '../../store/useDietPlanStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { leaderboardTarget, notificationDestination } from './notificationDestination';
+import { useNotificationStore } from '../../store/useNotificationStore';
+import { openNotification, refreshForNotification } from './openNotification';
 import { startPushNotifications, usePushNotificationStore } from './pushNotifications';
 
-function refreshPlan(message: RemoteMessage) {
-  if (message.data?.type === 'dietplan.ready') {
-    void useDietPlanStore.getState().fetchActivePlan();
-  }
+// A push that arrives while the app is open is also a new unread notification.
+function onForegroundMessage(message: RemoteMessage) {
+  refreshForNotification(message.data);
+  void useNotificationStore.getState().refreshUnreadCount();
 }
 
 // Register as soon as login/bootstrap finishes. Keep a tap pending while the
@@ -23,7 +23,7 @@ export function usePushNotificationRegistration(ready: boolean) {
     if (!ready || !authenticated) return;
     return startPushNotifications((message) => {
       usePushNotificationStore.setState({ pendingNotification: message });
-    }, refreshPlan);
+    }, onForegroundMessage);
   }, [ready, authenticated]);
 }
 
@@ -33,14 +33,12 @@ export function usePushNotifications() {
   useEffect(() => {
     if (!pending) return;
     usePushNotificationStore.setState({ pendingNotification: null });
-    refreshPlan(pending);
-    const destination = notificationDestination(pending.data);
-    if (destination === 'Friends' || destination === 'SharedPlan') {
-      navigation.navigate(destination);
-    } else if (destination === 'Leaderboard') {
-      navigation.navigate('Tabs', { screen: 'Leaderboard', params: leaderboardTarget(pending.data) });
-    } else {
-      navigation.navigate('Tabs', { screen: destination });
+    // Opening the push reads the notification in the inbox too. A Firebase
+    // Console test has no notificationId.
+    const notificationId = pending.data?.notificationId;
+    if (typeof notificationId === 'string' && notificationId) {
+      void useNotificationStore.getState().markRead(notificationId);
     }
+    openNotification(navigation, pending.data);
   }, [navigation, pending]);
 }

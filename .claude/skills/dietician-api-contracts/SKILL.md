@@ -17,6 +17,7 @@ The backend code is not in this repo. This file records what the client shows as
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/leaderboards`, `/scores` | `leaderboardService` |
 | `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/foods`, `/diet-plans` | `recommendationService` |
 | `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/diet-plans/shared` | `sharedPlanService` |
+| `EXPO_PUBLIC_NOTIFICATION_API_URL` | `/notifications` | `notificationService` |
 
 Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response uses the `{ message, data }` envelope and failures should throw. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
 
@@ -90,6 +91,7 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Onboarding pages | Local with a 250 ms delay. The answers are posted when the plan is created |
 | Leaderboards, score breakdown, friends | Real |
 | Shared meals (groups, invitations, shared plans) | Real, from 2026-11-08 |
+| Notifications inbox and unread count | Real, from 2026-11-08 |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |
 | `useInventoryStore`, `useDailyLogStore` | Mock, used only by `MealRecommendationScreen`, which is not in any navigator |
@@ -129,7 +131,18 @@ A user can eat the same meals as up to 2 friends (`maxFriends` on the group). Ea
 - **Swapping a shared meal** changes it for every member who hasn't logged it as eaten, each in their own portion. `MealCard` asks first. Once nobody else qualifies, it swaps just the user's copy.
 - `PATCH /diet-plans/active/feedback` is a 409 on a shared plan.
 - **Renewal:** the owner's check-in renews the shared plan for the whole group. A member's check-in renews just for them, and the owner's renewal later replaces that plan before it starts.
-- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`.
+- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`. The owner gets `sharedplan.invite_accepted`, with `groupId` and `memberUserId`, when a friend joins.
+
+## Notifications
+
+notification-service is the only place notifications are kept, and the app reads them from its API process (port 8087 locally, a separate process from the worker that sends pushes). Never store notifications in another service or build a list from local state.
+
+- `GET /notifications?limit&cursor` gives a page newest first, with `unreadCount` and `nextCursor` (null on the last page). Page with the cursor, never an offset.
+- Each item has `title` and `body` already rendered, in the `Accept-Language` language (English without it), and `data`, the same strings a push carries, `type` included. Route both through `openNotification` (`src/features/notifications/openNotification.ts`), so the inbox and a push open the same screen.
+- `POST /notifications/:id/read` and `POST /notifications/read-all` return `{ unreadCount }`; keep the badge (`useNotificationStore`) from those answers. Marking one already read is fine; another user's ID is a 404.
+- Every push carries `notificationId`, the inbox ID, and opening the push marks it read.
+- Every notification to the user is in the inbox even when push is off, its channel lists it nowhere else, or the phone has no FCM token. Nothing tells the app one arrived except a push, so `NotificationBell` reads the count on focus, on foreground and every minute.
+- Requests are limited to 120 a minute per user.
 
 ## Pregnancy plan
 
