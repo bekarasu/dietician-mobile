@@ -16,6 +16,8 @@ export interface ProfileDetails {
   // Starts or moves a pregnancy plan, and 0 ends it. The server stores the due
   // date it gives, so only send it when the user changes it.
   pregnancyWeek?: number;
+  // Where the user lives, an ISO 3166-1 alpha-2 code such as TR.
+  countryCode?: string;
 }
 
 // Lists left out are kept on the server; an empty list clears one.
@@ -78,6 +80,7 @@ export const profileService = {
       targetCoffeeCups: data.targetCoffeeCups,
       pregnancyWeek: data.pregnancyWeek,
       pregnancyDueDate: data.pregnancyDueDate,
+      countryCode: data.countryCode,
     } as UserProfile;
   },
 
@@ -97,6 +100,7 @@ export const profileService = {
         activityLevel: details.activityLevel,
         gender: details.gender,
         pregnancyWeek: details.pregnancyWeek,
+        countryCode: details.countryCode,
       }),
     });
 

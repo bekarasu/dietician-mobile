@@ -49,11 +49,18 @@ export interface OnboardingFileUploadFieldDefinition extends OnboardingFieldBase
   inputType: 'file-upload';
 }
 
+// A searchable list of countries, holding an ISO 3166-1 alpha-2 code.
+export interface OnboardingCountryFieldDefinition extends OnboardingFieldBase {
+  inputType: 'country';
+  placeholder?: string;
+}
+
 export type OnboardingFieldDefinition =
   | OnboardingInputFieldDefinition
   | OnboardingSelectFieldDefinition
   | OnboardingFileUploadFieldDefinition
-  | OnboardingFoodSelectionFieldDefinition;
+  | OnboardingFoodSelectionFieldDefinition
+  | OnboardingCountryFieldDefinition;
 
 export interface OnboardingPageDefinition {
   id: OnboardingPageId;

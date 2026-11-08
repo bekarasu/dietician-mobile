@@ -8,6 +8,7 @@ import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
 import { ChoiceChips } from '../components/ChoiceChips';
+import { CountryPicker } from '../components/CountryPicker';
 import { FoodPickerRow } from '../components/FoodPickerRow';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { describeBuild } from '../constants/appEnv';
@@ -139,6 +140,7 @@ export function ProfileGoalsScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingDiet, setIsSavingDiet] = useState(false);
+  const [isSavingCountry, setIsSavingCountry] = useState(false);
   const remindersOn = useMealReminderStore(selectRemindersOn);
   const reminderSettings = useMealReminderStore((state) => state.settings);
   const setRemindersEnabled = useMealReminderStore((state) => state.setEnabled);
@@ -211,6 +213,18 @@ export function ProfileGoalsScreen() {
       showDialog({ title: 'Error', message: 'We couldn\'t save your diet. Please try again.', tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
+    }
+  };
+
+  // Applies to the next plan and to swaps; the current plan's meals stay.
+  const saveCountry = async (countryCode: string) => {
+    setIsSavingCountry(true);
+    try {
+      await updateDetails({ countryCode });
+    } catch (error) {
+      showDialog({ title: 'Error', message: 'We couldn\'t save your country. Please try again.', tone: 'danger' });
+    } finally {
+      setIsSavingCountry(false);
     }
   };
 
@@ -407,6 +421,13 @@ export function ProfileGoalsScreen() {
         <View>
           <Text style={styles.cardTitle}>Food preferences</Text>
           <Text style={styles.cardCaption}>Every meal in your plan respects these. Changes save straight away.</Text>
+        </View>
+        <View style={styles.field}>
+          <View>
+            <Text style={styles.label}>Country</Text>
+            <Text style={styles.cardCaption}>Meals use ingredients you can buy there, from your next plan or swap.</Text>
+          </View>
+          <CountryPicker value={profile?.countryCode ?? ''} onChange={saveCountry} disabled={isSavingCountry || !profile} />
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Diet</Text>

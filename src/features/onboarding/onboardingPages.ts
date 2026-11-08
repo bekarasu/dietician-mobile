@@ -98,6 +98,14 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
     subtitle: 'Every meal in your plan respects these. You can change them later in your profile.',
     fields: [
       {
+        id: 'countryCode',
+        label: 'Country',
+        inputType: 'country',
+        required: true,
+        placeholder: 'Choose where you live',
+        helperText: 'Your meals use ingredients you can buy there, with a light touch of the local cuisine.',
+      },
+      {
         id: 'dietaryPreferences',
         label: 'Diet',
         inputType: 'multi-select',

@@ -142,6 +142,15 @@ A side program, not a goal: offered as the "Special program" chip under Sex (onb
 - While pregnant, `targetWaterMl` is 300 ml higher (still at most 3 L) and `targetCoffeeCups` is 2.
 - Plans: recommendation-service sends the week and trimester at the plan's start date. The AI adds +0/+340/+450 kcal by trimester, never a deficit, and the food-safety rules in `packages/openai/prompts/pregnancy.txt` apply to plans, swaps and shared plans (every shared meal is pregnancy-safe for everyone, and the pregnancy is never mentioned to other members).
 
+## Country
+
+Where the user lives, so plans use ingredients that are easy to buy there, with a light touch of the local cuisine. The plan stays in English. Added 2026-11-08.
+
+- `countryCode` is an upper-case ISO 3166-1 alpha-2 code (`TR`), read from `GET /profiles` and written with `PUT /profiles` or `POST /profiles/onboarding`. Anything else, including `''` or lower case, is a `400`. Left out, the server keeps it, so it can't be cleared.
+- The list is `src/constants/countries.ts`; every code in it passes account-service's validator. Pick with `CountryPicker` (`src/components/`), which also suggests the phone's region, but never pre-fill from it: the language setting often isn't where someone lives.
+- Asked on the onboarding preferences page (required), and changeable in the profile's Food preferences card, which saves straight away. Users onboarded earlier have none, and their plans are made as before until they set one.
+- It changes the next plan, renewal, feedback update and swap, not the plan already made. recommendation-service sends the English country name, which adds `packages/openai/prompts/local-cuisine.txt` to the prompt. Allergies, diets, dislikes, calories and pregnancy rules still win. A shared plan uses the country its members agree on, and none if they disagree.
+
 ## Leaderboards
 
 - A leaderboard is a 503 rather than a partial list when account-service can't answer. Show the error state, never an empty ranking. A background refresh that fails keeps the rankings already on screen.

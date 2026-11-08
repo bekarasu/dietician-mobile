@@ -146,6 +146,7 @@ export function OnboardingScreen({ navigation }: Props) {
       // Onboarding saves the pregnancy plan again too, and ends it if it's left out.
       specialPrograms: profile?.pregnancyWeek ? ['pregnancy'] : [],
       pregnancyWeek: profile?.pregnancyWeek ? String(profile.pregnancyWeek) : '',
+      countryCode: profile?.countryCode ?? '',
       dislikedFoods: profile?.dislikedFoods?.join(', ') ?? '',
       allergies: profile?.allergies?.join(', ') ?? '',
       dailyCalorieTarget: profile?.dailyCalorieTarget ? String(profile.dailyCalorieTarget) : '',

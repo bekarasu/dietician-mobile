@@ -20,6 +20,7 @@ const initialDraft: OnboardingDraft = {
   dietaryPreferences: [],
   specialPrograms: [],
   pregnancyWeek: '',
+  countryCode: '',
   dislikedFoods: '',
   allergies: '',
   dailyCalorieTarget: '',

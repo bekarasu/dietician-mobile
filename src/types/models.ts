@@ -51,6 +51,10 @@ export interface UserProfile {
   // the due date each time, and drops both once the pregnancy is over.
   pregnancyWeek?: number;
   pregnancyDueDate?: string;
+  // Where the user lives, an ISO 3166-1 alpha-2 code such as TR. Plans use
+  // ingredients that are easy to buy there. Missing for users onboarded before
+  // it was asked.
+  countryCode?: string;
 }
 
 export interface DailyFoodLogInput {
@@ -465,6 +469,8 @@ export interface OnboardingDraft {
   specialPrograms: SpecialProgram[];
   // Only used while specialPrograms has pregnancy.
   pregnancyWeek: string;
+  // An ISO 3166-1 alpha-2 code, or '' until chosen.
+  countryCode: string;
   allergies: string;
   dislikedFoods: string;
   dailyCalorieTarget: string;

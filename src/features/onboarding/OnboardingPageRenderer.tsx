@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppTextInput } from '../../components/AppTextInput';
 import { BloodTestUploader } from '../../components/BloodTestUploader';
 import { ChoiceChips } from '../../components/ChoiceChips';
+import { CountryPicker } from '../../components/CountryPicker';
 import { FoodPickerRow } from '../../components/FoodPickerRow';
 import { OnboardingStackParamList } from '../../navigation/navigationTypes';
 import { theme } from '../../theme/theme';
@@ -118,6 +119,20 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
             foods={selectedFoods}
             placeholder={field.placeholder || 'Choose foods'}
             onPress={() => navigation.navigate('FoodSelection', { selectedFoods, fieldName: field.id, context: 'onboarding' })}
+          />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </View>
+      );
+    }
+
+    if (field.inputType === 'country') {
+      return (
+        <View style={styles.field}>
+          <FieldLabel label={field.label} helperText={field.helperText} />
+          <CountryPicker
+            value={typeof rawValue === 'string' ? rawValue : ''}
+            placeholder={field.placeholder}
+            onChange={(code) => onChange(field.id, code as DraftValue)}
           />
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>

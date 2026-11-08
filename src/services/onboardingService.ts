@@ -51,6 +51,9 @@ export const onboardingService = {
         // Always sent, 0 for none, so onboarding can end a pregnancy plan too.
         // The server stores the due date it gives.
         pregnancyWeek: isPregnantDraft(draft) ? Number(draft.pregnancyWeek) : 0,
+        // Plans use ingredients that are easy to buy there. Left out, the server
+        // keeps what the profile has.
+        countryCode: draft.countryCode || undefined,
         dislikedFoods: draft.dislikedFoods,
         allergies: draft.allergies,
         dailyCalorieTarget: draft.dailyCalorieTarget ? Number(draft.dailyCalorieTarget) : undefined,
