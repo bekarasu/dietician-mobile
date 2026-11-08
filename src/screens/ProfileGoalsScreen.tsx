@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
@@ -14,9 +14,11 @@ import { describeBuild } from '../constants/appEnv';
 import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
 import { showDialog } from '../features/dialog/dialogStore';
 import { getTargetWeightError, toggleDietaryPreference } from '../features/profile/profileRules';
+import { formatReminderTime, MealReminderSettings, REMINDER_MEAL_TYPES } from '../features/reminders/mealReminderSettings';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { friendService } from '../services/friendService';
 import { useAuthStore } from '../store/useAuthStore';
+import { selectRemindersOn, useMealReminderStore } from '../store/useMealReminderStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -47,6 +49,14 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
 }
 
 const positiveNumber = (label: string) => (value: string) => Number(value) > 0 || `Enter your ${label}.`;
+
+// "Breakfast 8:30 AM · Lunch 12:30 PM"
+function summarizeReminders(settings: MealReminderSettings) {
+  const times = REMINDER_MEAL_TYPES.filter((mealType) => settings.meals[mealType].enabled).map(
+    (mealType) => `${mealType} ${formatReminderTime(settings.meals[mealType].minutes)}`,
+  );
+  return times.length ? times.join(' · ') : 'No meals chosen';
+}
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -115,7 +125,11 @@ export function ProfileGoalsScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingDiet, setIsSavingDiet] = useState(false);
-  const [mealReminders, setMealReminders] = useState(true);
+  const remindersOn = useMealReminderStore(selectRemindersOn);
+  const reminderSettings = useMealReminderStore((state) => state.settings);
+  const setRemindersEnabled = useMealReminderStore((state) => state.setEnabled);
+  // Shown while the permission prompt is open, so the switch doesn't jump back.
+  const [pendingReminders, setPendingReminders] = useState<boolean | null>(null);
   const [safeGuidanceMode, setSafeGuidanceMode] = useState(true);
   const [incomingRequestCount, setIncomingRequestCount] = useState(0);
 
@@ -177,6 +191,28 @@ export function ProfileGoalsScreen() {
       showDialog({ title: 'Error', message: 'We couldn\'t save your diet. Please try again.', tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
+    }
+  };
+
+  const toggleReminders = async (enabled: boolean) => {
+    setPendingReminders(enabled);
+    const permission = await setRemindersEnabled(enabled);
+    setPendingReminders(null);
+    if (!enabled || permission === 'granted' || permission === 'ask') {
+      return;
+    }
+    if (permission === 'blocked') {
+      showDialog({
+        title: 'Notifications are off',
+        message: 'Allow notifications for Eativio in Settings to get meal reminders.',
+        icon: 'notifications-off-outline',
+        buttons: [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ],
+      });
+    } else {
+      showDialog({ title: 'Update needed', message: 'This version of the app can\'t send reminders. Install the latest one to use them.' });
     }
   };
 
@@ -379,7 +415,20 @@ export function ProfileGoalsScreen() {
       </View>
 
       <View style={styles.menu}>
-        <SettingRow title="Meal reminders" text="Light nudges for meals, water and check-ins." value={mealReminders} onChange={setMealReminders} />
+        <SettingRow
+          title="Meal reminders"
+          text="A nudge at each meal in your plan."
+          value={pendingReminders ?? remindersOn}
+          onChange={toggleReminders}
+        />
+        {remindersOn ? (
+          <MenuRow
+            icon="time-outline"
+            label="Reminder times"
+            detail={summarizeReminders(reminderSettings)}
+            onPress={() => navigation.navigate('MealReminders')}
+          />
+        ) : null}
         <SettingRow
           title="Safe guidance mode"
           text="Keeps suggestions sustainable and never compensatory."

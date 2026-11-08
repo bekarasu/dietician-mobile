@@ -1,3 +1,5 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
 import { LeaderboardPeriod, LeaderboardScope } from '../types/models';
 
 // A user's place on the leaderboard their profile was opened from.
@@ -32,7 +34,7 @@ export type AppTabParamList = {
 };
 
 export type AppStackParamList = {
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<AppTabParamList> | undefined;
   Inventory: undefined;
   HydrationTracking: undefined;
   Friends: undefined;
@@ -41,6 +43,7 @@ export type AppStackParamList = {
   ScoreBreakdown: { period: LeaderboardPeriod; periodStart: string };
   BloodTestUpload: undefined;
   WeightProgress: undefined;
+  MealReminders: undefined;
   PlanCheckIn: { earliestStartDate: string };
   FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };

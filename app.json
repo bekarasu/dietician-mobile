@@ -40,6 +40,14 @@
         }
       ],
       "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand-v2/adaptive-icon-monochrome.png",
+          "color": "#0F766E",
+          "enableRemoteNotifications": false
+        }
+      ],
       "expo-status-bar",
       [
         "expo-splash-screen",

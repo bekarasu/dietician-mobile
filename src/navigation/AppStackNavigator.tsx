@@ -9,6 +9,7 @@ import { UserProfileScreen } from '../screens/UserProfileScreen';
 import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
 import { InventoryScreen } from '../screens/InventoryScreen';
+import { MealRemindersScreen } from '../screens/MealRemindersScreen';
 import { PlanCheckInScreen } from '../screens/PlanCheckInScreen';
 import { theme } from '../theme/theme';
 import { AppTabNavigator } from './AppTabNavigator';
@@ -37,6 +38,7 @@ export function AppStackNavigator() {
       <Stack.Screen component={ScoreBreakdownScreen} name="ScoreBreakdown" options={{ title: 'Your Score' }} />
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood tests' }} />
       <Stack.Screen component={WeightProgressScreen} name="WeightProgress" options={{ title: 'Weight Progress' }} />
+      <Stack.Screen component={MealRemindersScreen} name="MealReminders" options={{ title: 'Meal Reminders' }} />
       <Stack.Screen component={PlanCheckInScreen} name="PlanCheckIn" options={{ title: 'Plan Check-In' }} />
       <Stack.Screen component={FoodSelectionScreen} name="FoodSelection" options={{ title: 'Select Foods' }} />
     </Stack.Navigator>

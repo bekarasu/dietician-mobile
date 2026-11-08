@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 
 import { isOnboardingComplete } from '../features/onboarding/validation';
+import { cancelMealReminders } from '../features/reminders/mealReminders';
 import { authService } from '../services/authService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
+import { useDietPlanStore } from './useDietPlanStore';
 import { useOnboardingStore } from './useOnboardingStore';
 import { useProfileStore } from './useProfileStore';
 
@@ -164,6 +166,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       await tokenService.clearTokens();
       useProfileStore.getState().setProfile(null);
+      // The reminders name this user's meals, and the next user would get them
+      // from the plan until it reloads.
+      useDietPlanStore.getState().reset();
+      void cancelMealReminders();
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
     }
   },

@@ -7,6 +7,9 @@ import { DietPlan, PlanCheckIn, PlanGeneration } from '../types/models';
 interface DietPlanState {
   activePlan: DietPlan | null;
   isLoading: boolean;
+  // When fetchActivePlan last succeeded, null before it has. Tells "no plan"
+  // apart from "not loaded yet", which both leave activePlan null.
+  planLoadedAt: number | null;
   // A generation an earlier session left running, found at launch. RootNavigator
   // shows GeneratingDietPlanScreen until it ends.
   resumedGeneration: PlanGeneration | null;
@@ -17,18 +20,21 @@ interface DietPlanState {
   updateActiveDietPlan: (feedback: string, dayToUpdate?: number) => Promise<void>;
   renewActivePlan: (checkIn: PlanCheckIn) => Promise<void>;
   setActivePlan: (plan: DietPlan | null) => void;
+  // Logout calls it, so the next user never sees this plan or gets its reminders.
+  reset: () => void;
 }
 
 export const useDietPlanStore = create<DietPlanState>((set, get) => ({
   activePlan: null,
   isLoading: false,
+  planLoadedAt: null,
   resumedGeneration: null,
   fetchActivePlan: async () => {
     set({ isLoading: true });
     try {
       const response = await recommendationService.getActiveDietPlan();
       // Backend returns { message: string, data: DietPlan } or null
-      set({ activePlan: response?.data || null });
+      set({ activePlan: response?.data || null, planLoadedAt: Date.now() });
     } catch (e) {
       // Keep what's on screen: the plan screen refetches on every focus, and a
       // failed refresh doesn't mean the plan is gone. A real 404 arrives as null.
@@ -65,4 +71,5 @@ export const useDietPlanStore = create<DietPlanState>((set, get) => ({
     await get().fetchActivePlan();
   },
   setActivePlan: (plan) => set({ activePlan: plan }),
+  reset: () => set({ activePlan: null, planLoadedAt: null }),
 }));
