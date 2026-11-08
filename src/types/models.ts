@@ -106,6 +106,9 @@ export interface DietMeal {
   ingredients: string[];
   isTaken?: boolean;
   isExtra?: boolean;
+  // Everyone in the user's shared group has this meal, in their own portion, so
+  // swapping it changes it for all of them.
+  isShared?: boolean;
 }
 
 // A meal as POST /daily-logs and POST /diet-plans/active/meals both take it.
@@ -129,9 +132,14 @@ export interface DietPlan {
   // First day a next plan could start. Null before the plan's last day and once a next plan exists.
   earliestRenewalDate: string | null;
   nextPlan?: DietPlan;
+  // Set while the plan is shared: it was made for the user's group and they're
+  // still in it. Leaving keeps the plan as an ordinary one.
+  sharedGroupId?: string | null;
 }
 
-export type PlanGenerationKind = 'create' | 'renew' | 'update';
+// 'shared' is a plan the group's owner started for everyone in it. Every member
+// sees it running, and any of them can cancel it.
+export type PlanGenerationKind = 'create' | 'renew' | 'update' | 'shared';
 
 export type PlanGenerationStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -384,6 +392,38 @@ export interface PublicProfile {
   relationship: FriendRelationship;
   requestId?: string;
   friendsSince?: string;
+}
+
+export type SharedMemberStatus = 'joined' | 'invited';
+
+// Someone in a shared group. Members only see each other's names, never their
+// plans, portions or health data.
+export interface SharedGroupMember {
+  userId: string;
+  displayName: string;
+  status: SharedMemberStatus;
+  isOwner: boolean;
+  isCurrentUser: boolean;
+  joinedAt: string | null;
+}
+
+// Friends who get the same meals, each in portions for their own goal and
+// weight. The owner invites up to maxFriends friends, invitations included, and
+// starts shared plans.
+export interface SharedGroup {
+  id: string;
+  isOwner: boolean;
+  maxFriends: number;
+  // The owner first, then joined members, then invitations.
+  members: SharedGroupMember[];
+}
+
+export interface SharedPlanInvite {
+  groupId: string;
+  invitedAt: string;
+  owner: SharedGroupMember;
+  // Everyone who has joined, owner first.
+  members: SharedGroupMember[];
 }
 
 export interface BlockedUser {

@@ -16,6 +16,7 @@ The backend code is not in this repo. This file records what the client shows as
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/progress`, `/daily-logs` | `progressService` |
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/leaderboards`, `/scores` | `leaderboardService` |
 | `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/foods`, `/diet-plans` | `recommendationService` |
+| `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/diet-plans/shared` | `sharedPlanService` |
 
 Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response uses the `{ message, data }` envelope and failures should throw. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
 
@@ -88,6 +89,7 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Diet plans, meal take and swap | Real |
 | Onboarding pages | Local with a 250 ms delay. The answers are posted when the plan is created |
 | Leaderboards, score breakdown, friends | Real |
+| Shared meals (groups, invitations, shared plans) | Real, from 2026-11-08 |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |
 | `useInventoryStore`, `useDailyLogStore` | Mock, used only by `MealRecommendationScreen`, which is not in any navigator |
@@ -114,6 +116,20 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - **Fields you leave out keep their value**, so send only what changed. Every meal sent is added as a new log, so never resend a log you read back: resending duplicates its meals.
 - **Water and coffee count towards scores only when `logDate` is today in the business timezone**, because a past day mustn't be filled in later. Hydration sends `logDate: 'today'`. Without an `Accept-Timezone` header, the server resolves that in the business timezone (Europe/Istanbul), which is the day scores use.
 - `DietPlanScreen` logs meals directly with `progressService`, leaving `useHydrationStore.rawDailyLog` stale. That's harmless now that hydration writes don't resend it.
+
+## Shared meals
+
+A user can eat the same meals as up to 2 friends (`maxFriends` on the group). Each member still has their own plan, with the same dishes in portions worked out from their own goal and weight, so logging, scores and the plan screens work as usual. `SharedPlanScreen` manages it; `DietPlanScreen` links there.
+
+- **Groups:** the owner invites friends (`POST /diet-plans/shared/group/invites`, which creates the group); invitations count towards the limit. Someone is in one group at a time. Accepting drops the user's other invitations and deletes a group of their own with nobody else in it. Only the owner invites, removes members and starts plans; the owner leaving deletes the group. Leaving or being removed keeps the plan as an ordinary one.
+- `GET /diet-plans/shared/group` is a 404 when the user isn't in a group, so `getGroup` returns null. Members see each other's names only.
+- The server removes anyone who stops being the owner's friend, or has a block with another member, the next time the group is read or used. If account-service can't answer, these routes are a 503 rather than going ahead unchecked.
+- **Starting a plan:** `POST /diet-plans/shared` (owner only, `startDate` from today, not yesterday) replaces every joined member's plan from that date. A plan running then keeps going until the day before, and the usual rule applies: replacing a running plan resets that week's plan points. Joining a group is agreeing to this, which the accept dialog says. Start it through `runPlanGeneration`: the generation (kind `shared`) is recorded under every member, so it shows on their apps at launch, none of them can start another meanwhile (409), and **any member can cancel it**, which cancels it for everyone. Everyone gets a `dietplan.ready` push.
+- **Plan fields:** `sharedGroupId` is set on a plan, and `isShared` on its meals, only while the user is still in that group.
+- **Swapping a shared meal** changes it for every member who hasn't logged it as eaten, each in their own portion. `MealCard` asks first. Once nobody else qualifies, it swaps just the user's copy.
+- `PATCH /diet-plans/active/feedback` is a 409 on a shared plan.
+- **Renewal:** the owner's check-in renews the shared plan for the whole group. A member's check-in renews just for them, and the owner's renewal later replaces that plan before it starts.
+- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`.
 
 ## Leaderboards
 

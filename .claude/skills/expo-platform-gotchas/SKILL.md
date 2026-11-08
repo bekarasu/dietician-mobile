@@ -57,23 +57,26 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 - `BloodTestUploadScreen` asks for the screen lock (`unlock`) when it opens and before hiding or deleting a result. Any screen lock will do: it checks `getEnrolledLevelAsync()` is above `NONE`, so a phone with only a passcode gets in. A simulator with neither cannot. Do not bypass the check, as was done until 2026-11-08. Enroll instead: iOS Simulator > Features > Face ID > Enrolled; on Android, set a screen lock and fingerprint, then `adb -e emu finger touch 1`.
 - Biometrics here are a client-side UI gate only. The API does not enforce them.
 - `fallbackLabel` applies to iOS only.
-- Face ID needs a native build. Expo Go does not support it, and `expo-dev-client` is not installed, so `npm run ios` targets Expo Go.
+- Face ID needs a native build. Expo Go does not support it. `npm run ios` and `npm run android` make native debug builds (`expo run`); `expo-dev-client` is not installed.
 - iOS Keychain items survive app deletion, so reinstalling on iOS does not log the user out. Tokens in `tokenService` can outlive the install; use Log out, or erase the simulator.
 - The `expo-secure-store` plugin excludes secure data from Android Auto Backup through `secure_store_*` rules. Do not replace `fullBackupContent` or `dataExtractionRules` without keeping them.
 
 ## Native projects, config, and env
 
 - `ios/` and `android/` are gitignored prebuild output. Native edits there are lost and never reach teammates. Change `app.json` or a config plugin, then run `npx expo prebuild --clean`.
-- For a native build on the project port: `npx dotenv -e .env.development -- npx expo run:ios --port 3000`.
 - The two app identifiers differ on purpose: iOS `com.forvuno.eativio`, Android `com.forvuno.eativio`. Android forbids hyphens. Do not "align" them; changing either creates a new app identity.
-- `EXPO_PUBLIC_*` values are inlined at bundle time, so use static `process.env.EXPO_PUBLIC_X` access, never `process.env[key]`. After changing env files, restart with `npm start -- --clear`. Everything with this prefix ships in the bundle, so no secrets.
-- `.env` defines only `ACCOUNT` and `MEDICAL` URLs. `PROGRESS` and `RECOMMENDATION` exist only in `.env.development`, so a production bundle gets literal `undefined/progress` URLs. Add them before any production build. There is no `eas.json` yet.
-- Refer to env keys by name. Tasks here do not need the values.
+- `EXPO_PUBLIC_*` values are inlined at bundle time, so use static `process.env.EXPO_PUBLIC_X` access, never `process.env[key]`. Everything with this prefix ships in the bundle, so no secrets. New keys go in `src/types/env.d.ts`, which also gives `process` its type.
+- Envs are `.env.dev`, `.env.lan` and `.env.prod`, mapped in `package.json` `config.envs` with a `monitoring` flag each. Every run and build script goes through `scripts/with-env.js`, which loads exactly one file, sets `EXPO_NO_DOTENV`, and stamps `EXPO_PUBLIC_APP_ENV`, `_ENV_FILE`, `_MONITORING`, `_BUILD_TIME` and `_GIT_COMMIT`. `src/constants/appEnv.ts` reads them.
+- **Never name an env file `.env`, `.env.local`, `.env.development` or `.env.production`.** Expo CLI loads those itself, and `.env.local` beats `.env.production`: on 2026-11-08 a Release build shipped `.env.local`'s LAN HTTP URLs this way and could not reach the server. In development, `expo/virtual/env` also merges `.env`, `.env.local` and `.env.development` over `process.env`, beating dotenv-cli and ignoring `EXPO_NO_DOTENV`. `with-env.js` refuses to run while one exists.
+- The network inspector follows `appEnv.monitoring`, not `__DEV__`, so `ios:release:dev` has it and prod builds never do.
+- Gradle re-runs the Android bundle task only when a JS or TS file changes, so `with-env.js` rewrites `.expo/app-env.js` on every run to keep an env switch from reusing the old bundle.
+- To check what a built app contains, grep its `main.jsbundle` (iOS, under DerivedData `Release-iphoneos/Eativio.app`) for the API host or `.env.` stamp.
+- Refer to env keys by name. Tasks here do not need the values. There is no `eas.json` yet.
 
 ## Tooling
 
 - `npm run lint` currently fails: ESLint 9 finds no `eslint.config.*`, and `.eslintrc.js` plus `--ext` are legacy. It does not validate anything until migrated.
-- `npm run typecheck` currently reports exactly 11 errors, all `Cannot find name 'process'`. Any other error comes from your change.
+- `npm run typecheck` passes cleanly since 2026-11-08, so any error comes from your change.
 - `npm run web` is dead: `app.json` targets iOS and Android only, and `react-native-web` is not installed.
 
 ## Charts and animation

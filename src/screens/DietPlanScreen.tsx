@@ -153,6 +153,28 @@ function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestS
   );
 }
 
+// Points to sharing meals with friends, or says the plan on screen is shared.
+function SharedPlanCard({ plan, onOpen }: { plan: DietPlan; onOpen: () => void }) {
+  const isShared = !!plan.sharedGroupId;
+
+  return (
+    <AppCard style={styles.statusCard}>
+      <Pressable accessibilityRole="button" onPress={onOpen} style={styles.statusRow}>
+        <Ionicons name="people-outline" size={22} color={theme.colors.primary} />
+        <View style={styles.statusText}>
+          <Text style={styles.statusTitle}>{isShared ? 'Shared plan' : 'Share meals with friends'}</Text>
+          <Text style={styles.goalsText}>
+            {isShared
+              ? 'Your group has the same meals, each with portions for their own goal. Tap to see who\'s in it.'
+              : 'Eat the same meals as up to 2 friends, with portions for your own goal and weight.'}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
+      </Pressable>
+    </AppCard>
+  );
+}
+
 function GoalsCard({ goalsText }: { goalsText: string }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -333,7 +355,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
   const profile = useProfileStore((state) => state.profile);
   const availableIngredients = profile?.availableIngredients || [];
 
-  const handleSwap = async () => {
+  const swap = async () => {
     setIsSwapping(true);
     try {
       await recommendationService.swapMeal(meal.id);
@@ -343,6 +365,23 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
     } finally {
       setIsSwapping(false);
     }
+  };
+
+  // A shared meal changes for the whole group, so they're asked first.
+  const handleSwap = () => {
+    if (!meal.isShared) {
+      swap();
+      return;
+    }
+    showDialog({
+      title: 'Swap for everyone?',
+      message: 'This meal changes for everyone in your group who hasn\'t eaten it yet, each with their own portion.',
+      icon: 'swap-horizontal-outline',
+      buttons: [
+        { text: 'Swap for everyone', onPress: swap },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
   };
 
   const handleLogMeal = async () => {
@@ -364,6 +403,11 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
               {isExtra && (
                 <View style={{ backgroundColor: theme.colors.warningSurface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
                   <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.text }}>EXTRA</Text>
+                </View>
+              )}
+              {meal.isShared && (
+                <View style={{ backgroundColor: theme.colors.primarySoft, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.primary }}>SHARED</Text>
                 </View>
               )}
               {isLogged && <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />}
@@ -587,6 +631,8 @@ export function DietPlanScreen() {
       />
 
       {nextPlan ? <SegmentedControl onChange={setPlanView} options={PLAN_VIEW_OPTIONS} value={planView} /> : null}
+
+      <SharedPlanCard plan={plan} onOpen={() => navigation.navigate('SharedPlan')} />
 
       <GoalsCard goalsText={plan.goals} />
 

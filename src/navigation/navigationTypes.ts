@@ -36,6 +36,7 @@ export type AppStackParamList = {
   Inventory: undefined;
   HydrationTracking: undefined;
   Friends: undefined;
+  SharedPlan: undefined;
   UserProfile: { userId: string; displayName: string; standing?: ProfileStanding };
   ScoreBreakdown: { period: LeaderboardPeriod; periodStart: string };
   BloodTestUpload: undefined;

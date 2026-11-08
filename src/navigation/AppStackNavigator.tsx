@@ -4,6 +4,7 @@ import { BloodTestUploadScreen } from '../screens/BloodTestUploadScreen';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { HydrationTrackingScreen } from '../screens/HydrationTrackingScreen';
 import { ScoreBreakdownScreen } from '../screens/ScoreBreakdownScreen';
+import { SharedPlanScreen } from '../screens/SharedPlanScreen';
 import { UserProfileScreen } from '../screens/UserProfileScreen';
 import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
@@ -31,6 +32,7 @@ export function AppStackNavigator() {
       <Stack.Screen component={InventoryScreen} name="Inventory" options={{ title: 'My Fridge' }} />
       <Stack.Screen component={HydrationTrackingScreen} name="HydrationTracking" options={{ title: 'Water & Coffee' }} />
       <Stack.Screen component={FriendsScreen} name="Friends" options={{ title: 'Friends' }} />
+      <Stack.Screen component={SharedPlanScreen} name="SharedPlan" options={{ title: 'Shared Meals' }} />
       <Stack.Screen component={UserProfileScreen} name="UserProfile" options={{ title: 'Profile' }} />
       <Stack.Screen component={ScoreBreakdownScreen} name="ScoreBreakdown" options={{ title: 'Your Score' }} />
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood tests' }} />

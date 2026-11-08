@@ -10,6 +10,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ChoiceChips } from '../components/ChoiceChips';
 import { FoodPickerRow } from '../components/FoodPickerRow';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { describeBuild } from '../constants/appEnv';
 import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
 import { showDialog } from '../features/dialog/dialogStore';
 import { getTargetWeightError, toggleDietaryPreference } from '../features/profile/profileRules';
@@ -391,11 +392,20 @@ export function ProfileGoalsScreen() {
         <MenuRow icon="refresh-outline" label="Restart onboarding" detail="Answer the setup questions again" onPress={restartOnboarding} />
         <MenuRow icon="log-out-outline" label="Log out" danger onPress={confirmLogout} />
       </View>
+
+      <Text selectable style={styles.buildInfo}>
+        {describeBuild()}
+      </Text>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  buildInfo: {
+    ...theme.typography.caption,
+    color: theme.colors.muted,
+    textAlign: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
