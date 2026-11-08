@@ -13,6 +13,9 @@ export interface ProfileDetails {
   goalType?: GoalType;
   activityLevel?: string;
   gender?: string;
+  // Starts or moves a pregnancy plan, and 0 ends it. The server stores the due
+  // date it gives, so only send it when the user changes it.
+  pregnancyWeek?: number;
 }
 
 // Lists left out are kept on the server; an empty list clears one.
@@ -73,6 +76,8 @@ export const profileService = {
       gender: data.gender,
       targetWaterMl: data.targetWaterMl,
       targetCoffeeCups: data.targetCoffeeCups,
+      pregnancyWeek: data.pregnancyWeek,
+      pregnancyDueDate: data.pregnancyDueDate,
     } as UserProfile;
   },
 
@@ -91,6 +96,7 @@ export const profileService = {
         goal: details.goalType,
         activityLevel: details.activityLevel,
         gender: details.gender,
+        pregnancyWeek: details.pregnancyWeek,
       }),
     });
 

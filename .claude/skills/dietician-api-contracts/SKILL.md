@@ -70,7 +70,7 @@ Preferences (`/profiles/preferences`):
 - **Onboarding can be undone.** `POST /profiles/onboarding` first keeps what it overwrites, and `DELETE /profiles/onboarding` puts that back once: the profile fields and the three lists, or no answers for a profile onboarding created. The app posts only when the user creates the plan (`saveAnswers`) and reverts only when that generation is cancelled (`revertAnswers`), so the server's snapshot is always that save's. Don't add another caller of `DELETE` without that pairing: the snapshot stays after a plan is created, and reverting later would bring back answers from before an old onboarding.
 - Deploy account-service before an app that reverts. On an older server the `DELETE` fails, and `saveAnswers` then keeps failing, because it reverts an unreverted save first.
 - The server must be updated before the app: an older account-service treats a list left out of `PUT /profiles/preferences` as empty and deletes it.
-- **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
+- **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18; see Pregnancy plan for its limits) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
 - **Answers must agree, on both sides.** account-service returns a translated `400` for: more than one of `omnivore`, `vegetarian`, `vegan`, `pescatarian`; a `weight_loss` target at or above the current weight or below BMI 18.5 for the height; a preference listed twice; or a `gender`, `activityLevel`, goal or preference not in `src/constants/options.ts`, including an empty string, so leave unset fields out. The app applies the same rules from `src/features/profile/profileRules.ts`: picking a base diet replaces the other (`toggleDietaryPreference`), onboarding pages declare cross-field rules as `validate`, which shows under the fields and blocks Continue, and the profile form checks the target. `PUT /profiles` only checks the target when the goal or target changes.
 - Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings, and account-service splits them on commas.
 
@@ -130,6 +130,17 @@ A user can eat the same meals as up to 2 friends (`maxFriends` on the group). Ea
 - `PATCH /diet-plans/active/feedback` is a 409 on a shared plan.
 - **Renewal:** the owner's check-in renews the shared plan for the whole group. A member's check-in renews just for them, and the owner's renewal later replaces that plan before it starts.
 - `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`.
+
+## Pregnancy plan
+
+A side program, not a goal: offered as the "Special program" chip under Sex (onboarding basics page and the profile form), only for `female` or `other`. Added 2026-11-08.
+
+- **Write the week, read the week.** `PUT /profiles` and `POST /profiles/onboarding` take `pregnancyWeek`: 1–42 starts or moves the plan, 0 ends it, left out keeps it. The server stores a due date from it, so send it only when the user changes it (the profile form compares with `profile.pregnancyWeek`): resending the same week can move the due date by days. Onboarding always sends it.
+- `GET /profiles` returns `pregnancyWeek`, worked out from the due date each time, and `pregnancyDueDate` (`YYYY-MM-DD`). Past week 42 the pregnancy is over and both disappear; nothing has to clear it.
+- **Rules, on both sides:** a `400` for a pregnancy plan with `male`, or with a goal other than `maintenance` or `habit_building` (no calorie deficit in pregnancy). App: `getPregnancyGoalError`, `getPregnancyWeekError`, `canHavePregnancyPlan` in `profileRules.ts`. Picking male hides the chip and saving sends 0, so the server never sees both.
+- The goal rule also keeps pregnant users off the leaderboards: only `weight_loss` is scored.
+- While pregnant, `targetWaterMl` is 300 ml higher (still at most 3 L) and `targetCoffeeCups` is 2.
+- Plans: recommendation-service sends the week and trimester at the plan's start date. The AI adds +0/+340/+450 kcal by trimester, never a deficit, and the food-safety rules in `packages/openai/prompts/pregnancy.txt` apply to plans, swaps and shared plans (every shared meal is pregnancy-safe for everyone, and the pregnancy is never mentioned to other members).
 
 ## Leaderboards
 

@@ -1,5 +1,9 @@
 export type GoalType = 'weight_loss' | 'maintenance' | 'body_recomposition' | 'habit_building';
 
+// Programs for a stage of life that changes what a plan needs, offered beside
+// the main goals rather than as one. Only pregnancy so far.
+export type SpecialProgram = 'pregnancy';
+
 export type DietaryPreference =
   | 'omnivore'
   | 'vegetarian'
@@ -43,6 +47,10 @@ export interface UserProfile {
   // Set by the server from weight and age; users can't change them.
   targetWaterMl?: number;
   targetCoffeeCups?: number;
+  // Set while the user has a pregnancy plan. The server works the week out from
+  // the due date each time, and drops both once the pregnancy is over.
+  pregnancyWeek?: number;
+  pregnancyDueDate?: string;
 }
 
 export interface DailyFoodLogInput {
@@ -454,6 +462,9 @@ export interface OnboardingDraft {
   activityLevel: string;
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
+  specialPrograms: SpecialProgram[];
+  // Only used while specialPrograms has pregnancy.
+  pregnancyWeek: string;
   allergies: string;
   dislikedFoods: string;
   dailyCalorieTarget: string;

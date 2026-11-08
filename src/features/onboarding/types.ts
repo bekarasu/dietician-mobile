@@ -19,6 +19,8 @@ interface OnboardingFieldBase {
   helperText?: string;
   // Two half-width fields in a row share it.
   half?: boolean;
+  // Whether the field shows for these answers. A hidden field is never missing.
+  visible?: (draft: OnboardingDraft) => boolean;
 }
 
 export interface OnboardingInputFieldDefinition extends OnboardingFieldBase {

@@ -1,3 +1,4 @@
+import { isPregnantDraft } from '../features/onboarding/validation';
 import { OnboardingDraft, OnboardingPageId, OnboardingPageResponse } from '../types/models';
 import { fetchData } from './apiClient';
 
@@ -30,7 +31,7 @@ function buildGoalSuggestion(draft: OnboardingDraft) {
 export const onboardingService = {
   // Saves the answers to the profile, all at once. The server keeps what they
   // replace until the next save, for revertAnswers, and sets the water target
-  // and coffee limit from weight and age, so they aren't sent.
+  // and coffee limit from weight, age and pregnancy, so they aren't sent.
   async saveAnswers(draft: OnboardingDraft): Promise<void> {
     await fetchData(`${API_URL}/onboarding`, {
       method: 'POST',
@@ -47,6 +48,9 @@ export const onboardingService = {
         activityLevel: draft.activityLevel,
         goalType: draft.goalType,
         dietaryPreferences: draft.dietaryPreferences,
+        // Always sent, 0 for none, so onboarding can end a pregnancy plan too.
+        // The server stores the due date it gives.
+        pregnancyWeek: isPregnantDraft(draft) ? Number(draft.pregnancyWeek) : 0,
         dislikedFoods: draft.dislikedFoods,
         allergies: draft.allergies,
         dailyCalorieTarget: draft.dailyCalorieTarget ? Number(draft.dailyCalorieTarget) : undefined,

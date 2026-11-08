@@ -18,6 +18,8 @@ const initialDraft: OnboardingDraft = {
   activityLevel: '',
   goalType: 'habit_building',
   dietaryPreferences: [],
+  specialPrograms: [],
+  pregnancyWeek: '',
   dislikedFoods: '',
   allergies: '',
   dailyCalorieTarget: '',
