@@ -62,7 +62,40 @@ Release builds need HTTPS. Android release refuses plain HTTP, so `lan` is for d
 ### Other scripts
 
 - `npm run typecheck`: Runs TypeScript compiler check without emitting files
+- `npm run test:push`: Checks push registration, token refresh, logout races, opt-out, permission changes and notification destinations
 - `npm run lint`: Runs ESLint for code formatting and quality
+
+### iOS push notifications (FCM)
+
+The iOS app uses `@react-native-firebase/app` and `@react-native-firebase/messaging`, wrapping the native Firebase Apple SDK. `GoogleService-Info.plist` belongs to Firebase project `eativio-73ea5` and bundle ID `com.forvuno.eativio`. It is client configuration; never put a Firebase Admin service account key or an APNs `.p8` key in this app.
+
+The Expo config enables Push Notifications and the `remote-notification` background mode. Firebase 27 uses Swift Package Manager for the Apple SDK and needs dynamic frameworks, configured through `expo-build-properties`. Native folders are generated; keep changes in `app.json`, `firebase.json` and `plugins/withFirebaseIos.js`.
+
+Before testing delivery:
+
+1. Enable **Push Notifications** for `com.forvuno.eativio` in the Apple Developer portal. Regenerate the provisioning profile if it predates this capability. The Xcode target uses team `7NCH5FSTYT`.
+2. In Firebase project **eativio-73ea5**, open **Project settings → Cloud Messaging → Apple app configuration** and upload the APNs authentication key for that team, if it has not already been configured.
+3. Build a new native app on a physical iPhone: `npm run ios:device`. Expo Go and the native build from before this change do not include the Firebase modules.
+4. Log in and allow notifications. In **Profile → Push notifications**, the phone should show that it is ready. In `dev` and `lan`, this screen also exposes the FCM token for a Firebase Console test message. Put the app in the background and send the test to that token, then repeat with the app open and after a cold launch.
+
+After bootstrap/login, the app sends the **FCM registration token** to account-service with `PUT /devices` and `{ token, platform: 'ios' }`, using the existing authenticated API client. It re-registers on foreground and token refresh, and retries failed registration on the next foreground or **Try again**. Notification permission is checked on every sync. **Push notifications** is a per-device preference stored in SecureStore; turning it off removes this device and revokes its FCM token. Logout stops listeners, drains any in-flight registration, removes the device and revokes the token before ending the authenticated session. The backend logout also invalidates all devices for that account.
+
+Notification taps wait until the signed-in app navigator is available, including when onboarding or resumed generation is open:
+
+| FCM `data.type` | Opens |
+| --- | --- |
+| `friendship.request_received`, `friendship.request_accepted` | Friends |
+| `sharedplan.invite_received` | Shared Meals |
+| `dietplan.ready` | Diet Plan; also refreshes the active plan |
+| Other types or a Firebase Console test without data | Today |
+
+iOS presents the original push in foreground and background; the app does not schedule a duplicate. Local meal reminders keep their existing schedules and stay silent in the foreground. A silent background launch acknowledges FCM messages without mounting the account UI, then mounts it when the app becomes active.
+
+Backend delivery also requires notification-service's Firebase Admin credentials for the same Firebase project and the relevant event/channel switches. See the backend's `docs/notifications.md`; this mobile change does not configure the deployed server.
+
+Android FCM is intentionally disabled in the config plugin and native autolinking. Its existing local notifications keep working. To add Android push later, supply the Firebase project's `google-services.json`, enable the standard Firebase plugins for Android, remove the Android exclusions in `react-native.config.js`, and add its permission/channel/presentation handling in the push service.
+
+References: [React Native Firebase Expo setup](https://rnfirebase.io/#installation-for-expo-projects), [Firebase Apple FCM setup and test delivery](https://firebase.google.com/docs/cloud-messaging/ios/get-started).
 
 ## License
 

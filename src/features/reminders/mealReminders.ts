@@ -114,13 +114,14 @@ export async function requestReminderPermission(): Promise<ReminderPermission> {
   );
 }
 
-// Shows reminders that arrive while the app is open, without a sound.
+// Local reminders stay quiet. Remote pushes also present in the foreground;
+// iOS displays the original notification, so no duplicate is scheduled in JS.
 export function configureReminderPresentation() {
   Notifications?.setNotificationHandler({
-    handleNotification: async () => ({
+    handleNotification: async (notification) => ({
       shouldShowBanner: true,
       shouldShowList: true,
-      shouldPlaySound: false,
+      shouldPlaySound: !isAppReminder(notification.request),
       shouldSetBadge: false,
     }),
   });

@@ -489,6 +489,12 @@ export function ProfileGoalsScreen() {
             onPress={() => navigation.navigate('MealReminders')}
           />
         ) : null}
+        <MenuRow
+          icon="notifications-outline"
+          label="Push notifications"
+          detail="Friends, shared meals and plan updates"
+          onPress={() => navigation.navigate('PushNotifications')}
+        />
         <SettingRow
           title="Safe guidance mode"
           text="Keeps suggestions sustainable and never compensatory."

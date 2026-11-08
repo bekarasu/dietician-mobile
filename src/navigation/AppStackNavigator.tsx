@@ -10,6 +10,7 @@ import { WeightProgressScreen } from '../screens/WeightProgressScreen';
 import { FoodSelectionScreen } from '../screens/FoodSelectionScreen';
 import { InventoryScreen } from '../screens/InventoryScreen';
 import { MealRemindersScreen } from '../screens/MealRemindersScreen';
+import { PushNotificationsScreen } from '../screens/PushNotificationsScreen';
 import { PlanCheckInScreen } from '../screens/PlanCheckInScreen';
 import { theme } from '../theme/theme';
 import { AppTabNavigator } from './AppTabNavigator';
@@ -39,6 +40,7 @@ export function AppStackNavigator() {
       <Stack.Screen component={BloodTestUploadScreen} name="BloodTestUpload" options={{ title: 'Blood tests' }} />
       <Stack.Screen component={WeightProgressScreen} name="WeightProgress" options={{ title: 'Weight Progress' }} />
       <Stack.Screen component={MealRemindersScreen} name="MealReminders" options={{ title: 'Meal Reminders' }} />
+      <Stack.Screen component={PushNotificationsScreen} name="PushNotifications" options={{ title: 'Push Notifications' }} />
       <Stack.Screen component={PlanCheckInScreen} name="PlanCheckIn" options={{ title: 'Plan Check-In' }} />
       <Stack.Screen component={FoodSelectionScreen} name="FoodSelection" options={{ title: 'Select Foods' }} />
     </Stack.Navigator>

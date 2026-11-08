@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { appEnv } from '../constants/appEnv';
 import { DialogHost } from '../features/dialog/DialogHost';
 import { NetworkInspector } from '../features/networkInspector/NetworkInspector';
+import { usePushNotificationRegistration } from '../features/notifications/usePushNotifications';
 import { useAppBootstrap } from '../hooks/useAppBootstrap';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { theme } from '../theme/theme';
@@ -25,6 +26,7 @@ const navigationTheme = {
 
 export function AppProviders() {
   const isReady = useAppBootstrap();
+  usePushNotificationRegistration(isReady);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

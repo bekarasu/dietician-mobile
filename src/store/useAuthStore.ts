@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { isOnboardingComplete } from '../features/onboarding/validation';
+import { stopPushNotifications } from '../features/notifications/pushNotifications';
 import { cancelAllReminders } from '../features/reminders/mealReminders';
 import { authService } from '../services/authService';
 import { tokenService } from '../services/tokenService';
@@ -156,6 +157,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    await stopPushNotifications();
     try {
       const accessToken = await tokenService.getAccessToken();
       if (accessToken) {

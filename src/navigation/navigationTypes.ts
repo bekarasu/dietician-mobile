@@ -44,6 +44,7 @@ export type AppStackParamList = {
   BloodTestUpload: undefined;
   WeightProgress: undefined;
   MealReminders: undefined;
+  PushNotifications: undefined;
   PlanCheckIn: { earliestStartDate: string };
   FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };

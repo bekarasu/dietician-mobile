@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useMealReminderSync } from '../features/reminders/useMealReminderSync';
+import { usePushNotifications } from '../features/notifications/usePushNotifications';
 import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
@@ -26,6 +27,7 @@ export function AppTabNavigator() {
   const tabBarPaddingBottom = Math.max(insets.bottom, theme.spacing.sm);
 
   useMealReminderSync();
+  usePushNotifications();
 
   useEffect(() => {
     if (landingTab) {
