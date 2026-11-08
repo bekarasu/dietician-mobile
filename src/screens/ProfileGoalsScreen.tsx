@@ -12,6 +12,7 @@ import { CountryPicker } from '../components/CountryPicker';
 import { FoodPickerRow } from '../components/FoodPickerRow';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { describeBuild } from '../constants/appEnv';
+import { IOS_PUSH_ENABLED } from '../constants/notifications';
 import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS, SPECIAL_PROGRAM_OPTIONS } from '../constants/options';
 import { showDialog } from '../features/dialog/dialogStore';
 import {
@@ -510,12 +511,14 @@ export function ProfileGoalsScreen() {
             onPress={() => navigation.navigate('MealReminders')}
           />
         ) : null}
-        <MenuRow
-          icon="notifications-outline"
-          label="Push notifications"
-          detail="Friends, shared meals and plan updates"
-          onPress={() => navigation.navigate('PushNotifications')}
-        />
+        {IOS_PUSH_ENABLED ? (
+          <MenuRow
+            icon="notifications-outline"
+            label="Push notifications"
+            detail="Friends, shared meals and plan updates"
+            onPress={() => navigation.navigate('PushNotifications')}
+          />
+        ) : null}
         <SettingRow
           title="Safe guidance mode"
           text="Keeps suggestions sustainable and never compensatory."

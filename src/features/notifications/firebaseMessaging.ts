@@ -1,10 +1,12 @@
 import type * as MessagingModule from '@react-native-firebase/messaging';
 import { Platform, TurboModuleRegistry } from 'react-native';
 
+import { IOS_PUSH_ENABLED } from '../../constants/notifications';
+
 // Old native builds and Expo Go have no Firebase modules. They can still open
 // the app while the settings screen explains that a new native build is needed.
 function loadMessaging(): typeof MessagingModule | null {
-  if (Platform.OS !== 'ios' || !TurboModuleRegistry.get('NativeRNFBTurboApp')) {
+  if (!IOS_PUSH_ENABLED || Platform.OS !== 'ios' || !TurboModuleRegistry.get('NativeRNFBTurboApp')) {
     return null;
   }
   try {

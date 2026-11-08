@@ -55,8 +55,7 @@
         {
           "icon": "./assets/brand-v2/adaptive-icon-monochrome.png",
           "color": "#0F766E",
-          "enableRemoteNotifications": true,
-          "enableBackgroundRemoteNotifications": true
+          "enableRemoteNotifications": false
         }
       ],
       "expo-status-bar",

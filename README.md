@@ -69,11 +69,15 @@ Release builds need HTTPS. Android release refuses plain HTTP, so `lan` is for d
 
 The iOS app uses `@react-native-firebase/app` and `@react-native-firebase/messaging`, wrapping the native Firebase Apple SDK. `GoogleService-Info.plist` belongs to Firebase project `eativio-73ea5` and bundle ID `com.forvuno.eativio`. It is client configuration; never put a Firebase Admin service account key or an APNs `.p8` key in this app.
 
-The Expo config enables Push Notifications and the `remote-notification` background mode. Firebase 27 uses Swift Package Manager for the Apple SDK and needs dynamic frameworks, configured through `expo-build-properties`. Native folders are generated; keep changes in `app.json`, `firebase.json` and `plugins/withFirebaseIos.js`.
+Remote push is **off by default** so the app can be signed with a free Apple Personal Team. Local meal reminders still work. Apple requires an Apple Developer Program membership (or access to an enrolled team) for the iOS Push Notifications capability. The FCM integration stays in the project, but does not register with APNs/FCM or show its settings entry while remote push is disabled.
+
+The single switch is the `expo-notifications` plugin's **`enableRemoteNotifications`** option in `app.json`. Once an enrolled team is available, set it to `true` and run `npm run ios:device`. `plugins/withFirebaseIos.js` manages the `remote-notification` background mode with the same switch and removes old push entitlements/capability metadata when switching back to `false`, including on incremental prebuilds. Do not enable push while signing with a free Personal Team.
+
+Firebase 27 uses Swift Package Manager for the Apple SDK and needs dynamic frameworks, configured through `expo-build-properties`. Native folders are generated; keep changes in `app.json`, `firebase.json` and `plugins/withFirebaseIos.js`.
 
 Before testing delivery:
 
-1. Enable **Push Notifications** for `com.forvuno.eativio` in the Apple Developer portal. Regenerate the provisioning profile if it predates this capability. The Xcode target uses team `7NCH5FSTYT`.
+1. Join the Apple Developer Program or an enrolled team's development account, select that team in `ios.appleTeamId`, and enable **Push Notifications** for `com.forvuno.eativio` in the Apple Developer portal. Regenerate the provisioning profile if it predates this capability. Set `enableRemoteNotifications` to `true` in `app.json`.
 2. In Firebase project **eativio-73ea5**, open **Project settings → Cloud Messaging → Apple app configuration** and upload the APNs authentication key for that team, if it has not already been configured.
 3. Build a new native app on a physical iPhone: `npm run ios:device`. Expo Go and the native build from before this change do not include the Firebase modules.
 4. Log in and allow notifications. In **Profile → Push notifications**, the phone should show that it is ready. In `dev` and `lan`, this screen also exposes the FCM token for a Firebase Console test message. Put the app in the background and send the test to that token, then repeat with the app open and after a cold launch.
@@ -95,7 +99,7 @@ Backend delivery also requires notification-service's Firebase Admin credentials
 
 Android FCM is intentionally disabled in the config plugin and native autolinking. Its existing local notifications keep working. To add Android push later, supply the Firebase project's `google-services.json`, enable the standard Firebase plugins for Android, remove the Android exclusions in `react-native.config.js`, and add its permission/channel/presentation handling in the push service.
 
-References: [React Native Firebase Expo setup](https://rnfirebase.io/#installation-for-expo-projects), [Firebase Apple FCM setup and test delivery](https://firebase.google.com/docs/cloud-messaging/ios/get-started).
+References: [Apple account and Personal Team limitations](https://developer.apple.com/help/account/basics/about-your-developer-account), [Supported iOS capabilities by membership](https://developer.apple.com/help/account/reference/supported-capabilities-ios/), [React Native Firebase Expo setup](https://rnfirebase.io/#installation-for-expo-projects), [Firebase Apple FCM setup and test delivery](https://firebase.google.com/docs/cloud-messaging/ios/get-started).
 
 ## License
 
