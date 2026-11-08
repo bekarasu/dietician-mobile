@@ -10,6 +10,7 @@ import { useDietPlanStore } from './useDietPlanStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useOnboardingStore } from './useOnboardingStore';
 import { useProfileStore } from './useProfileStore';
+import { useSharedPlanOfferStore } from './useSharedPlanOfferStore';
 
 interface AuthState {
   user: User | null;
@@ -173,6 +174,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // from the plan until it reloads.
       useDietPlanStore.getState().reset();
       useNotificationStore.getState().reset();
+      useSharedPlanOfferStore.getState().reset();
       void cancelAllReminders();
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
     }

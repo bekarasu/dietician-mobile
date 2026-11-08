@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useMealReminderSync } from '../features/reminders/useMealReminderSync';
 import { usePushNotifications } from '../features/notifications/usePushNotifications';
+import { useSharedPlanOfferPrompt } from '../features/sharedPlan/useSharedPlanOfferPrompt';
 import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
@@ -28,6 +29,7 @@ export function AppTabNavigator() {
 
   useMealReminderSync();
   usePushNotifications();
+  useSharedPlanOfferPrompt();
 
   useEffect(() => {
     if (landingTab) {

@@ -149,8 +149,8 @@ export interface DietPlan {
   sharedGroupId?: string | null;
 }
 
-// 'shared' is a plan the group's owner started for everyone in it. Every member
-// sees it running, and any of them can cancel it.
+// 'shared' is a shared plan for one person: the owner's when they start one, or
+// a member's when they switch to it. Only that person sees it running.
 export type PlanGenerationKind = 'create' | 'renew' | 'update' | 'shared';
 
 export type PlanGenerationStatus = 'running' | 'completed' | 'failed' | 'cancelled';
@@ -428,6 +428,22 @@ export interface SharedGroup {
   maxFriends: number;
   // The owner first, then joined members, then invitations.
   members: SharedGroupMember[];
+}
+
+// A shared plan the group's owner started. The user's plan stays as it is
+// until they switch to it or keep theirs; switching works out their portions,
+// which takes about a minute like any plan.
+export interface SharedPlanOffer {
+  // Changes with every new shared plan. Answering names it.
+  id: string;
+  groupId: string;
+  owner: { userId: string; displayName: string };
+  // YYYY-MM-DD. Switching replaces the user's plan from this day: the shared
+  // plan's first day, or today once it has started.
+  startDate: string;
+  // YYYY-MM-DD, the shared plan's last day.
+  endDate: string;
+  offeredAt: string;
 }
 
 export interface SharedPlanInvite {

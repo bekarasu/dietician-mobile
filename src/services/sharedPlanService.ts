@@ -1,4 +1,4 @@
-import { SharedGroup, SharedPlanInvite } from '../types/models';
+import { SharedGroup, SharedPlanInvite, SharedPlanOffer } from '../types/models';
 import { fetchData, fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_RECOMMENDATION_API_URL}/diet-plans/shared`;
@@ -57,8 +57,34 @@ export const sharedPlanService = {
   },
 
   // Owner only. Takes about a minute, like any plan, so start it through
-  // runPlanGeneration. Every member's plan is replaced from startDate.
+  // runPlanGeneration. The owner's plan is replaced from startDate. The other
+  // members are offered it, and keep their plans until they switch.
   createSharedPlan(startDate: string, durationDays = 7) {
     return postJson(API_URL, { startDate, durationDays });
+  },
+
+  // Null when no shared plan is waiting for the user.
+  async getOffer(): Promise<SharedPlanOffer | null> {
+    const response = await fetchWithAuth(`${API_URL}/offer`);
+    if (response.status === 404) {
+      return null;
+    }
+
+    const body = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to load the shared plan');
+    }
+    return body.data;
+  },
+
+  // Works out the user's portions, so start it through runPlanGeneration. A
+  // 404 means a newer shared plan replaced this one, or it can't be taken any more.
+  acceptOffer(offerId: string) {
+    return postJson(`${API_URL}/offer/${offerId}/accept`);
+  },
+
+  // Keeps the user's own plan. They stay in the group.
+  declineOffer(offerId: string) {
+    return postJson(`${API_URL}/offer/${offerId}/decline`);
   },
 };

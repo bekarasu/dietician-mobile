@@ -11,10 +11,12 @@ import { ListCard, RowAction, UserRow } from '../components/UserList';
 import { showDialog } from '../features/dialog/dialogStore';
 import { GENERATION_DETAIL, isGenerationCancelled, runPlanGeneration } from '../features/dietPlan/planGeneration';
 import { useCancelGeneration } from '../features/dietPlan/useCancelGeneration';
+import { acceptSharedPlanOffer, askToSwitch, declineSharedPlanOffer } from '../features/sharedPlan/sharedPlanOffer';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { friendService } from '../services/friendService';
 import { sharedPlanService } from '../services/sharedPlanService';
 import { useDietPlanStore } from '../store/useDietPlanStore';
+import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
 import { theme } from '../theme/theme';
 import { Friend, SharedGroup, SharedGroupMember, SharedPlanInvite } from '../types/models';
 import { formatCalendarDate, formatDateLabel, toCalendarDate } from '../utils/date';
@@ -57,7 +59,10 @@ export function SharedPlanScreen({ navigation }: Props) {
   const [today] = useState(() => toCalendarDate(new Date()));
   const [startDate, setStartDate] = useState(today);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { confirmCancel, isCancelling } = useCancelGeneration(isGenerating);
+  // A shared plan the owner started, waiting for this member to switch to it.
+  const offer = useSharedPlanOfferStore((state) => state.offer);
+  const isAccepting = useSharedPlanOfferStore((state) => state.isAccepting);
+  const { confirmCancel, isCancelling } = useCancelGeneration(isGenerating || isAccepting);
   const fetchActivePlan = useDietPlanStore((state) => state.fetchActivePlan);
   // A plan carries on generating after the screen is left, and only then says so.
   const isMounted = useRef(true);
@@ -67,6 +72,12 @@ export function SharedPlanScreen({ navigation }: Props) {
       sharedPlanService.getGroup(),
       sharedPlanService.listInvites(),
       friendService.listFriends(),
+      // Shown here, so the app-open prompt doesn't ask about it as well. The
+      // rest of the screen works without it.
+      useSharedPlanOfferStore
+        .getState()
+        .load({ seen: true })
+        .catch(() => undefined),
     ]);
     setGroup(nextGroup);
     setInvites(nextInvites);
@@ -134,7 +145,7 @@ export function SharedPlanScreen({ navigation }: Props) {
     const ownerName = invite.owner.displayName;
     showDialog({
       title: `Share meals with ${ownerName}?`,
-      message: `You'll eat the same meals as the group, in portions for your own goal and weight. When ${ownerName} starts a shared plan, it replaces your plan from its start date, and if your plan is running then, the meal, water and coffee points from your plan earlier that week are reset. You can leave at any time.`,
+      message: `You'll eat the same meals as the group, in portions for your own goal and weight. When ${ownerName} starts a shared plan, you'll be asked whether to switch to it, and your plan only changes if you do. You can leave at any time.`,
       icon: 'people-outline',
       buttons: [
         { text: 'Join', onPress: () => run(invite.groupId, () => sharedPlanService.acceptInvite(invite.groupId)) },
@@ -167,7 +178,7 @@ export function SharedPlanScreen({ navigation }: Props) {
       title: isOwner ? 'Delete your group?' : 'Leave the group?',
       message: isOwner
         ? "Everyone's current plan stays as it is, but you won't share new plans any more."
-        : `Your current plan stays as it is, and ${owner?.displayName ?? 'the owner'}'s next shared plans won't replace it.`,
+        : `Your current plan stays as it is, and you won't be offered ${owner?.displayName ?? 'the owner'}'s next shared plans.`,
       icon: 'exit-outline',
       buttons: [
         { text: 'Cancel', style: 'cancel' },
@@ -177,13 +188,14 @@ export function SharedPlanScreen({ navigation }: Props) {
   };
 
   const createPlan = async () => {
+    const names = joinNames(joinedFriends.map((member) => member.displayName));
     setIsGenerating(true);
     try {
       await runPlanGeneration(() => sharedPlanService.createSharedPlan(startDate));
       await fetchActivePlan();
       showDialog({
         title: 'Your shared plan is ready',
-        message: 'Everyone in your group has the same meals now, each with portions for their own goal.',
+        message: `${names} will be asked whether to switch to it when they next open the app. Their plans change only if they do.`,
         icon: 'checkmark-circle-outline',
         buttons: isMounted.current
           ? [{ text: 'See my plan', onPress: () => isMounted.current && navigation.canGoBack() && navigation.goBack() }]
@@ -203,7 +215,7 @@ export function SharedPlanScreen({ navigation }: Props) {
     const names = joinNames(joinedFriends.map((member) => member.displayName));
     showDialog({
       title: 'Start a shared plan?',
-      message: `You and ${names} will get the same meals from ${formatCalendarDate(startDate)}, each in portions for your own goal and weight. It replaces each of your plans from that day. Anyone whose plan is running then has the meal, water and coffee points from their plan earlier that week reset.`,
+      message: `Your plan is replaced from ${formatCalendarDate(startDate)} with meals that suit ${names} too. If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset. ${names} will be asked whether to switch, and get portions for their own goal and weight if they do.`,
       icon: 'restaurant-outline',
       buttons: [
         { text: 'Start shared plan', onPress: createPlan },
@@ -225,6 +237,38 @@ export function SharedPlanScreen({ navigation }: Props) {
     ];
   };
 
+  // A shared plan waiting for this member, or their portions being prepared.
+  const renderOfferCard = () => {
+    if (isAccepting) {
+      return (
+        <View style={[styles.card, styles.centered]}>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <Text style={styles.cardTitle}>Switching to the shared plan</Text>
+          <Text style={[styles.bodyText, styles.centeredText]}>{GENERATION_DETAIL}</Text>
+          <AppButton title="Stop" variant="ghost" loading={isCancelling} onPress={confirmCancel} />
+        </View>
+      );
+    }
+    if (!offer) {
+      return null;
+    }
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{offer.owner.displayName} started a shared plan</Text>
+        <Text style={styles.bodyText}>
+          It runs from {formatCalendarDate(offer.startDate)} to {formatCalendarDate(offer.endDate)}. Your plan stays as it is
+          until you choose. If you switch, you get the group's meals in portions for your own goal and weight.
+        </Text>
+        <AppButton
+          title="Switch to the shared plan"
+          onPress={() => void askToSwitch(offer, { onSwitch: () => void acceptSharedPlanOffer(), dismissText: 'Cancel' })}
+        />
+        <AppButton title="Keep my plan" variant="ghost" onPress={() => void declineSharedPlanOffer()} />
+      </View>
+    );
+  };
+
   const renderPlanCard = () => {
     if (!group) {
       return null;
@@ -235,8 +279,9 @@ export function SharedPlanScreen({ navigation }: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Shared plans</Text>
           <Text style={styles.bodyText}>
-            {owner?.displayName ?? 'The owner'} starts the group's shared plans and renews them. You'll get a notification when
-            yours is ready. You can still swap meals, which changes them for everyone who hasn't eaten them yet.
+            {owner?.displayName ?? 'The owner'} starts the group's shared plans and renews them. You're asked each time whether
+            to switch, and your plan only changes if you do. Swapping a shared meal changes it for everyone on the plan who
+            hasn't eaten it yet.
           </Text>
         </View>
       );
@@ -266,8 +311,9 @@ export function SharedPlanScreen({ navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Start a shared plan</Text>
         <Text style={styles.bodyText}>
-          Everyone gets the same meals, with portions worked out from their own goal and weight. Meals avoid every member's
-          allergies, dislikes and diet. Pick a day you'll all have time to shop for.
+          You get your plan straight away. Your friends are asked whether to switch, and get the same meals with portions
+          worked out from their own goal and weight. Meals avoid every member's allergies, dislikes and diet. Pick a day you'll all have
+          time to shop for.
         </Text>
         <StartDatePicker firstDate={today} onChange={setStartDate} value={startDate} />
         <AppButton title="Create shared plan" onPress={confirmCreate} />
@@ -338,6 +384,8 @@ export function SharedPlanScreen({ navigation }: Props) {
             </ListCard>
           ) : null}
 
+          {renderOfferCard()}
+
           {renderPlanCard()}
 
           {isOwner && slotsLeft > 0 ? (
@@ -372,7 +420,7 @@ export function SharedPlanScreen({ navigation }: Props) {
               title={group.isOwner ? 'Delete group' : 'Leave group'}
               variant="ghost"
               loading={busyId === 'leave'}
-              disabled={isGenerating}
+              disabled={isGenerating || isAccepting}
               onPress={confirmLeave}
             />
           ) : null}

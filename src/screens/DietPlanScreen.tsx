@@ -17,6 +17,7 @@ import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
 import { leaderboardService } from '../services/leaderboardService';
 import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
@@ -153,21 +154,32 @@ function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestS
   );
 }
 
-// Points to sharing meals with friends, or says the plan on screen is shared.
+// Points to sharing meals with friends, says the plan on screen is shared, or
+// that a shared plan is waiting for the user to switch to it.
 function SharedPlanCard({ plan, onOpen }: { plan: DietPlan; onOpen: () => void }) {
   const isShared = !!plan.sharedGroupId;
+  const offer = useSharedPlanOfferStore((state) => state.offer);
+  const isAccepting = useSharedPlanOfferStore((state) => state.isAccepting);
+
+  let title = isShared ? 'Shared plan' : 'Share meals with friends';
+  let detail = isShared
+    ? 'Your group has the same meals, each with portions for their own goal. Tap to see who\'s in it.'
+    : 'Eat the same meals as up to 2 friends, with portions for your own goal and weight.';
+  if (isAccepting) {
+    title = 'Switching to the shared plan';
+    detail = 'Your portions are being prepared. This usually takes about a minute.';
+  } else if (offer) {
+    title = `${offer.owner.displayName} started a shared plan`;
+    detail = 'Your plan stays as it is until you choose. Tap to decide whether to switch.';
+  }
 
   return (
     <AppCard style={styles.statusCard}>
       <Pressable accessibilityRole="button" onPress={onOpen} style={styles.statusRow}>
         <Ionicons name="people-outline" size={22} color={theme.colors.primary} />
         <View style={styles.statusText}>
-          <Text style={styles.statusTitle}>{isShared ? 'Shared plan' : 'Share meals with friends'}</Text>
-          <Text style={styles.goalsText}>
-            {isShared
-              ? 'Your group has the same meals, each with portions for their own goal. Tap to see who\'s in it.'
-              : 'Eat the same meals as up to 2 friends, with portions for your own goal and weight.'}
-          </Text>
+          <Text style={styles.statusTitle}>{title}</Text>
+          <Text style={styles.goalsText}>{detail}</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
       </Pressable>

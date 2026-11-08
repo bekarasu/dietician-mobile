@@ -9,6 +9,7 @@ export function notificationDestination(data?: { [key: string]: unknown }): Noti
       return 'Friends';
     case 'sharedplan.invite_received':
     case 'sharedplan.invite_accepted':
+    case 'sharedplan.plan_offered':
       return 'SharedPlan';
     case 'dietplan.ready':
       return 'DietPlan';

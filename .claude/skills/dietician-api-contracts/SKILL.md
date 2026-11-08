@@ -34,6 +34,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 | `GET /profiles` | 404 means no profile yet | Normal for a first login; return `null` |
 | `GET /diet-plans/active` | 404 means no plan | Return `null` |
 | `GET /diet-plans/generation` | 404 means no generation in the last day | Return `null` |
+| `GET /diet-plans/shared/offer` | 404 means no shared plan waiting | Return `null` |
 | `GET /daily-logs/:date` | 404 means no log | Return `null` |
 
 ## Error handling differs by service
@@ -126,12 +127,13 @@ A user can eat the same meals as up to 2 friends (`maxFriends` on the group). Ea
 - **Groups:** the owner invites friends (`POST /diet-plans/shared/group/invites`, which creates the group); invitations count towards the limit. Someone is in one group at a time. Accepting drops the user's other invitations and deletes a group of their own with nobody else in it. Only the owner invites, removes members and starts plans; the owner leaving deletes the group. Leaving or being removed keeps the plan as an ordinary one.
 - `GET /diet-plans/shared/group` is a 404 when the user isn't in a group, so `getGroup` returns null. Members see each other's names only.
 - The server removes anyone who stops being the owner's friend, or has a block with another member, the next time the group is read or used. If account-service can't answer, these routes are a 503 rather than going ahead unchecked.
-- **Starting a plan:** `POST /diet-plans/shared` (owner only, `startDate` from today, not yesterday) replaces every joined member's plan from that date. A plan running then keeps going until the day before, and the usual rule applies: replacing a running plan resets that week's plan points. Joining a group is agreeing to this, which the accept dialog says. Start it through `runPlanGeneration`: the generation (kind `shared`) is recorded under every member, so it shows on their apps at launch, none of them can start another meanwhile (409), and **any member can cancel it**, which cancels it for everyone. Everyone gets a `dietplan.ready` push.
+- **Starting a plan:** `POST /diet-plans/shared` (owner only, `startDate` from today, not yesterday) replaces **only the owner's** plan from that date. Its meals suit every joined member (combined allergies, diets, dislikes, pregnancy-safe if anyone is pregnant), but only the owner's portions are worked out. Start it through `runPlanGeneration`; the generation (kind `shared`) is the owner's alone. The owner gets `dietplan.ready`; each other joined member gets a `sharedplan.plan_offered` push (`groupId`, `ownerUserId`, `startDate`) and an offer. From recommendation-service 2026-11-08; before that, every member's plan was replaced at once.
+- **Offers:** a member's plan stays as it is until they answer. `GET /diet-plans/shared/offer` (404: none) gives `id`, `owner`, `startDate` (the shared plan's first day, or today once it has started) and `endDate`. `POST /diet-plans/shared/offer/:id/accept` works out their portions (an AI call, about a minute, kind `shared`, so go through `runPlanGeneration`) and replaces their plan from `startDate`; the usual score rule applies. `POST .../offer/:id/decline` keeps their plan, and they stay in the group. One offer per user: a newer shared plan replaces it (a new `id`, so answering the old one is a 404), and it disappears when they leave the group or the owner's plan ends or is replaced. State lives in `useSharedPlanOfferStore` (reset at logout). `useSharedPlanOfferPrompt` (in `AppTabNavigator`) asks once per offer per launch, on open, on foreground and on a foreground push, with the points at risk (`features/sharedPlan/sharedPlanOffer.ts`); `SharedPlanScreen` and the Diet Plan shared card show it too.
 - **Plan fields:** `sharedGroupId` is set on a plan, and `isShared` on its meals, only while the user is still in that group.
 - **Swapping a shared meal** changes it for every member who hasn't logged it as eaten, each in their own portion. `MealCard` asks first. Once nobody else qualifies, it swaps just the user's copy.
 - `PATCH /diet-plans/active/feedback` is a 409 on a shared plan.
-- **Renewal:** the owner's check-in renews the shared plan for the whole group. A member's check-in renews just for them, and the owner's renewal later replaces that plan before it starts.
-- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`. The owner gets `sharedplan.invite_accepted`, with `groupId` and `memberUserId`, when a friend joins.
+- **Renewal:** the owner's check-in renews the shared plan: the owner gets it and the others are offered it. A member's check-in renews just for them, and the owner's renewal replaces that plan only if they switch.
+- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`. The owner gets `sharedplan.invite_accepted`, with `groupId` and `memberUserId`, when a friend joins. `sharedplan.plan_offered` opens `SharedPlanScreen`.
 
 ## Notifications
 
