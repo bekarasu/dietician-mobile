@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { AppStackParamList } from '../../navigation/navigationTypes';
 import { useDietPlanStore } from '../../store/useDietPlanStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { notificationDestination } from './notificationDestination';
+import { leaderboardTarget, notificationDestination } from './notificationDestination';
 import { startPushNotifications, usePushNotificationStore } from './pushNotifications';
 
 function refreshPlan(message: RemoteMessage) {
@@ -37,6 +37,8 @@ export function usePushNotifications() {
     const destination = notificationDestination(pending.data);
     if (destination === 'Friends' || destination === 'SharedPlan') {
       navigation.navigate(destination);
+    } else if (destination === 'Leaderboard') {
+      navigation.navigate('Tabs', { screen: 'Leaderboard', params: leaderboardTarget(pending.data) });
     } else {
       navigation.navigate('Tabs', { screen: destination });
     }

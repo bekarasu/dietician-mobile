@@ -26,7 +26,7 @@ export function PushNotificationsScreen() {
         <View style={styles.row}>
           <View style={styles.copy}>
             <Text style={styles.title}>Keep up with your plan</Text>
-            <Text style={styles.text}>Friend requests, shared meal invitations and updates when your plan is ready.</Text>
+            <Text style={styles.text}>Friend requests, your weekly and monthly results, shared meal invitations and updates when your plan is ready.</Text>
           </View>
           <Switch
             accessibilityLabel="Push notifications"

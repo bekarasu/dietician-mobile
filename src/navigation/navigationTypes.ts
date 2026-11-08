@@ -2,6 +2,13 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 
 import { LeaderboardPeriod, LeaderboardScope } from '../types/models';
 
+// Which ranking the Leaderboard tab opens on. Anything left out keeps the tab's default.
+export interface LeaderboardTarget {
+  scope?: LeaderboardScope;
+  period?: LeaderboardPeriod;
+  periodStart?: string;
+}
+
 // A user's place on the leaderboard their profile was opened from.
 export interface ProfileStanding {
   rank: number;
@@ -28,7 +35,8 @@ export type OnboardingStackParamList = {
 export type AppTabParamList = {
   Home: undefined;
   DietPlan: undefined;
-  Leaderboard: undefined;
+  // A score result notification opens the period and ranking it was about.
+  Leaderboard: LeaderboardTarget | undefined;
   ProgressDashboard: undefined;
   ProfileGoals: undefined;
 };

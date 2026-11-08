@@ -89,7 +89,8 @@ Notification taps wait until the signed-in app navigator is available, including
 | FCM `data.type` | Opens |
 | --- | --- |
 | `friendship.request_received`, `friendship.request_accepted` | Friends |
-| `sharedplan.invite_received` | Shared Meals |
+| `sharedplan.invite_received`, `sharedplan.invite_accepted` | Shared Meals |
+| `score.weekly_result`, `score.monthly_result` | Leaderboard, on the period and ranking (`scope`) the notification was about |
 | `dietplan.ready` | Diet Plan; also refreshes the active plan |
 | Other types or a Firebase Console test without data | Today |
 
