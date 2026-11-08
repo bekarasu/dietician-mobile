@@ -32,7 +32,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 | `GET /uploads/:id` | `{ data: { upload } }` | Unused: `GET /uploads` already carries `parsedResults`. The upload date is `createdAt` |
 | `GET /profiles` | 404 means no profile yet | Normal for a first login; return `null` |
 | `GET /diet-plans/active` | 404 means no plan | Return `null` |
-| `GET /diet-plans/generation` | 404 means no generation | Return `null` |
+| `GET /diet-plans/generation` | 404 means no generation in the last day | Return `null` |
 | `GET /daily-logs/:date` | 404 means no log | Return `null` |
 
 ## Error handling differs by service
@@ -109,7 +109,7 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - `mealType` values are capitalized (`Breakfast`, `Lunch`, `Snack`, `Dinner`) for sorting. Other values sort last.
 - `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`.
 - After a plan mutation, the UI calls `fetchActivePlan()` rather than patching state.
-- **Generating a plan outlives its request.** Create, renew and feedback update take about a minute, and the server finishes and saves the plan even when the app is backgrounded or killed. iOS suspends the app in the background, so the request then fails or stalls. Start these through `runPlanGeneration` (`src/features/dietPlan/planGeneration.ts`): after an interruption it follows `GET /diet-plans/generation`, and recognizes its generation by an id different from the one read before starting. One generation runs per user, and starting another is a 409. A generation left running by an earlier session is found once, at launch (see dietician-session-flow), and opens `GeneratingDietPlanScreen`. Don't add checks on screen focus. The generating and check-in screens can cancel through `POST /diet-plans/generation/cancel` (`useCancelGeneration`). Nothing is saved, and the wait then throws an error that `isGenerationCancelled` recognizes, which is where a screen moves on. A cancel is a 409 once the generation is saving its plan, which then still arrives.
+- **Generating a plan outlives its request.** Create, renew and feedback update take about a minute, and the server finishes and saves the plan even when the app is backgrounded or killed. iOS suspends the app in the background, so the request then fails or stalls. Start these through `runPlanGeneration` (`src/features/dietPlan/planGeneration.ts`): after an interruption it follows `GET /diet-plans/generation`, and recognizes its generation by an id different from the one read before starting. A saved plan's generation reads `completed` for a day, like `failed` and `cancelled`; a 404 after following one means it stopped without an end (its server crashed). Until recommendation-service from 2026-11-08 it was deleted instead, so the 404 made the app report a failure for a saved plan, and "Go back" reverted the onboarding answers. One generation runs per user, and starting another is a 409. A generation left running by an earlier session is found once, at launch (see dietician-session-flow), and opens `GeneratingDietPlanScreen`. Don't add checks on screen focus. The generating and check-in screens can cancel through `POST /diet-plans/generation/cancel` (`useCancelGeneration`). Nothing is saved, and the wait then throws an error that `isGenerationCancelled` recognizes, which is where a screen moves on. A cancel is a 409 once the generation is saving its plan, which then still arrives.
 
 `POST /daily-logs` is an upsert:
 
