@@ -7,6 +7,7 @@ import { FoodSelectionList } from '../components/FoodSelectionList';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { showDialog } from '../features/dialog/dialogStore';
 import { AppStackParamList } from '../navigation/navigationTypes';
+import { getErrorMessage } from '../services/apiError';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
@@ -48,7 +49,7 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
       await updatePreferences(fieldName === 'allergies' ? { allergies: selectedFoods } : { dislikedFoods: selectedFoods });
       navigation.goBack();
     } catch (error) {
-      showDialog({ title: 'Error', message: 'Failed to save selection.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your selection. Please try again.'), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }

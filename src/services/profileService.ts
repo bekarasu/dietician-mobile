@@ -1,5 +1,6 @@
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
 import { fetchWithAuth } from './apiClient';
+import { ApiError } from './apiError';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
@@ -37,7 +38,7 @@ export const profileService = {
     }
 
     if (!response.ok) {
-      throw new Error('Failed to fetch profile');
+      throw await ApiError.fromResponse(response, "We couldn't load your profile. Please try again.");
     }
 
     const json = await response.json();
@@ -47,7 +48,7 @@ export const profileService = {
     // safer than empty lists, which a later save would write back over the real ones.
     const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
     if (!prefResponse.ok) {
-      throw new Error('Failed to fetch preferences');
+      throw await ApiError.fromResponse(prefResponse, "We couldn't load your preferences. Please try again.");
     }
 
     const prefJson = await prefResponse.json();
@@ -105,7 +106,7 @@ export const profileService = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update profile');
+      throw await ApiError.fromResponse(response, "We couldn't save your profile. Please try again.");
     }
   },
 
@@ -125,7 +126,7 @@ export const profileService = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update preferences');
+      throw await ApiError.fromResponse(response, "We couldn't save your preferences. Please try again.");
     }
   },
 };
