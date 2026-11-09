@@ -22,7 +22,20 @@ export function OnboardingNavigator() {
 			<Stack.Screen component={PlanStartDateScreen} name="PlanStartDate" />
 			{/* Leaving goes through its Cancel button, which stops the generation. */}
 			<Stack.Screen component={GeneratingDietPlanScreen} name="GeneratingDietPlan" options={{ gestureEnabled: false }} />
-			<Stack.Screen component={FoodSelectionScreen} name="FoodSelection" />
+			{/* The only onboarding screen with a header: it has no back button of its own. */}
+			<Stack.Screen
+				component={FoodSelectionScreen}
+				name="FoodSelection"
+				options={{
+					headerShown: true,
+					title: 'Select Foods',
+					headerTintColor: theme.colors.text,
+					// Otherwise the back label reads as the "Onboarding" route's name.
+					headerBackButtonDisplayMode: 'minimal',
+					headerStyle: { backgroundColor: theme.colors.surface },
+					headerShadowVisible: false,
+				}}
+			/>
 		</Stack.Navigator>
 	)
 }

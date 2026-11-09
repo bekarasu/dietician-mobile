@@ -50,7 +50,7 @@ No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens
 - Android has `adjustResize` together with edge-to-edge. Do not assume keyboard behavior from the manifest alone; test on a device or emulator.
 - `AppTabNavigator` sets a numeric `height` in `tabBarStyle`, which disables React Navigation's inset math, so it derives `height` and `paddingBottom` from `useSafeAreaInsets()`. Change them together, or the tabs collide with the iPhone home indicator and the Android 3-button bar.
 - Inside the tab navigator, `ScreenContainer` drops the bottom safe-area edge, detected through `BottomTabBarHeightContext`, because the tab bar already pads for the home indicator. Padding twice left an empty strip of about 34pt above the bar, which made it look raised. Screens that build their own `SafeAreaView` inside a tab need the same `edges`.
-- **Open:** the top edge has the same double inset under a native stack header. `ScreenContainer` pads for the status bar even though the header already sits below it, so pushed screens such as Plan Check-In start with a gap of about 60pt. `HeaderHeightContext` can tell a header is shown.
+- The top edge had the same double inset under a native stack header (a gap of about 60pt on pushed screens such as Plan Check-In). Fixed: `ScreenContainer` drops the top edge when `HeaderShownContext` says a header is shown, so a screen can turn its header on without a gap.
 
 ## Biometrics and secure storage
 
