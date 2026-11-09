@@ -118,8 +118,9 @@ export interface DietMeal {
   ingredients: string[];
   isTaken?: boolean;
   isExtra?: boolean;
-  // Everyone in the user's shared group has this meal, in their own portion, so
-  // swapping it changes it for all of them.
+  // Everyone in the user's shared group has this meal, in their own portion. The
+  // plan's owner can swap it for all of them (see DietPlan.isSharedOwner); anyone
+  // swapping it for themselves alone makes it their own, and it stops being shared.
   isShared?: boolean;
 }
 
@@ -147,6 +148,9 @@ export interface DietPlan {
   // Set while the plan is shared: it was made for the user's group and they're
   // still in it. Leaving keeps the plan as an ordinary one.
   sharedGroupId?: string | null;
+  // Set on a shared plan when the user owns its group and so started it. Only
+  // they can swap its shared meals for everyone; other members swap only their own.
+  isSharedOwner?: boolean;
 }
 
 // 'shared' is a shared plan for one person: the owner's when they start one, or

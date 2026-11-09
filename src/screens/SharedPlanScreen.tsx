@@ -280,8 +280,8 @@ export function SharedPlanScreen({ navigation }: Props) {
           <Text style={styles.cardTitle}>Shared plans</Text>
           <Text style={styles.bodyText}>
             {owner?.displayName ?? 'The owner'} starts the group's shared plans and renews them. You're asked each time whether
-            to switch, and your plan only changes if you do. Swapping a shared meal changes it for everyone on the plan who
-            hasn't eaten it yet.
+            to switch, and your plan only changes if you do. Swapping a shared meal changes only yours, and it stops being
+            shared.
           </Text>
         </View>
       );

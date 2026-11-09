@@ -1,4 +1,5 @@
 import { fetchData, fetchWithAuth } from './apiClient';
+import { ApiError } from './apiError';
 import { AI_GUIDANCE_NOTICE } from '../constants/health';
 import { DietPlan, FoodResponse, MealEntry, MealRecommendation, PlanCheckIn, PlanGeneration, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
@@ -138,15 +139,21 @@ export const recommendationService = {
 		return response.json();
 	},
 
-	async swapMeal(mealId: string) {
+	// For a shared meal, 'me' makes the new meal the user's own and leaves the
+	// group's meal as it was. 'everyone' changes it for the whole group, and only
+	// the plan's owner (plan.isSharedOwner) may ask for it; anyone else gets a 403.
+	// Left out, the server picks: everyone for the owner, me for other members.
+	// scope doesn't matter for a meal that isn't shared.
+	async swapMeal(mealId: string, scope?: 'everyone' | 'me') {
 		if (!API_URL) throw new Error('Recommendation API URL is not defined');
 
-		const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/swap`, {
+		const query = scope ? `?scope=${scope}` : '';
+		const response = await fetchWithAuth(`${API_URL}/diet-plans/meals/${mealId}/swap${query}`, {
 			method: 'PATCH',
 		});
 
 		if (!response.ok) {
-			throw new Error('Failed to swap meal');
+			throw await ApiError.fromResponse(response, 'Failed to swap meal.');
 		}
 
 		return response.json();

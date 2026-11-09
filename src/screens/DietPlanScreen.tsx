@@ -19,6 +19,7 @@ import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
 import { leaderboardService } from '../services/leaderboardService';
+import { getErrorMessage } from '../services/apiError';
 import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
 import { DailyPoints, DayPoints, DietMeal, DietPlan, WeekPoints } from '../types/models';
@@ -360,37 +361,48 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
   );
 }
 
-function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogged }: { meal: DietMeal; logDate: string; isLogged?: boolean; isExtra?: boolean; canLog?: boolean; onMealLogged?: () => void }) {
+// canSwapForEveryone is for the owner of a shared plan, the only one who can
+// swap its shared meals for the whole group.
+function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForEveryone = false, onMealLogged }: { meal: DietMeal; logDate: string; isLogged?: boolean; isExtra?: boolean; canLog?: boolean; canSwapForEveryone?: boolean; onMealLogged?: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const updateActiveDietPlan = useDietPlanStore((state) => state.updateActiveDietPlan);
   const profile = useProfileStore((state) => state.profile);
   const availableIngredients = profile?.availableIngredients || [];
 
-  const swap = async () => {
+  const swap = async (scope?: 'everyone' | 'me') => {
     setIsSwapping(true);
     try {
-      await recommendationService.swapMeal(meal.id);
+      await recommendationService.swapMeal(meal.id, scope);
       onMealLogged?.();
     } catch (e) {
-      showDialog({ title: 'Error', message: 'Failed to swap meal.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(e, 'Failed to swap meal.'), tone: 'danger' });
     } finally {
       setIsSwapping(false);
     }
   };
 
-  // A shared meal changes for the whole group, so they're asked first.
+  // The owner of a shared plan chooses whether a shared meal changes for the
+  // whole group or just for them. Other members only swap their own, so they
+  // aren't asked.
   const handleSwap = () => {
     if (!meal.isShared) {
       swap();
       return;
     }
+    if (!canSwapForEveryone) {
+      swap('me');
+      return;
+    }
     showDialog({
-      title: 'Swap for everyone?',
-      message: 'This meal changes for everyone in your group who hasn\'t eaten it yet, each with their own portion.',
+      title: 'Swap this shared meal?',
+      message:
+        'Swap for everyone changes it for everyone in your group who hasn\'t eaten it yet, each with their own portion. ' +
+        'Just for me changes only your meal, and it stops being shared; the group keeps theirs.',
       icon: 'swap-horizontal-outline',
       buttons: [
-        { text: 'Swap for everyone', onPress: swap },
+        { text: 'Swap for everyone', onPress: () => swap('everyone') },
+        { text: 'Just for me', onPress: () => swap('me') },
         { text: 'Cancel', style: 'cancel' },
       ],
     });
@@ -693,7 +705,15 @@ export function DietPlanScreen() {
         ) : (
           planMeals.map((meal) => {
             return (
-              <MealCard key={meal.id} meal={meal} logDate={logDate} isLogged={meal.isTaken} canLog={canLog} onMealLogged={onMealLogged} />
+              <MealCard
+                key={meal.id}
+                meal={meal}
+                logDate={logDate}
+                isLogged={meal.isTaken}
+                canLog={canLog}
+                canSwapForEveryone={!!plan.isSharedOwner}
+                onMealLogged={onMealLogged}
+              />
             );
           })
         )}
