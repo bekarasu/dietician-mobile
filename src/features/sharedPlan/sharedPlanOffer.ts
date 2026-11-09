@@ -48,7 +48,7 @@ async function getPointsToReset(offer: SharedPlanOffer): Promise<PointsToReset> 
 function getOfferMessage(offer: SharedPlanOffer, points: PointsToReset) {
   const today = toCalendarDate(new Date());
   const from = offer.startDate === today ? 'today' : formatCalendarDate(offer.startDate);
-  let message = `${offer.owner.displayName} started a shared plan, until ${formatCalendarDate(offer.endDate)}. If you switch, you'll eat the same meals as your group, in portions worked out for your own goal and weight, and it replaces your plan from ${from}.`;
+  let message = `${offer.owner.displayName} started a shared plan, until ${formatCalendarDate(offer.endDate)}. If you switch, you'll eat the same meals as your group, in portions worked out for your own goal and weight and adapted to your own allergies, dislikes and diet, and it replaces your plan from ${from}.`;
   if (points === null) {
     message +=
       ' If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset to zero, and those days still count towards your weekly average.';

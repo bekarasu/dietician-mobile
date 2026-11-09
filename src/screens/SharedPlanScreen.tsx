@@ -312,8 +312,8 @@ export function SharedPlanScreen({ navigation }: Props) {
         <Text style={styles.cardTitle}>Start a shared plan</Text>
         <Text style={styles.bodyText}>
           You get your plan straight away. Your friends are asked whether to switch, and get the same meals with portions
-          worked out from their own goal and weight. Meals avoid every member's allergies, dislikes and diet. Pick a day you'll all have
-          time to shop for.
+          worked out from their own goal and weight. Where someone's allergies, dislikes or diet rule out an ingredient, only
+          their own version of the meal changes, yours included. Pick a day you'll all have time to shop for.
         </Text>
         <StartDatePicker firstDate={today} onChange={setStartDate} value={startDate} />
         <AppButton title="Create shared plan" onPress={confirmCreate} />
