@@ -1,8 +1,10 @@
-import { User } from '../types/models';
+import { LegalAcceptance, User } from '../types/models';
+import { ApiError } from './apiError';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/auth`;
 
-// Helper to handle fetch responses
+// Helper to handle fetch responses. Throws an ApiError, so callers can tell
+// statuses apart.
 const handleResponse = async (response: Response) => {
   const data = await response.json();
   if (!response.ok) {
@@ -14,7 +16,7 @@ const handleResponse = async (response: Response) => {
     } else if (data.message) {
       errorMessage = data.message;
     }
-    throw new Error(errorMessage);
+    throw new ApiError(errorMessage, response.status, typeof data.requestId === 'string' ? data.requestId : undefined);
   }
   return data;
 };
@@ -28,7 +30,15 @@ const buildUser = (email: string, name?: string): User => ({
 });
 
 export const authService = {
-  async register(firstName: string, lastName: string, email: string, password: string) {
+  // acceptedDocuments must hold every required legal document. A 409 means one
+  // was replaced by a newer version after it was loaded.
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    acceptedDocuments: LegalAcceptance[],
+  ) {
     if (!firstName || !lastName || !email || !password) {
       throw new Error('All fields are required.');
     }
@@ -36,7 +46,7 @@ export const authService = {
     const response = await fetch(`${API_URL}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, firstName, lastName }),
+      body: JSON.stringify({ email, password, firstName, lastName, acceptedDocuments }),
     });
 
     const data = await handleResponse(response);

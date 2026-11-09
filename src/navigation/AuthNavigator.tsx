@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { theme } from '../theme/theme';
 import type { AuthStackParamList } from './navigationTypes';
 
+import { LegalDocumentScreen, legalDocumentScreenOptions } from '../screens/LegalDocumentScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { OnboardingIntroScreen } from '../screens/OnboardingIntroScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
@@ -28,6 +29,7 @@ export function AuthNavigator() {
       <Stack.Screen component={LoginScreen} name="Login" />
       <Stack.Screen component={RegisterScreen} name="Register" />
       <Stack.Screen component={VerifyOTPScreen} name="VerifyOTP" />
+      <Stack.Screen component={LegalDocumentScreen} name="LegalDocument" options={legalDocumentScreenOptions} />
     </Stack.Navigator>
   );
 }

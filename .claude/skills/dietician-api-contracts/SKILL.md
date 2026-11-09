@@ -12,6 +12,7 @@ The backend code is not in this repo. This file records what the client shows as
 | Env key | Paths | Client |
 | --- | --- | --- |
 | `EXPO_PUBLIC_ACCOUNT_API_URL` | `/auth`, `/profiles`, `/friends` | `authService`, `profileService`, `onboardingService`, `friendService` |
+| `EXPO_PUBLIC_ACCOUNT_API_URL` | `/legal` | `legalService` |
 | `EXPO_PUBLIC_MEDICAL_API_URL` | `/uploads` | `bloodTestService` |
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/progress`, `/daily-logs` | `progressService` |
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/leaderboards`, `/scores` | `leaderboardService` |
@@ -76,6 +77,16 @@ Preferences (`/profiles/preferences`):
 - **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18; see Pregnancy plan for its limits) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
 - **Answers must agree, on both sides.** account-service returns a translated `400` for: more than one of `omnivore`, `vegetarian`, `vegan`, `pescatarian`; a `weight_loss` target at or above the current weight or below BMI 18.5 for the height; a preference listed twice; or a `gender`, `activityLevel`, goal or preference not in `src/constants/options.ts`, including an empty string, so leave unset fields out. The app applies the same rules from `src/features/profile/profileRules.ts`: picking a base diet replaces the other (`toggleDietaryPreference`), onboarding pages declare cross-field rules as `validate`, which shows under the fields and blocks Continue, and the profile form checks the target. `PUT /profiles` only checks the target when the goal or target changes.
 - Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings, and account-service splits them on commas.
+
+## Legal documents
+
+Terms of use, privacy policy, KVKK disclosure and the like live in account-service's database, versioned, and are changed there without an app update (added 2026-11-09). Never hard-code their text, list or wording in the app.
+
+- `GET /legal/documents` (public, plain `fetch`) gives the current version of each, in display order: `id` (the version), `type`, `version`, `isRequired`, `publishedAt`, and the text `language`, `title`, `consentLabel` (the checkbox sentence) and `content` (plain text: blank line, `# ` heading, `- ` bullet; `LegalText` renders it). Empty while none are published, and then nothing is required.
+- Accepting sends back `{ id, language }` as listed (`toLegalAcceptance`), so the server records the exact text shown, with time, IP and user agent. `POST /auth/register` takes them as `acceptedDocuments`: every `isRequired` one plus ticked optional ones. Missing a required one is a `400`; a version replaced since loading is a `409`. On either, `useAuthStore.register` reloads the list, and the new version comes up unticked because checks are keyed by `id`.
+- `GET /legal/documents/pending` lists required documents with a version the user hasn't accepted. `POST /legal/acceptances` (`{ documents: [{ id, language }] }`) records them and returns what's still pending; a replaced version is a `409`, after which `useLegalStore.acceptPending` reloads pending.
+- Optional documents (e.g. marketing consent) are only offered at registration, never in pending.
+- The server doesn't refuse other requests while something is pending; only the app's gate (see dietician-session-flow) enforces it. Deploy account-service with migration 016 before an app that registers this way: on an older server the documents request fails and registration stays disabled.
 
 ## Identity
 

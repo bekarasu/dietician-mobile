@@ -24,13 +24,13 @@ HTTP base URLs are allowed only in development: Android enables cleartext only i
 
 ## Forms and text input
 
-No screen sets `textContentType` or `autoComplete` yet. **Open** for the screens below; `AppTextInput` forwards these props.
+`RegisterScreen` sets `textContentType` (since 2026-11-09). **Open** for the other screens below; `AppTextInput` forwards these props.
 
 | Field | Props |
 | --- | --- |
 | Login email (`LoginScreen`) | `textContentType="username"`, keep `keyboardType="email-address"`. iOS needs this to recognize the login pair. |
 | Login password | `textContentType="password"` |
-| Register email and password (`RegisterScreen`) | `textContentType="username"` and `"newPassword"` |
+| Register email and password (`RegisterScreen`) | `textContentType="username"` and `"newPassword"` (done) |
 | OTP (`VerifyOTPScreen`) | `textContentType="oneTimeCode"`, `autoComplete="sms-otp"` for Android |
 
 **Open: decimal comma corrupts values.** RN maps `keyboardType="numeric"` to `UIKeyboardTypeDecimalPad` on iOS, which shows `,` under a Turkish or other comma-decimal locale.

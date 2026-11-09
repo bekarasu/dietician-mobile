@@ -29,6 +29,29 @@ export interface User {
   name: string;
 }
 
+// The current version of a legal document (terms of use, privacy policy, KVKK
+// disclosure...), with its text in one language. Managed in account-service's
+// database, so the types and wording can change without an app update.
+export interface LegalDocument {
+  id: string;
+  type: string;
+  version: number;
+  isRequired: boolean;
+  publishedAt: string;
+  language: string;
+  title: string;
+  // The sentence beside the checkbox.
+  consentLabel: string;
+  // Plain text: a blank line starts a paragraph, "# " a heading, "- " a bullet.
+  content: string;
+}
+
+// What accepting a document sends back: the exact text the user was shown.
+export interface LegalAcceptance {
+  id: string;
+  language: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;

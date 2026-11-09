@@ -1,6 +1,6 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 
-import { LeaderboardPeriod, LeaderboardScope } from '../types/models';
+import { LeaderboardPeriod, LeaderboardScope, LegalDocument } from '../types/models';
 
 // Which ranking the Leaderboard tab opens on. Anything left out keeps the tab's default.
 export interface LeaderboardTarget {
@@ -23,6 +23,13 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   VerifyOTP: undefined;
+  LegalDocument: { document: LegalDocument };
+};
+
+// Shown instead of everything else while the user has documents to accept.
+export type LegalStackParamList = {
+  LegalUpdate: undefined;
+  LegalDocument: { document: LegalDocument };
 };
 
 export type OnboardingStackParamList = {

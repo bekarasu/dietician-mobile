@@ -3,10 +3,13 @@ import { create } from 'zustand';
 import { isOnboardingComplete } from '../features/onboarding/validation';
 import { stopPushNotifications } from '../features/notifications/pushNotifications';
 import { cancelAllReminders } from '../features/reminders/mealReminders';
+import { isApiError } from '../services/apiError';
 import { authService } from '../services/authService';
+import { toLegalAcceptance } from '../services/legalService';
 import { tokenService } from '../services/tokenService';
-import { User } from '../types/models';
+import { LegalDocument, User } from '../types/models';
 import { useDietPlanStore } from './useDietPlanStore';
+import { useLegalStore } from './useLegalStore';
 import { useNotificationStore } from './useNotificationStore';
 import { useOnboardingStore } from './useOnboardingStore';
 import { useProfileStore } from './useProfileStore';
@@ -22,7 +25,13 @@ interface AuthState {
   setHasSeenOnboardingIntro: () => Promise<void>;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  register: (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    acceptedDocuments: LegalDocument[],
+  ) => Promise<void>;
   verifyOTP: (otp: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -60,6 +69,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           console.warn('Failed to fetch profile during bootstrap', err);
           // If token is invalid, we might want to clear it, but let's just leave it for now
         }
+        // Before signing in, so updated terms show before any other screen.
+        await useLegalStore.getState().checkPending();
 
         set({ isAuthenticated: true });
 
@@ -97,6 +108,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch (err) {
         console.warn('Failed to fetch profile during login', err);
       }
+      await useLegalStore.getState().checkPending();
 
       set({ user: response.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
@@ -107,13 +119,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  register: async (firstName, lastName, email, password) => {
+  register: async (firstName, lastName, email, password, acceptedDocuments) => {
     set({ isLoading: true, error: null });
 
     try {
-      const otpToken = await authService.register(firstName, lastName, email, password);
+      const otpToken = await authService.register(
+        firstName,
+        lastName,
+        email,
+        password,
+        acceptedDocuments.map(toLegalAcceptance),
+      );
       set({ otpToken, isLoading: false });
     } catch (error) {
+      // The documents changed since they were loaded (409), or a required one
+      // was added (400). Reloading shows the new ones, unticked.
+      if (isApiError(error) && (error.status === 409 || error.status === 400)) {
+        void useLegalStore.getState().loadDocuments();
+      }
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : 'Registration failed.',
@@ -143,6 +166,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch (err) {
         console.warn('Failed to fetch profile during verifyOTP', err);
       }
+      // Registration accepted the documents, unless one changed since.
+      await useLegalStore.getState().checkPending();
 
       set({
         user: response.user,
@@ -177,6 +202,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       useSharedPlanOfferStore.getState().reset();
       void cancelAllReminders();
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
+      // After signing out, so RootNavigator never shows the app between the two.
+      useLegalStore.getState().reset();
     }
   },
 }));
