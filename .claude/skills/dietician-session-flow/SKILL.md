@@ -69,7 +69,7 @@ Check these before assuming a session bug is new. Fix them when the task touches
 
 1. **Any network failure at startup logs the user out.** If `GET /profiles` fails for any reason (offline, 500), step 2 rejects and `useAppBootstrap` calls `logout()`, which deletes the tokens. The code comment assumes 401 only. Treat auth failure and transient failure differently.
 2. **An expired session leaves the user stranded.** When refresh fails, `fetchWithAuth` clears the tokens but never updates `useAuthStore`. `isAuthenticated` stays true, the app stays on `AppStackNavigator`, and every call returns 401 until restart. Refresh failure needs to reach the store, and `apiClient` must avoid an import cycle when doing so.
-3. **`logout` only clears auth and profile.** Onboarding, diet plan, hydration, and progress stores keep their data, so in the same app session:
+3. **`logout` only clears auth, profile, the diet plan, the notification badge and the shared plan offer.** It also cancels the local reminders (`cancelAllReminders`), which name the user's meals (since 2026-11-08). `useNotificationStore.reset()` also drops an unread count still in flight, so it can't come back for the next user. Onboarding, hydration, and progress stores keep their data, so in the same app session:
    - The next user keeps `isCompleted: true`, and a brand-new account skips onboarding with no profile.
    - The previous user's health data stays in memory.
 

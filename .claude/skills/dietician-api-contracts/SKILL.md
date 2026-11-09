@@ -16,6 +16,8 @@ The backend code is not in this repo. This file records what the client shows as
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/progress`, `/daily-logs` | `progressService` |
 | `EXPO_PUBLIC_PROGRESS_API_URL` | `/leaderboards`, `/scores` | `leaderboardService` |
 | `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/foods`, `/diet-plans` | `recommendationService` |
+| `EXPO_PUBLIC_RECOMMENDATION_API_URL` | `/diet-plans/shared` | `sharedPlanService` |
+| `EXPO_PUBLIC_NOTIFICATION_API_URL` | `/notifications` | `notificationService` |
 
 Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response uses the `{ message, data }` envelope and failures should throw. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
 
@@ -31,12 +33,14 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 | `GET /uploads/:id` | `{ data: { upload } }` | Unused: `GET /uploads` already carries `parsedResults`. The upload date is `createdAt` |
 | `GET /profiles` | 404 means no profile yet | Normal for a first login; return `null` |
 | `GET /diet-plans/active` | 404 means no plan | Return `null` |
-| `GET /diet-plans/generation` | 404 means no generation | Return `null` |
+| `GET /diet-plans/generation` | 404 means no generation in the last day | Return `null` |
+| `GET /diet-plans/shared/offer` | 404 means no shared plan waiting | Return `null` |
 | `GET /daily-logs/:date` | 404 means no log | Return `null` |
 
 ## Error handling differs by service
 
 - `profileService`, `bloodTestService`, `recommendationService`, `leaderboardService`, and `friendService` throw.
+- **Throw `ApiError` (`src/services/apiError.ts`), not `new Error('Failed to …')`.** Every service fails with `{ error, code, requestId }`, and `error` is already translated. Use `throw await ApiError.fromResponse(response, fallback)`, which carries `status` and `requestId`. The fallback is used only when the body has no message. In the popup, show `getErrorMessage(error, fallback)`: the server's message for an `ApiError`, and the fallback for anything else, such as a network failure. `profileService` and `fetchData` do this (from 2026-11-09). The other services still throw generic errors, so their popups show fixed text.
 - **`progressService` catches everything** and returns `null`, `[]`, or `false`. Callers must check the return value, because `try/catch` around it never fires.
 
 So anything that logs a meal must check the log first, then touch the plan:
@@ -69,7 +73,7 @@ Preferences (`/profiles/preferences`):
 - **Onboarding can be undone.** `POST /profiles/onboarding` first keeps what it overwrites, and `DELETE /profiles/onboarding` puts that back once: the profile fields and the three lists, or no answers for a profile onboarding created. The app posts only when the user creates the plan (`saveAnswers`) and reverts only when that generation is cancelled (`revertAnswers`), so the server's snapshot is always that save's. Don't add another caller of `DELETE` without that pairing: the snapshot stays after a plan is created, and reverting later would bring back answers from before an old onboarding.
 - Deploy account-service before an app that reverts. On an older server the `DELETE` fails, and `saveAnswers` then keeps failing, because it reverts an unreverted save first.
 - The server must be updated before the app: an older account-service treats a list left out of `PUT /profiles/preferences` as empty and deletes it.
-- **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
+- **`targetWaterMl` and `targetCoffeeCups` are read-only.** The server sets them from weight and age (30 ml/kg within 1.5–3 L; 4 cups, or 1 under 18; see Pregnancy plan for its limits) and ignores them on writes, so never send them or add an input for them. They follow each weigh-in on the server, but the app's copy only updates when the profile reloads. `HomeScreen` passes them to `useHydrationStore.setTargets`.
 - **Answers must agree, on both sides.** account-service returns a translated `400` for: more than one of `omnivore`, `vegetarian`, `vegan`, `pescatarian`; a `weight_loss` target at or above the current weight or below BMI 18.5 for the height; a preference listed twice; or a `gender`, `activityLevel`, goal or preference not in `src/constants/options.ts`, including an empty string, so leave unset fields out. The app applies the same rules from `src/features/profile/profileRules.ts`: picking a base diet replaces the other (`toggleDietaryPreference`), onboarding pages declare cross-field rules as `validate`, which shows under the fields and blocks Continue, and the profile form checks the target. `PUT /profiles` only checks the target when the goal or target changes.
 - Onboarding draft `dislikedFoods` and `allergies` are comma-separated strings, while the profile model uses `string[]`. `onboardingService` posts the raw strings, and account-service splits them on commas.
 
@@ -88,6 +92,8 @@ Use `profile.id` for API calls. **`user.id` is fake** after login or OTP: `authS
 | Diet plans, meal take and swap | Real |
 | Onboarding pages | Local with a 250 ms delay. The answers are posted when the plan is created |
 | Leaderboards, score breakdown, friends | Real |
+| Shared meals (groups, invitations, shared plans) | Real, from 2026-11-08 |
+| Notifications inbox and unread count | Real, from 2026-11-08 |
 | Hydration and coffee history | `mockHistorical*`, set at store creation |
 | `generateRecommendation` | Local template, not AI |
 | `useInventoryStore`, `useDailyLogStore` | Mock, used only by `MealRecommendationScreen`, which is not in any navigator |
@@ -107,13 +113,59 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - `mealType` values are capitalized (`Breakfast`, `Lunch`, `Snack`, `Dinner`) for sorting. Other values sort last.
 - `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`.
 - After a plan mutation, the UI calls `fetchActivePlan()` rather than patching state.
-- **Generating a plan outlives its request.** Create, renew and feedback update take about a minute, and the server finishes and saves the plan even when the app is backgrounded or killed. iOS suspends the app in the background, so the request then fails or stalls. Start these through `runPlanGeneration` (`src/features/dietPlan/planGeneration.ts`): after an interruption it follows `GET /diet-plans/generation`, and recognizes its generation by an id different from the one read before starting. One generation runs per user, and starting another is a 409. A generation left running by an earlier session is found once, at launch (see dietician-session-flow), and opens `GeneratingDietPlanScreen`. Don't add checks on screen focus. The generating and check-in screens can cancel through `POST /diet-plans/generation/cancel` (`useCancelGeneration`). Nothing is saved, and the wait then throws an error that `isGenerationCancelled` recognizes, which is where a screen moves on. A cancel is a 409 once the generation is saving its plan, which then still arrives.
+- **Generating a plan outlives its request.** Create, renew and feedback update take about a minute, and the server finishes and saves the plan even when the app is backgrounded or killed. iOS suspends the app in the background, so the request then fails or stalls. Start these through `runPlanGeneration` (`src/features/dietPlan/planGeneration.ts`): after an interruption it follows `GET /diet-plans/generation`, and recognizes its generation by an id different from the one read before starting. A saved plan's generation reads `completed` for a day, like `failed` and `cancelled`; a 404 after following one means it stopped without an end (its server crashed). Until recommendation-service from 2026-11-08 it was deleted instead, so the 404 made the app report a failure for a saved plan, and "Go back" reverted the onboarding answers. One generation runs per user, and starting another is a 409. A generation left running by an earlier session is found once, at launch (see dietician-session-flow), and opens `GeneratingDietPlanScreen`. Don't add checks on screen focus. The generating and check-in screens can cancel through `POST /diet-plans/generation/cancel` (`useCancelGeneration`). Nothing is saved, and the wait then throws an error that `isGenerationCancelled` recognizes, which is where a screen moves on. A cancel is a 409 once the generation is saving its plan, which then still arrives.
 
 `POST /daily-logs` is an upsert:
 
 - **Fields you leave out keep their value**, so send only what changed. Every meal sent is added as a new log, so never resend a log you read back: resending duplicates its meals.
 - **Water and coffee count towards scores only when `logDate` is today in the business timezone**, because a past day mustn't be filled in later. Hydration sends `logDate: 'today'`. Without an `Accept-Timezone` header, the server resolves that in the business timezone (Europe/Istanbul), which is the day scores use.
 - `DietPlanScreen` logs meals directly with `progressService`, leaving `useHydrationStore.rawDailyLog` stale. That's harmless now that hydration writes don't resend it.
+
+## Shared meals
+
+A user can eat the same meals as up to 2 friends (`maxFriends` on the group). Each member still has their own plan, with the same dishes in portions worked out from their own goal and weight, so logging, scores and the plan screens work as usual. `SharedPlanScreen` manages it; `DietPlanScreen` links there.
+
+- **Groups:** the owner invites friends (`POST /diet-plans/shared/group/invites`, which creates the group); invitations count towards the limit. Someone is in one group at a time. Accepting drops the user's other invitations and deletes a group of their own with nobody else in it. Only the owner invites, removes members and starts plans; the owner leaving deletes the group. Leaving or being removed keeps the plan as an ordinary one.
+- `GET /diet-plans/shared/group` is a 404 when the user isn't in a group, so `getGroup` returns null. Members see each other's names only.
+- The server removes anyone who stops being the owner's friend, or has a block with another member, the next time the group is read or used. If account-service can't answer, these routes are a 503 rather than going ahead unchecked.
+- **Starting a plan:** `POST /diet-plans/shared` (owner only, `startDate` from today, not yesterday) replaces **only the owner's** plan from that date. Its meals suit every joined member (combined allergies, diets, dislikes, pregnancy-safe if anyone is pregnant), but only the owner's portions are worked out. Start it through `runPlanGeneration`; the generation (kind `shared`) is the owner's alone. The owner gets `dietplan.ready`; each other joined member gets a `sharedplan.plan_offered` push (`groupId`, `ownerUserId`, `startDate`) and an offer. From recommendation-service 2026-11-08; before that, every member's plan was replaced at once.
+- **Offers:** a member's plan stays as it is until they answer. `GET /diet-plans/shared/offer` (404: none) gives `id`, `owner`, `startDate` (the shared plan's first day, or today once it has started) and `endDate`. `POST /diet-plans/shared/offer/:id/accept` works out their portions (an AI call, about a minute, kind `shared`, so go through `runPlanGeneration`) and replaces their plan from `startDate`; the usual score rule applies. `POST .../offer/:id/decline` keeps their plan, and they stay in the group. One offer per user: a newer shared plan replaces it (a new `id`, so answering the old one is a 404), and it disappears when they leave the group or the owner's plan ends or is replaced. State lives in `useSharedPlanOfferStore` (reset at logout). `useSharedPlanOfferPrompt` (in `AppTabNavigator`) asks once per offer per launch, on open, on foreground and on a foreground push, with the points at risk (`features/sharedPlan/sharedPlanOffer.ts`); `SharedPlanScreen` and the Diet Plan shared card show it too.
+- **Plan fields:** `sharedGroupId` is set on a plan, and `isShared` on its meals, only while the user is still in that group.
+- **Swapping a shared meal** changes it for every member who hasn't logged it as eaten, each in their own portion. `MealCard` asks first. Once nobody else qualifies, it swaps just the user's copy.
+- `PATCH /diet-plans/active/feedback` is a 409 on a shared plan.
+- **Renewal:** the owner's check-in renews the shared plan: the owner gets it and the others are offered it. A member's check-in renews just for them, and the owner's renewal replaces that plan only if they switch.
+- `sharedplan.invite_received` pushes carry `groupId` and `ownerUserId`. The owner gets `sharedplan.invite_accepted`, with `groupId` and `memberUserId`, when a friend joins. `sharedplan.plan_offered` opens `SharedPlanScreen`.
+
+## Notifications
+
+notification-service is the only place notifications are kept, and the app reads them from its API process (port 8087 locally, a separate process from the worker that sends pushes). Never store notifications in another service or build a list from local state.
+
+- `GET /notifications?limit&cursor` gives a page newest first, with `unreadCount` and `nextCursor` (null on the last page). Page with the cursor, never an offset.
+- Each item has `title` and `body` already rendered, in the `Accept-Language` language (English without it), and `data`, the same strings a push carries, `type` included. Route both through `openNotification` (`src/features/notifications/openNotification.ts`), so the inbox and a push open the same screen.
+- `POST /notifications/:id/read` and `POST /notifications/read-all` return `{ unreadCount }`; keep the badge (`useNotificationStore`) from those answers. Marking one already read is fine; another user's ID is a 404.
+- Every push carries `notificationId`, the inbox ID, and opening the push marks it read.
+- Every notification to the user is in the inbox even when push is off, its channel lists it nowhere else, or the phone has no FCM token. Nothing tells the app one arrived except a push, so `NotificationBell` reads the count on focus, on foreground and every minute.
+- Requests are limited to 120 a minute per user.
+
+## Pregnancy plan
+
+A side program, not a goal: offered as the "Special program" chip under Sex (onboarding basics page and the profile form), only for `female` or `other`. Added 2026-11-08.
+
+- **Write the week, read the week.** `PUT /profiles` and `POST /profiles/onboarding` take `pregnancyWeek`: 1–42 starts or moves the plan, 0 ends it, left out keeps it. The server stores a due date from it, so send it only when the user changes it (the profile form compares with `profile.pregnancyWeek`): resending the same week can move the due date by days. Onboarding always sends it.
+- `GET /profiles` returns `pregnancyWeek`, worked out from the due date each time, and `pregnancyDueDate` (`YYYY-MM-DD`). Past week 42 the pregnancy is over and both disappear; nothing has to clear it.
+- **Rules, on both sides:** a `400` for a pregnancy plan with `male`, or with a goal other than `maintenance` or `habit_building` (no calorie deficit in pregnancy). App: `getPregnancyGoalError`, `getPregnancyWeekError`, `canHavePregnancyPlan` in `profileRules.ts`. Picking male hides the chip and saving sends 0, so the server never sees both.
+- The goal rule also keeps pregnant users off the leaderboards: only `weight_loss` is scored.
+- While pregnant, `targetWaterMl` is 300 ml higher (still at most 3 L) and `targetCoffeeCups` is 2.
+- Plans: recommendation-service sends the week and trimester at the plan's start date. The AI adds +0/+340/+450 kcal by trimester, never a deficit, and the food-safety rules in `packages/openai/prompts/pregnancy.txt` apply to plans, swaps and shared plans (every shared meal is pregnancy-safe for everyone, and the pregnancy is never mentioned to other members).
+
+## Country
+
+Where the user lives, so plans use ingredients that are easy to buy there, with a light touch of the local cuisine. The plan stays in English. Added 2026-11-08.
+
+- `countryCode` is an upper-case ISO 3166-1 alpha-2 code (`TR`), read from `GET /profiles` and written with `PUT /profiles` or `POST /profiles/onboarding`. Anything else, including `''` or lower case, is a `400`. Left out, the server keeps it, so it can't be cleared.
+- The list is `src/constants/countries.ts`; every code in it passes account-service's validator. Pick with `CountryPicker` (`src/components/`), which also suggests the phone's region, but never pre-fill from it: the language setting often isn't where someone lives.
+- Asked on the onboarding preferences page (required), and changeable in the profile's Food preferences card, which saves straight away. Users onboarded earlier have none, and their plans are made as before until they set one.
+- It changes the next plan, renewal, feedback update and swap, not the plan already made. recommendation-service sends the English country name, which adds `packages/openai/prompts/local-cuisine.txt` to the prompt. Allergies, diets, dislikes, calories and pregnancy rules still win. A shared plan uses the country its members agree on, and none if they disagree.
 
 ## Leaderboards
 

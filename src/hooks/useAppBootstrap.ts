@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useDailyLogStore } from '../store/useDailyLogStore';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useInventoryStore } from '../store/useInventoryStore';
+import { useMealReminderStore } from '../store/useMealReminderStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -23,6 +24,8 @@ export function useAppBootstrap() {
           useDailyLogStore.getState().bootstrap(),
           useInventoryStore.getState().bootstrap(),
           useProgressStore.getState().bootstrap(),
+          // Never rejects, so it can't log anyone out.
+          useMealReminderStore.getState().load(),
         ]);
 
         // Only here, once per launch. It runs after the rest, which can still log

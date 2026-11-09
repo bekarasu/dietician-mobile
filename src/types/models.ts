@@ -1,5 +1,9 @@
 export type GoalType = 'weight_loss' | 'maintenance' | 'body_recomposition' | 'habit_building';
 
+// Programs for a stage of life that changes what a plan needs, offered beside
+// the main goals rather than as one. Only pregnancy so far.
+export type SpecialProgram = 'pregnancy';
+
 export type DietaryPreference =
   | 'omnivore'
   | 'vegetarian'
@@ -43,6 +47,14 @@ export interface UserProfile {
   // Set by the server from weight and age; users can't change them.
   targetWaterMl?: number;
   targetCoffeeCups?: number;
+  // Set while the user has a pregnancy plan. The server works the week out from
+  // the due date each time, and drops both once the pregnancy is over.
+  pregnancyWeek?: number;
+  pregnancyDueDate?: string;
+  // Where the user lives, an ISO 3166-1 alpha-2 code such as TR. Plans use
+  // ingredients that are easy to buy there. Missing for users onboarded before
+  // it was asked.
+  countryCode?: string;
 }
 
 export interface DailyFoodLogInput {
@@ -106,6 +118,9 @@ export interface DietMeal {
   ingredients: string[];
   isTaken?: boolean;
   isExtra?: boolean;
+  // Everyone in the user's shared group has this meal, in their own portion, so
+  // swapping it changes it for all of them.
+  isShared?: boolean;
 }
 
 // A meal as POST /daily-logs and POST /diet-plans/active/meals both take it.
@@ -129,9 +144,14 @@ export interface DietPlan {
   // First day a next plan could start. Null before the plan's last day and once a next plan exists.
   earliestRenewalDate: string | null;
   nextPlan?: DietPlan;
+  // Set while the plan is shared: it was made for the user's group and they're
+  // still in it. Leaving keeps the plan as an ordinary one.
+  sharedGroupId?: string | null;
 }
 
-export type PlanGenerationKind = 'create' | 'renew' | 'update';
+// 'shared' is a shared plan for one person: the owner's when they start one, or
+// a member's when they switch to it. Only that person sees it running.
+export type PlanGenerationKind = 'create' | 'renew' | 'update' | 'shared';
 
 export type PlanGenerationStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -386,6 +406,54 @@ export interface PublicProfile {
   friendsSince?: string;
 }
 
+export type SharedMemberStatus = 'joined' | 'invited';
+
+// Someone in a shared group. Members only see each other's names, never their
+// plans, portions or health data.
+export interface SharedGroupMember {
+  userId: string;
+  displayName: string;
+  status: SharedMemberStatus;
+  isOwner: boolean;
+  isCurrentUser: boolean;
+  joinedAt: string | null;
+}
+
+// Friends who get the same meals, each in portions for their own goal and
+// weight. The owner invites up to maxFriends friends, invitations included, and
+// starts shared plans.
+export interface SharedGroup {
+  id: string;
+  isOwner: boolean;
+  maxFriends: number;
+  // The owner first, then joined members, then invitations.
+  members: SharedGroupMember[];
+}
+
+// A shared plan the group's owner started. The user's plan stays as it is
+// until they switch to it or keep theirs; switching works out their portions,
+// which takes about a minute like any plan.
+export interface SharedPlanOffer {
+  // Changes with every new shared plan. Answering names it.
+  id: string;
+  groupId: string;
+  owner: { userId: string; displayName: string };
+  // YYYY-MM-DD. Switching replaces the user's plan from this day: the shared
+  // plan's first day, or today once it has started.
+  startDate: string;
+  // YYYY-MM-DD, the shared plan's last day.
+  endDate: string;
+  offeredAt: string;
+}
+
+export interface SharedPlanInvite {
+  groupId: string;
+  invitedAt: string;
+  owner: SharedGroupMember;
+  // Everyone who has joined, owner first.
+  members: SharedGroupMember[];
+}
+
 export interface BlockedUser {
   userId: string;
   displayName: string;
@@ -414,6 +482,11 @@ export interface OnboardingDraft {
   activityLevel: string;
   goalType: GoalType;
   dietaryPreferences: DietaryPreference[];
+  specialPrograms: SpecialProgram[];
+  // Only used while specialPrograms has pregnancy.
+  pregnancyWeek: string;
+  // An ISO 3166-1 alpha-2 code, or '' until chosen.
+  countryCode: string;
   allergies: string;
   dislikedFoods: string;
   dailyCalorieTarget: string;
@@ -424,4 +497,23 @@ export interface OnboardingPageResponse {
   pageId: OnboardingPageId;
   message: string;
   patch?: Partial<OnboardingDraft>;
+}
+
+// One notification from notification-service's inbox, already in the
+// request's language. data is what a push of it carries, type included.
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, string>;
+  createdAt: string;
+  readAt: string | null;
+}
+
+// A page of the inbox, newest first. nextCursor is null on the last page.
+export interface NotificationPage {
+  notifications: AppNotification[];
+  unreadCount: number;
+  nextCursor: string | null;
 }

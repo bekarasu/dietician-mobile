@@ -1,7 +1,15 @@
-import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../../constants/options';
-import { getDietError, getTargetWeightError, toggleDietaryPreference } from '../profile/profileRules';
+import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS, SPECIAL_PROGRAM_OPTIONS } from '../../constants/options';
+import {
+  canHavePregnancyPlan,
+  getDietError,
+  getPregnancyGoalError,
+  getPregnancyWeekError,
+  getTargetWeightError,
+  toggleDietaryPreference,
+} from '../profile/profileRules';
 
 import { OnboardingFieldOption, OnboardingIcon, OnboardingPageDefinition } from './types';
+import { isPregnantDraft } from './validation';
 
 const ACTIVITY_DESCRIPTIONS: Record<string, string> = {
   sedentary: 'Little or no exercise',
@@ -37,6 +45,25 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
       { id: 'age', label: 'Age', inputType: 'number', required: true, placeholder: '25', unit: 'years', half: true },
       { id: 'heightCm', label: 'Height', inputType: 'number', required: true, placeholder: '175', unit: 'cm', half: true },
       { id: 'gender', label: 'Sex', inputType: 'single-select', required: true, options: GENDER_OPTIONS },
+      // Right under the sex it depends on, and only for those it applies to, so
+      // it's easy to find without being part of everyone's setup.
+      {
+        id: 'specialPrograms',
+        label: 'Special program',
+        inputType: 'multi-select',
+        helperText: 'Optional. Expecting? Your plan adds the energy each trimester needs and leaves out foods to avoid in pregnancy.',
+        options: SPECIAL_PROGRAM_OPTIONS,
+        visible: (draft) => canHavePregnancyPlan(draft.gender),
+      },
+      {
+        id: 'pregnancyWeek',
+        label: 'Weeks pregnant',
+        inputType: 'number',
+        required: true,
+        placeholder: '20',
+        unit: 'weeks',
+        visible: isPregnantDraft,
+      },
       {
         id: 'activityLevel',
         label: 'How active are you?',
@@ -46,6 +73,8 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         presentation: 'cards',
       },
     ],
+    // An empty week is the field's own error, shown on Continue.
+    validate: (draft) => (isPregnantDraft(draft) && draft.pregnancyWeek.trim() ? getPregnancyWeekError(draft.pregnancyWeek) : null),
   },
   {
     id: 'goals',
@@ -59,6 +88,7 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
       { id: 'targetWeightKg', label: 'Target weight', inputType: 'number', required: true, placeholder: '78', unit: 'kg', half: true },
     ],
     validate: (draft) =>
+      getPregnancyGoalError(isPregnantDraft(draft), draft.goalType) ??
       getTargetWeightError(draft.goalType, Number(draft.weightKg), Number(draft.targetWeightKg), Number(draft.heightCm)),
   },
   {
@@ -67,6 +97,14 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
     title: 'How do you like to eat?',
     subtitle: 'Every meal in your plan respects these. You can change them later in your profile.',
     fields: [
+      {
+        id: 'countryCode',
+        label: 'Country',
+        inputType: 'country',
+        required: true,
+        placeholder: 'Choose where you live',
+        helperText: 'Your meals use ingredients you can buy there, with a light touch of the local cuisine.',
+      },
       {
         id: 'dietaryPreferences',
         label: 'Diet',

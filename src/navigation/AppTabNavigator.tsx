@@ -4,6 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import { useMealReminderSync } from '../features/reminders/useMealReminderSync';
+import { usePushNotifications } from '../features/notifications/usePushNotifications';
+import { useSharedPlanOfferPrompt } from '../features/sharedPlan/useSharedPlanOfferPrompt';
 import { DietPlanScreen } from '../screens/DietPlanScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
@@ -23,6 +26,10 @@ export function AppTabNavigator() {
   const clearLandingTab = useOnboardingStore((state) => state.clearLandingTab);
   // A numeric height turns off React Navigation's own inset handling, so both values account for it here.
   const tabBarPaddingBottom = Math.max(insets.bottom, theme.spacing.sm);
+
+  useMealReminderSync();
+  usePushNotifications();
+  useSharedPlanOfferPrompt();
 
   useEffect(() => {
     if (landingTab) {

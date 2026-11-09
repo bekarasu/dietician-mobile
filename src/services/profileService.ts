@@ -1,5 +1,6 @@
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
 import { fetchWithAuth } from './apiClient';
+import { ApiError } from './apiError';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
 
@@ -13,6 +14,11 @@ export interface ProfileDetails {
   goalType?: GoalType;
   activityLevel?: string;
   gender?: string;
+  // Starts or moves a pregnancy plan, and 0 ends it. The server stores the due
+  // date it gives, so only send it when the user changes it.
+  pregnancyWeek?: number;
+  // Where the user lives, an ISO 3166-1 alpha-2 code such as TR.
+  countryCode?: string;
 }
 
 // Lists left out are kept on the server; an empty list clears one.
@@ -32,7 +38,7 @@ export const profileService = {
     }
 
     if (!response.ok) {
-      throw new Error('Failed to fetch profile');
+      throw await ApiError.fromResponse(response, "We couldn't load your profile. Please try again.");
     }
 
     const json = await response.json();
@@ -42,7 +48,7 @@ export const profileService = {
     // safer than empty lists, which a later save would write back over the real ones.
     const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
     if (!prefResponse.ok) {
-      throw new Error('Failed to fetch preferences');
+      throw await ApiError.fromResponse(prefResponse, "We couldn't load your preferences. Please try again.");
     }
 
     const prefJson = await prefResponse.json();
@@ -73,6 +79,9 @@ export const profileService = {
       gender: data.gender,
       targetWaterMl: data.targetWaterMl,
       targetCoffeeCups: data.targetCoffeeCups,
+      pregnancyWeek: data.pregnancyWeek,
+      pregnancyDueDate: data.pregnancyDueDate,
+      countryCode: data.countryCode,
     } as UserProfile;
   },
 
@@ -91,11 +100,13 @@ export const profileService = {
         goal: details.goalType,
         activityLevel: details.activityLevel,
         gender: details.gender,
+        pregnancyWeek: details.pregnancyWeek,
+        countryCode: details.countryCode,
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update profile');
+      throw await ApiError.fromResponse(response, "We couldn't save your profile. Please try again.");
     }
   },
 
@@ -115,7 +126,7 @@ export const profileService = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update preferences');
+      throw await ApiError.fromResponse(response, "We couldn't save your preferences. Please try again.");
     }
   },
 };

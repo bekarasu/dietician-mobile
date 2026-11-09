@@ -7,13 +7,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppTextInput } from '../../components/AppTextInput';
 import { BloodTestUploader } from '../../components/BloodTestUploader';
 import { ChoiceChips } from '../../components/ChoiceChips';
+import { CountryPicker } from '../../components/CountryPicker';
 import { FoodPickerRow } from '../../components/FoodPickerRow';
 import { OnboardingStackParamList } from '../../navigation/navigationTypes';
 import { theme } from '../../theme/theme';
 import { OnboardingDraft } from '../../types/models';
 
 import { OnboardingFieldDefinition, OnboardingFieldOption, OnboardingPageDefinition, OnboardingSelectFieldDefinition } from './types';
-import { isFieldMissing } from './validation';
+import { isFieldMissing, isFieldVisible } from './validation';
 
 interface OnboardingPageRendererProps {
   page: OnboardingPageDefinition;
@@ -124,6 +125,20 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
       );
     }
 
+    if (field.inputType === 'country') {
+      return (
+        <View style={styles.field}>
+          <FieldLabel label={field.label} helperText={field.helperText} />
+          <CountryPicker
+            value={typeof rawValue === 'string' ? rawValue : ''}
+            placeholder={field.placeholder}
+            onChange={(code) => onChange(field.id, code as DraftValue)}
+          />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </View>
+      );
+    }
+
     // Every other kind of field returned above.
     const selectField = field as OnboardingSelectFieldDefinition;
     const selectedValues: string[] = Array.isArray(rawValue) ? rawValue : [];
@@ -156,7 +171,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
 
   // Consecutive half-width fields share a row.
   const rows: OnboardingFieldDefinition[][] = [];
-  page.fields.forEach((field) => {
+  page.fields.filter((field) => isFieldVisible(field, draft)).forEach((field) => {
     const last = rows[rows.length - 1];
     if (field.half && last?.length === 1 && last[0].half) {
       last.push(field);

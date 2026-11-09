@@ -69,3 +69,30 @@ export function formatDateTimeLabel(dateString: string) {
     minute: '2-digit',
   }).format(new Date(dateString));
 }
+
+// "Just now", "5m ago", "3h ago", "Yesterday", "4d ago", then the date.
+export function formatRelativeTime(dateString: string, now = new Date()) {
+  const date = new Date(dateString);
+  const minutes = Math.floor((now.getTime() - date.getTime()) / 60_000);
+  if (minutes < 1) {
+    return 'Just now';
+  }
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+  if (minutes < 24 * 60) {
+    return `${Math.floor(minutes / 60)}h ago`;
+  }
+  const days = calendarDaysBetween(toCalendarDate(date), toCalendarDate(now));
+  if (days === 1) {
+    return 'Yesterday';
+  }
+  if (days < 7) {
+    return `${days}d ago`;
+  }
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  }).format(date);
+}

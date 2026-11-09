@@ -4,8 +4,10 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { appEnv } from '../constants/appEnv';
 import { DialogHost } from '../features/dialog/DialogHost';
 import { NetworkInspector } from '../features/networkInspector/NetworkInspector';
+import { usePushNotificationRegistration } from '../features/notifications/usePushNotifications';
 import { useAppBootstrap } from '../hooks/useAppBootstrap';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { theme } from '../theme/theme';
@@ -24,6 +26,7 @@ const navigationTheme = {
 
 export function AppProviders() {
   const isReady = useAppBootstrap();
+  usePushNotificationRegistration(isReady);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -47,7 +50,7 @@ export function AppProviders() {
         )}
         {/* Mounted outside the branch so it stays open across bootstrap and
             can show the startup requests while the spinner is up. */}
-        {__DEV__ ? <NetworkInspector /> : null}
+        {appEnv.monitoring ? <NetworkInspector /> : null}
         {/* Outside the navigators, so a dialog can finish closing when its
             action swaps them, as logging out does. */}
         <DialogHost />

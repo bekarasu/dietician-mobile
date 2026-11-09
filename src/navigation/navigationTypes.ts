@@ -1,4 +1,13 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
 import { LeaderboardPeriod, LeaderboardScope } from '../types/models';
+
+// Which ranking the Leaderboard tab opens on. Anything left out keeps the tab's default.
+export interface LeaderboardTarget {
+  scope?: LeaderboardScope;
+  period?: LeaderboardPeriod;
+  periodStart?: string;
+}
 
 // A user's place on the leaderboard their profile was opened from.
 export interface ProfileStanding {
@@ -26,20 +35,25 @@ export type OnboardingStackParamList = {
 export type AppTabParamList = {
   Home: undefined;
   DietPlan: undefined;
-  Leaderboard: undefined;
+  // A score result notification opens the period and ranking it was about.
+  Leaderboard: LeaderboardTarget | undefined;
   ProgressDashboard: undefined;
   ProfileGoals: undefined;
 };
 
 export type AppStackParamList = {
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<AppTabParamList> | undefined;
   Inventory: undefined;
   HydrationTracking: undefined;
   Friends: undefined;
+  SharedPlan: undefined;
   UserProfile: { userId: string; displayName: string; standing?: ProfileStanding };
   ScoreBreakdown: { period: LeaderboardPeriod; periodStart: string };
   BloodTestUpload: undefined;
   WeightProgress: undefined;
+  MealReminders: undefined;
+  PushNotifications: undefined;
+  Notifications: undefined;
   PlanCheckIn: { earliestStartDate: string };
   FoodSelection: { selectedFoods: string[]; fieldName: string; context?: 'onboarding' | 'profile' };
 };

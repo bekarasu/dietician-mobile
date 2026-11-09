@@ -1,4 +1,4 @@
-import { DietaryPreference, GoalType } from '../types/models';
+import { DietaryPreference, GoalType, SpecialProgram } from '../types/models';
 
 export const GOAL_TYPE_OPTIONS: Array<{ label: string; value: GoalType }> = [
   { label: 'Weight loss', value: 'weight_loss' },
@@ -15,6 +15,11 @@ export const DIETARY_OPTIONS: Array<{ label: string; value: DietaryPreference }>
   { label: 'Gluten free', value: 'gluten_free' },
   { label: 'Dairy free', value: 'dairy_free' },
 ];
+
+// Offered only where they apply (pregnancy unless the sex is male), so they
+// stay out of everyone else's way. The server keeps no program, only the
+// pregnancy week, as a due date.
+export const SPECIAL_PROGRAM_OPTIONS: Array<{ label: string; value: SpecialProgram }> = [{ label: 'Pregnancy', value: 'pregnancy' }];
 
 export const GENDER_OPTIONS: Array<{ label: string; value: string }> = [
   { label: 'Male', value: 'male' },

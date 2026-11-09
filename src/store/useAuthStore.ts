@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 
 import { isOnboardingComplete } from '../features/onboarding/validation';
+import { stopPushNotifications } from '../features/notifications/pushNotifications';
+import { cancelAllReminders } from '../features/reminders/mealReminders';
 import { authService } from '../services/authService';
 import { tokenService } from '../services/tokenService';
 import { User } from '../types/models';
+import { useDietPlanStore } from './useDietPlanStore';
+import { useNotificationStore } from './useNotificationStore';
 import { useOnboardingStore } from './useOnboardingStore';
 import { useProfileStore } from './useProfileStore';
+import { useSharedPlanOfferStore } from './useSharedPlanOfferStore';
 
 interface AuthState {
   user: User | null;
@@ -154,6 +159,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    await stopPushNotifications();
     try {
       const accessToken = await tokenService.getAccessToken();
       if (accessToken) {
@@ -164,6 +170,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       await tokenService.clearTokens();
       useProfileStore.getState().setProfile(null);
+      // The reminders name this user's meals, and the next user would get them
+      // from the plan until it reloads.
+      useDietPlanStore.getState().reset();
+      useNotificationStore.getState().reset();
+      useSharedPlanOfferStore.getState().reset();
+      void cancelAllReminders();
       set({ user: null, isAuthenticated: false, error: null, otpToken: null });
     }
   },

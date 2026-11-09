@@ -11,6 +11,7 @@ import { UserAvatar } from '../components/UserAvatar';
 import { HEALTH_NOTICE } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
 import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
+import { NotificationBell } from '../features/notifications/NotificationBell';
 import { formatStartsIn, getPlanSchedule } from '../features/dietPlan/planSchedule';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { getGoalProgress, getWeeklyChange } from '../features/progress/progressSummary';
@@ -168,9 +169,12 @@ export function HomeScreen() {
             {planLabel ? <Chip icon="calendar-outline" label={planLabel} /> : null}
           </View>
         </View>
-        <Pressable accessibilityLabel="Profile" accessibilityRole="button" onPress={() => navigation.navigate('ProfileGoals')}>
-          <UserAvatar name={profile?.name || '?'} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <NotificationBell onPress={() => navigation.navigate('Notifications')} />
+          <Pressable accessibilityLabel="Profile" accessibilityRole="button" onPress={() => navigation.navigate('ProfileGoals')}>
+            <UserAvatar name={profile?.name || '?'} />
+          </Pressable>
+        </View>
       </View>
 
       <TodayCard day={todayPoints} activity={activity} onOpenWeek={() => navigation.navigate('Leaderboard')} />
@@ -502,6 +506,11 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
     gap: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   date: {
     color: theme.colors.muted,

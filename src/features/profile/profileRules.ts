@@ -47,3 +47,35 @@ export function getTargetWeightError(goalType: GoalType | string, weightKg: numb
   }
   return null;
 }
+
+// Pregnancy weeks as a doctor or midwife counts them. After 42 the server
+// treats the pregnancy as over.
+export const MIN_PREGNANCY_WEEK = 1;
+export const MAX_PREGNANCY_WEEK = 42;
+
+// Goals that never put someone in a calorie deficit, the only ones allowed
+// during pregnancy.
+const PREGNANCY_GOALS: readonly string[] = ['maintenance', 'habit_building'];
+
+// A pregnancy plan is offered once the sex is known and isn't male.
+export function canHavePregnancyPlan(gender: string | undefined) {
+  return gender === 'female' || gender === 'other';
+}
+
+// The same split as the server (packages/pregnancy), which plans meals by it.
+export function getTrimester(week: number) {
+  return week < 14 ? 1 : week < 28 ? 2 : 3;
+}
+
+export function getPregnancyWeekError(week: string) {
+  const value = Number(week);
+  return Number.isInteger(value) && value >= MIN_PREGNANCY_WEEK && value <= MAX_PREGNANCY_WEEK
+    ? null
+    : `Enter how many weeks pregnant you are, from ${MIN_PREGNANCY_WEEK} to ${MAX_PREGNANCY_WEEK}.`;
+}
+
+export function getPregnancyGoalError(pregnant: boolean, goalType: GoalType | string) {
+  return pregnant && !PREGNANCY_GOALS.includes(goalType)
+    ? 'A pregnancy plan never cuts calories. Choose healthy maintenance or habit building.'
+    : null;
+}

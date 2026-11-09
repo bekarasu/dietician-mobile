@@ -3,19 +3,31 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
 import { ChoiceChips } from '../components/ChoiceChips';
+import { CountryPicker } from '../components/CountryPicker';
 import { FoodPickerRow } from '../components/FoodPickerRow';
 import { ScreenContainer } from '../components/ScreenContainer';
-import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS } from '../constants/options';
+import { describeBuild } from '../constants/appEnv';
+import { IOS_PUSH_ENABLED } from '../constants/notifications';
+import { ACTIVITY_LEVEL_OPTIONS, DIETARY_OPTIONS, GENDER_OPTIONS, GOAL_TYPE_OPTIONS, SPECIAL_PROGRAM_OPTIONS } from '../constants/options';
 import { showDialog } from '../features/dialog/dialogStore';
-import { getTargetWeightError, toggleDietaryPreference } from '../features/profile/profileRules';
+import {
+  canHavePregnancyPlan,
+  getPregnancyGoalError,
+  getPregnancyWeekError,
+  getTargetWeightError,
+  toggleDietaryPreference,
+} from '../features/profile/profileRules';
+import { formatReminderTime, MealReminderSettings, REMINDER_MEAL_TYPES } from '../features/reminders/mealReminderSettings';
 import { AppStackParamList } from '../navigation/navigationTypes';
+import { getErrorMessage } from '../services/apiError';
 import { friendService } from '../services/friendService';
 import { useAuthStore } from '../store/useAuthStore';
+import { selectRemindersOn, useMealReminderStore } from '../store/useMealReminderStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -31,6 +43,8 @@ interface ProfileFormValues {
   gender: string;
   activityLevel: string;
   goalType: GoalType;
+  pregnant: boolean;
+  pregnancyWeek: string;
 }
 
 function toFormValues(profile: UserProfile): ProfileFormValues {
@@ -42,10 +56,24 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
     gender: profile.gender ?? '',
     activityLevel: profile.activityLevel ?? '',
     goalType: profile.goalType,
+    pregnant: Boolean(profile.pregnancyWeek),
+    pregnancyWeek: profile.pregnancyWeek ? String(profile.pregnancyWeek) : '',
   };
 }
 
+// Pregnancy counts only while it can show: picking male hides it, and saving
+// then ends it.
+const isPregnant = (values: ProfileFormValues) => canHavePregnancyPlan(values.gender) && values.pregnant;
+
 const positiveNumber = (label: string) => (value: string) => Number(value) > 0 || `Enter your ${label}.`;
+
+// "Breakfast 8:30 AM · Lunch 12:30 PM"
+function summarizeReminders(settings: MealReminderSettings) {
+  const times = REMINDER_MEAL_TYPES.filter((mealType) => settings.meals[mealType].enabled).map(
+    (mealType) => `${mealType} ${formatReminderTime(settings.meals[mealType].minutes)}`,
+  );
+  return times.length ? times.join(' · ') : 'No meals chosen';
+}
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -114,7 +142,12 @@ export function ProfileGoalsScreen() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingDiet, setIsSavingDiet] = useState(false);
-  const [mealReminders, setMealReminders] = useState(true);
+  const [isSavingCountry, setIsSavingCountry] = useState(false);
+  const remindersOn = useMealReminderStore(selectRemindersOn);
+  const reminderSettings = useMealReminderStore((state) => state.settings);
+  const setRemindersEnabled = useMealReminderStore((state) => state.setEnabled);
+  // Shown while the permission prompt is open, so the switch doesn't jump back.
+  const [pendingReminders, setPendingReminders] = useState<boolean | null>(null);
   const [safeGuidanceMode, setSafeGuidanceMode] = useState(true);
   const [incomingRequestCount, setIncomingRequestCount] = useState(0);
 
@@ -131,9 +164,11 @@ export function ProfileGoalsScreen() {
     }, [refreshProfile]),
   );
 
-  const { control, handleSubmit, reset, formState } = useForm<ProfileFormValues>({
+  const { control, handleSubmit, reset, formState, watch } = useForm<ProfileFormValues>({
     defaultValues: profile ? toFormValues(profile) : undefined,
   });
+  const showSpecialPrograms = canHavePregnancyPlan(watch('gender'));
+  const showPregnancyWeek = showSpecialPrograms && watch('pregnant');
 
   // A refresh or a saved diet change replaces the profile, so fields being
   // edited keep what was typed.
@@ -144,6 +179,9 @@ export function ProfileGoalsScreen() {
   }, [profile, reset]);
 
   const onSubmit = async (values: ProfileFormValues) => {
+    // Sent only when it differs from the profile's week: the server stores the
+    // due date it gives, so sending the same week again could move it by days.
+    const pregnancyWeek = isPregnant(values) ? Number(values.pregnancyWeek) : 0;
     setIsSaving(true);
     try {
       await updateDetails({
@@ -155,13 +193,14 @@ export function ProfileGoalsScreen() {
         gender: values.gender || undefined,
         activityLevel: values.activityLevel || undefined,
         goalType: values.goalType,
+        pregnancyWeek: pregnancyWeek !== (profile?.pregnancyWeek ?? 0) ? pregnancyWeek : undefined,
       });
       reset(values);
-      // The server sets the coffee limit from age, so reload to show it.
+      // The server sets the water target and coffee limit from age and pregnancy, so reload to show them.
       refreshProfile().catch(() => undefined);
       showDialog({ title: 'Saved', message: 'Your profile is up to date.', icon: 'checkmark-circle-outline' });
     } catch (error) {
-      showDialog({ title: 'Error', message: 'We couldn\'t save your profile. Please try again.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your profile. Please try again.'), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -173,9 +212,43 @@ export function ProfileGoalsScreen() {
     try {
       await updatePreferences({ dietaryPreferences: next });
     } catch (error) {
-      showDialog({ title: 'Error', message: 'We couldn\'t save your diet. Please try again.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your diet. Please try again.'), tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
+    }
+  };
+
+  // Applies to the next plan and to swaps; the current plan's meals stay.
+  const saveCountry = async (countryCode: string) => {
+    setIsSavingCountry(true);
+    try {
+      await updateDetails({ countryCode });
+    } catch (error) {
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your country. Please try again.'), tone: 'danger' });
+    } finally {
+      setIsSavingCountry(false);
+    }
+  };
+
+  const toggleReminders = async (enabled: boolean) => {
+    setPendingReminders(enabled);
+    const permission = await setRemindersEnabled(enabled);
+    setPendingReminders(null);
+    if (!enabled || permission === 'granted' || permission === 'ask') {
+      return;
+    }
+    if (permission === 'blocked') {
+      showDialog({
+        title: 'Notifications are off',
+        message: 'Allow notifications for Eativio in Settings to get meal reminders.',
+        icon: 'notifications-off-outline',
+        buttons: [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ],
+      });
+    } else {
+      showDialog({ title: 'Update needed', message: 'This version of the app can\'t send reminders. Install the latest one to use them.' });
     }
   };
 
@@ -205,6 +278,7 @@ export function ProfileGoalsScreen() {
           <Text style={styles.name}>{profile?.name || 'Your profile'}</Text>
           <View style={styles.tags}>
             {profile ? <Text style={styles.tag}>{formatGoalType(profile.goalType)}</Text> : null}
+            {profile?.pregnancyWeek ? <Text style={styles.tag}>Pregnancy · week {profile.pregnancyWeek}</Text> : null}
             {activityLabel ? <Text style={styles.tag}>{activityLabel}</Text> : null}
           </View>
         </View>
@@ -275,8 +349,12 @@ export function ProfileGoalsScreen() {
           <Controller
             control={control}
             name="goalType"
-            render={({ field: { onChange, value } }) => (
-              <ChoiceChips options={GOAL_TYPE_OPTIONS} isSelected={(option) => option === value} onPress={onChange} />
+            rules={{ validate: (value, values) => getPregnancyGoalError(isPregnant(values), value) ?? true }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <>
+                <ChoiceChips options={GOAL_TYPE_OPTIONS} isSelected={(option) => option === value} onPress={onChange} />
+                {error ? <Text style={styles.errorText}>{error.message}</Text> : null}
+              </>
             )}
           />
         </View>
@@ -290,6 +368,39 @@ export function ProfileGoalsScreen() {
             )}
           />
         </View>
+        {showSpecialPrograms ? (
+          <View style={styles.field}>
+            <View>
+              <Text style={styles.label}>Special program</Text>
+              <Text style={styles.cardCaption}>Pregnancy adds the energy each trimester needs and leaves out foods to avoid.</Text>
+            </View>
+            <Controller
+              control={control}
+              name="pregnant"
+              render={({ field: { onChange, value } }) => (
+                <ChoiceChips options={SPECIAL_PROGRAM_OPTIONS} isSelected={() => value} onPress={() => onChange(!value)} />
+              )}
+            />
+          </View>
+        ) : null}
+        {showPregnancyWeek ? (
+          <Controller
+            control={control}
+            name="pregnancyWeek"
+            rules={{ validate: (value, values) => !isPregnant(values) || (getPregnancyWeekError(value) ?? true) }}
+            render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+              <AppTextInput
+                inputMode="numeric"
+                label="Weeks pregnant"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                suffix="weeks"
+                value={value}
+                error={error?.message}
+              />
+            )}
+          />
+        ) : null}
         <View style={styles.field}>
           <Text style={styles.label}>Activity</Text>
           <Controller
@@ -312,6 +423,13 @@ export function ProfileGoalsScreen() {
         <View>
           <Text style={styles.cardTitle}>Food preferences</Text>
           <Text style={styles.cardCaption}>Every meal in your plan respects these. Changes save straight away.</Text>
+        </View>
+        <View style={styles.field}>
+          <View>
+            <Text style={styles.label}>Country</Text>
+            <Text style={styles.cardCaption}>Meals use ingredients you can buy there, from your next plan or swap.</Text>
+          </View>
+          <CountryPicker value={profile?.countryCode ?? ''} onChange={saveCountry} disabled={isSavingCountry || !profile} />
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Diet</Text>
@@ -343,7 +461,9 @@ export function ProfileGoalsScreen() {
       <View style={styles.card}>
         <View>
           <Text style={styles.cardTitle}>Daily targets</Text>
-          <Text style={styles.cardCaption}>Set for you from your weight and age.</Text>
+          <Text style={styles.cardCaption}>
+            {profile?.pregnancyWeek ? 'Set for you from your weight, age and pregnancy.' : 'Set for you from your weight and age.'}
+          </Text>
         </View>
         <View style={styles.targets}>
           <View style={[styles.target, { backgroundColor: theme.colors.waterSoft }]}>
@@ -378,7 +498,28 @@ export function ProfileGoalsScreen() {
       </View>
 
       <View style={styles.menu}>
-        <SettingRow title="Meal reminders" text="Light nudges for meals, water and check-ins." value={mealReminders} onChange={setMealReminders} />
+        <SettingRow
+          title="Meal reminders"
+          text="A nudge at each meal in your plan."
+          value={pendingReminders ?? remindersOn}
+          onChange={toggleReminders}
+        />
+        {remindersOn ? (
+          <MenuRow
+            icon="time-outline"
+            label="Reminder times"
+            detail={summarizeReminders(reminderSettings)}
+            onPress={() => navigation.navigate('MealReminders')}
+          />
+        ) : null}
+        {IOS_PUSH_ENABLED ? (
+          <MenuRow
+            icon="notifications-outline"
+            label="Push notifications"
+            detail="Friends, shared meals and plan updates"
+            onPress={() => navigation.navigate('PushNotifications')}
+          />
+        ) : null}
         <SettingRow
           title="Safe guidance mode"
           text="Keeps suggestions sustainable and never compensatory."
@@ -391,11 +532,20 @@ export function ProfileGoalsScreen() {
         <MenuRow icon="refresh-outline" label="Restart onboarding" detail="Answer the setup questions again" onPress={restartOnboarding} />
         <MenuRow icon="log-out-outline" label="Log out" danger onPress={confirmLogout} />
       </View>
+
+      <Text selectable style={styles.buildInfo}>
+        {describeBuild()}
+      </Text>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  buildInfo: {
+    ...theme.typography.caption,
+    color: theme.colors.muted,
+    textAlign: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -497,6 +647,10 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.caption.fontSize,
     fontWeight: '700',
+  },
+  errorText: {
+    color: theme.colors.danger,
+    fontSize: theme.typography.caption.fontSize,
   },
   targets: {
     flexDirection: 'row',

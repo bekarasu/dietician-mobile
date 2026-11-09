@@ -19,7 +19,8 @@
       "appleTeamId": "7NCH5FSTYT",
       "infoPlist": {
         "CFBundleDisplayName": "Eativio"
-      }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +33,15 @@
       "icon": "./assets/brand-v2/icon.png"
     },
     "plugins": [
+      "./plugins/withFirebaseIos",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "dynamic"
+          }
+        }
+      ],
       "expo-secure-store",
       [
         "expo-local-authentication",
@@ -40,6 +50,14 @@
         }
       ],
       "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand-v2/adaptive-icon-monochrome.png",
+          "color": "#0F766E",
+          "enableRemoteNotifications": false
+        }
+      ],
       "expo-status-bar",
       [
         "expo-splash-screen",

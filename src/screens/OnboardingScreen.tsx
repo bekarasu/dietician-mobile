@@ -10,8 +10,8 @@ import { HEALTH_NOTICE } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
 import { OnboardingPageRenderer } from '../features/onboarding/OnboardingPageRenderer';
 import { ONBOARDING_PAGES } from '../features/onboarding/onboardingPages';
-import { isFieldMissing } from '../features/onboarding/validation';
-import { MIN_HEALTHY_BMI } from '../features/profile/profileRules';
+import { isFieldMissing, isPregnantDraft } from '../features/onboarding/validation';
+import { getTrimester, MIN_HEALTHY_BMI } from '../features/profile/profileRules';
 import { useAuthStore } from '../store/useAuthStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
@@ -32,6 +32,21 @@ const MAX_WEEKLY_LOSS_KG = 0.75;
 // unhealthy target is noticed before the plan is built around it. A weight-loss
 // target that can't be used is the page's error instead, which hides this.
 function GoalPreview({ draft }: { draft: OnboardingDraft }) {
+  // During pregnancy weight goes up as it should, so there's no pace to show.
+  // The page's error covers a goal that isn't allowed.
+  if (isPregnantDraft(draft)) {
+    const trimester = ['first', 'second', 'third'][getTrimester(Number(draft.pregnancyWeek)) - 1];
+    return (
+      <View style={styles.preview}>
+        <Ionicons name="heart-outline" size={20} color={theme.colors.primary} />
+        <Text style={styles.previewText}>
+          Your plan follows your pregnancy, with the energy you need in your {trimester} trimester. It never cuts calories, whatever the
+          target. Keep following your doctor's or midwife's advice.
+        </Text>
+      </View>
+    );
+  }
+
   const weight = Number(draft.weightKg);
   const target = Number(draft.targetWeightKg);
   const height = Number(draft.heightCm);
@@ -128,6 +143,10 @@ export function OnboardingScreen({ navigation }: Props) {
       // Restarting onboarding saves these lists again, so they start from what's
       // saved instead of empty, which used to wipe them.
       dietaryPreferences: profile?.dietaryPreferences ?? [],
+      // Onboarding saves the pregnancy plan again too, and ends it if it's left out.
+      specialPrograms: profile?.pregnancyWeek ? ['pregnancy'] : [],
+      pregnancyWeek: profile?.pregnancyWeek ? String(profile.pregnancyWeek) : '',
+      countryCode: profile?.countryCode ?? '',
       dislikedFoods: profile?.dislikedFoods?.join(', ') ?? '',
       allergies: profile?.allergies?.join(', ') ?? '',
       dailyCalorieTarget: profile?.dailyCalorieTarget ? String(profile.dailyCalorieTarget) : '',

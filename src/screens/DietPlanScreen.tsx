@@ -17,6 +17,7 @@ import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
 import { leaderboardService } from '../services/leaderboardService';
 import { recommendationService } from '../services/recommendationService';
 import { theme } from '../theme/theme';
@@ -149,6 +150,39 @@ function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestS
         </View>
       </View>
       {earliestRenewalDate ? <AppButton title="Renew My Plan" onPress={() => onRenew(earliestRenewalDate)} /> : null}
+    </AppCard>
+  );
+}
+
+// Points to sharing meals with friends, says the plan on screen is shared, or
+// that a shared plan is waiting for the user to switch to it.
+function SharedPlanCard({ plan, onOpen }: { plan: DietPlan; onOpen: () => void }) {
+  const isShared = !!plan.sharedGroupId;
+  const offer = useSharedPlanOfferStore((state) => state.offer);
+  const isAccepting = useSharedPlanOfferStore((state) => state.isAccepting);
+
+  let title = isShared ? 'Shared plan' : 'Share meals with friends';
+  let detail = isShared
+    ? 'Your group has the same meals, each with portions for their own goal. Tap to see who\'s in it.'
+    : 'Eat the same meals as up to 2 friends, with portions for your own goal and weight.';
+  if (isAccepting) {
+    title = 'Switching to the shared plan';
+    detail = 'Your portions are being prepared. This usually takes about a minute.';
+  } else if (offer) {
+    title = `${offer.owner.displayName} started a shared plan`;
+    detail = 'Your plan stays as it is until you choose. Tap to decide whether to switch.';
+  }
+
+  return (
+    <AppCard style={styles.statusCard}>
+      <Pressable accessibilityRole="button" onPress={onOpen} style={styles.statusRow}>
+        <Ionicons name="people-outline" size={22} color={theme.colors.primary} />
+        <View style={styles.statusText}>
+          <Text style={styles.statusTitle}>{title}</Text>
+          <Text style={styles.goalsText}>{detail}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} />
+      </Pressable>
     </AppCard>
   );
 }
@@ -333,7 +367,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
   const profile = useProfileStore((state) => state.profile);
   const availableIngredients = profile?.availableIngredients || [];
 
-  const handleSwap = async () => {
+  const swap = async () => {
     setIsSwapping(true);
     try {
       await recommendationService.swapMeal(meal.id);
@@ -343,6 +377,23 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
     } finally {
       setIsSwapping(false);
     }
+  };
+
+  // A shared meal changes for the whole group, so they're asked first.
+  const handleSwap = () => {
+    if (!meal.isShared) {
+      swap();
+      return;
+    }
+    showDialog({
+      title: 'Swap for everyone?',
+      message: 'This meal changes for everyone in your group who hasn\'t eaten it yet, each with their own portion.',
+      icon: 'swap-horizontal-outline',
+      buttons: [
+        { text: 'Swap for everyone', onPress: swap },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
   };
 
   const handleLogMeal = async () => {
@@ -364,6 +415,11 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, onMealLogge
               {isExtra && (
                 <View style={{ backgroundColor: theme.colors.warningSurface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
                   <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.text }}>EXTRA</Text>
+                </View>
+              )}
+              {meal.isShared && (
+                <View style={{ backgroundColor: theme.colors.primarySoft, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.primary }}>SHARED</Text>
                 </View>
               )}
               {isLogged && <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />}
@@ -587,6 +643,8 @@ export function DietPlanScreen() {
       />
 
       {nextPlan ? <SegmentedControl onChange={setPlanView} options={PLAN_VIEW_OPTIONS} value={planView} /> : null}
+
+      <SharedPlanCard plan={plan} onOpen={() => navigation.navigate('SharedPlan')} />
 
       <GoalsCard goalsText={plan.goals} />
 

@@ -4,28 +4,62 @@
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "dotenv -e .env.development -- expo start --port 3000",
-    "start:local": "dotenv -e .env.local -- expo start --port 3000",
-    "android": "dotenv -e .env.development -- expo start --android --port 3000",
-    "ios": "dotenv -e .env.development -- expo start --ios --port 3000",
-    "android:native": "expo prebuild --platform android && dotenv -e .env.development -- expo run:android --port 3000",
-    "ios:native": "expo prebuild --platform ios && dotenv -e .env.development -- expo run:ios --port 3000",
-    "ios:release": "expo prebuild --platform ios && expo run:ios --configuration Release --device --no-bundler",
+    "start": "node scripts/with-env.js dev -- expo start --port 3000",
+    "start:lan": "node scripts/with-env.js lan -- expo start --port 3000",
+    "start:prod": "node scripts/with-env.js prod -- expo start --port 3000",
+    "ios": "expo prebuild --platform ios && node scripts/with-env.js dev -- expo run:ios --port 3000",
+    "ios:device": "expo prebuild --platform ios && node scripts/with-env.js dev -- expo run:ios --port 3000 --device",
+    "ios:lan": "expo prebuild --platform ios && node scripts/with-env.js lan -- expo run:ios --port 3000",
+    "ios:release": "expo prebuild --platform ios && node scripts/with-env.js prod -- expo run:ios --configuration Release --device --no-bundler",
+    "ios:release:dev": "expo prebuild --platform ios && node scripts/with-env.js dev -- expo run:ios --configuration Release --device --no-bundler",
+    "android": "expo prebuild --platform android && node scripts/with-env.js dev -- expo run:android --port 3000",
+    "android:lan": "expo prebuild --platform android && node scripts/with-env.js lan -- expo run:android --port 3000",
+    "android:release": "expo prebuild --platform android && node scripts/with-env.js prod -- expo run:android --variant release --no-bundler",
+    "android:release:dev": "expo prebuild --platform android && node scripts/with-env.js dev -- expo run:android --variant release --no-bundler",
+    "env:check": "node scripts/with-env.js --check",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "test:push": "node --test tests/pushNotifications.test.cjs",
     "lint": "eslint . --ext .ts,.tsx"
+  },
+  "config": {
+    "envs": {
+      "dev": {
+        "file": ".env.dev",
+        "monitoring": true
+      },
+      "lan": {
+        "file": ".env.lan",
+        "monitoring": true
+      },
+      "prod": {
+        "file": ".env.prod",
+        "monitoring": false
+      }
+    },
+    "requiredEnv": [
+      "EXPO_PUBLIC_ACCOUNT_API_URL",
+      "EXPO_PUBLIC_MEDICAL_API_URL",
+      "EXPO_PUBLIC_PROGRESS_API_URL",
+      "EXPO_PUBLIC_RECOMMENDATION_API_URL",
+      "EXPO_PUBLIC_NOTIFICATION_API_URL"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-firebase/app": "27.1.0",
+    "@react-native-firebase/messaging": "27.1.0",
     "@react-navigation/bottom-tabs": "^7.4.2",
     "@react-navigation/elements": "^2.9.15",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/native-stack": "^7.3.21",
     "babel-preset-expo": "~58.0.0",
     "expo": "^58.0.0",
+    "expo-build-properties": "58.0.12",
     "expo-document-picker": "~58.0.4",
     "expo-font": "~58.0.11",
     "expo-local-authentication": "~58.0.2",
+    "expo-notifications": "~58.1.8",
     "expo-secure-store": "~58.0.2",
     "expo-splash-screen": "~58.0.13",
     "expo-status-bar": "~58.0.4",
@@ -45,7 +79,6 @@
     "@babel/core": "^7.29.7",
     "@types/node": "^26.6.3",
     "@types/react": "~19.3.0",
-    "dotenv-cli": "^11.0.0",
     "eslint": "^9.34.0",
     "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3"

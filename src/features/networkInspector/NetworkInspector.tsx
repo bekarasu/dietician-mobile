@@ -15,6 +15,7 @@ import {
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from '../../theme/theme';
+import { EnvironmentCard } from './EnvironmentCard';
 import { NetworkEntryDetail } from './NetworkEntryDetail';
 import { formatClock, formatDuration, isFailure, splitUrl, statusColor, statusLabel } from './networkFormat';
 import { NetworkEntry, useNetworkLogStore } from './networkLogStore';
@@ -23,8 +24,9 @@ const BUBBLE_SIZE = 48;
 const EDGE_MARGIN = 12;
 const DRAG_THRESHOLD = 4;
 
-// Dev-only overlay. Requests are recorded by installNetworkLogger; this only
-// shows them, from a draggable bubble that floats over every screen.
+// Shown when the env turns monitoring on (appEnv.monitoring). Requests are
+// recorded by installNetworkLogger; this only shows them, from a draggable
+// bubble that floats over every screen.
 export function NetworkInspector() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -143,6 +145,8 @@ function NetworkLogPanel({ selectedId, onSelect, onClose }: NetworkLogPanelProps
           <Ionicons color={theme.colors.text} name="close" size={24} />
         </Pressable>
       </View>
+
+      <EnvironmentCard />
 
       <TextInput
         autoCapitalize="none"

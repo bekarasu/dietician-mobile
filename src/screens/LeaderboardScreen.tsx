@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, AppState, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -11,7 +11,7 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import { AvatarColors, getAvatarColors, UserAvatar } from '../components/UserAvatar';
 import { showDialog } from '../features/dialog/dialogStore';
 import { getComparisonMessage, getDifferenceLabel, getStatusMessage } from '../features/leaderboard/scoreMessages';
-import { AppStackParamList } from '../navigation/navigationTypes';
+import { AppStackParamList, AppTabParamList } from '../navigation/navigationTypes';
 import { LEADERBOARD_PAGE_SIZE, leaderboardService } from '../services/leaderboardService';
 import { theme } from '../theme/theme';
 import { Leaderboard, LeaderboardEntry, LeaderboardPeriod, LeaderboardScope } from '../types/models';
@@ -54,9 +54,11 @@ const LIVE_COLOR = '#4ADE80';
 
 export function LeaderboardScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
-  const [scope, setScope] = useState<LeaderboardScope>('friends');
-  const [period, setPeriod] = useState<LeaderboardPeriod>('weekly');
-  const [periodStart, setPeriodStart] = useState<string>();
+  // Set when a score result notification opens the tab on the period it was about.
+  const { params: target } = useRoute<RouteProp<AppTabParamList, 'Leaderboard'>>();
+  const [scope, setScope] = useState<LeaderboardScope>(target?.scope ?? 'friends');
+  const [period, setPeriod] = useState<LeaderboardPeriod>(target?.period ?? 'weekly');
+  const [periodStart, setPeriodStart] = useState<string | undefined>(target?.periodStart);
   const [board, setBoard] = useState<Leaderboard | null>(null);
   const [failed, setFailed] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -124,6 +126,22 @@ export function LeaderboardScreen() {
     setBoard(null);
     setFailed(false);
   };
+
+  // The tab stays mounted, so a later notification arrives as new params. Each
+  // navigation brings a new object, so opening the same result twice still
+  // brings it back after the user has moved on.
+  const shownTarget = useRef(target);
+  useEffect(() => {
+    if (!target || target === shownTarget.current) {
+      return;
+    }
+    shownTarget.current = target;
+    setBoard(null);
+    setFailed(false);
+    setScope(target.scope ?? 'friends');
+    setPeriod(target.period ?? 'weekly');
+    setPeriodStart(target.periodStart);
+  }, [target]);
 
   const changeScope = (next: LeaderboardScope) => {
     if (next !== scope) {
