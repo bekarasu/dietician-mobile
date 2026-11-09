@@ -26,9 +26,9 @@ type Tip = {
 
 const HEALTHY_TIPS: Tip[] = [
   { text: 'Hydration is key! Drinking enough water boosts your metabolism.', icon: 'water-outline' },
-  { text: 'Focusing on lean proteins helps build and repair muscle.', icon: 'barbell-outline' },
-  { text: 'Eating a variety of colors provides a wide range of nutrients.', icon: 'color-palette-outline' },
-  { text: 'Consistency is more important than perfection in your diet.', icon: 'calendar-outline' },
+  { text: 'Focusing on lean proteins helps build and repair muscle.', icon: 'fish-outline' },
+  { text: 'Eating a variety of colors provides a wide range of nutrients.', icon: 'nutrition-outline' },
+  { text: 'Consistency is more important than perfection in your diet.', icon: 'restaurant-outline' },
 ];
 
 // RootNavigator also shows this outside the onboarding stack, with no route.

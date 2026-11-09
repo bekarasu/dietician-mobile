@@ -101,9 +101,8 @@ export const ONBOARDING_PAGES: OnboardingPageDefinition[] = [
         id: 'countryCode',
         label: 'Country',
         inputType: 'country',
-        required: true,
         placeholder: 'Choose where you live',
-        helperText: 'Your meals use ingredients you can buy there, with a light touch of the local cuisine.',
+        helperText: 'Optional. Your meals use ingredients you can buy there, with a light touch of the local cuisine.',
       },
       {
         id: 'dietaryPreferences',

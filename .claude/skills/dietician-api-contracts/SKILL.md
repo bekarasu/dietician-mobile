@@ -164,7 +164,7 @@ Where the user lives, so plans use ingredients that are easy to buy there, with 
 
 - `countryCode` is an upper-case ISO 3166-1 alpha-2 code (`TR`), read from `GET /profiles` and written with `PUT /profiles` or `POST /profiles/onboarding`. Anything else, including `''` or lower case, is a `400`. Left out, the server keeps it, so it can't be cleared.
 - The list is `src/constants/countries.ts`; every code in it passes account-service's validator. Pick with `CountryPicker` (`src/components/`), which also suggests the phone's region, but never pre-fill from it: the language setting often isn't where someone lives.
-- Asked on the onboarding preferences page (required), and changeable in the profile's Food preferences card, which saves straight away. Users onboarded earlier have none, and their plans are made as before until they set one.
+- Asked on the onboarding preferences page (optional since 2026-11-09; left empty, `countryCode` is not sent), and changeable in the profile's Food preferences card, which saves straight away. Users onboarded earlier have none, and their plans are made as before until they set one.
 - It changes the next plan, renewal, feedback update and swap, not the plan already made. recommendation-service sends the English country name, which adds `packages/openai/prompts/local-cuisine.txt` to the prompt. Allergies, diets, dislikes, calories and pregnancy rules still win. A shared plan uses the country its members agree on, and none if they disagree.
 
 ## Leaderboards
