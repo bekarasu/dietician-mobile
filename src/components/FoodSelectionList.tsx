@@ -71,6 +71,7 @@ export function FoodSelectionList({ selectedFoodNames, onToggleFood }: FoodSelec
         placeholder="e.g. Apple, Chicken Breast..."
         value={searchQuery}
         onChangeText={setSearchQuery}
+        clearable
       />
       {isLoading ? (
         <View style={styles.loadingContainer}>

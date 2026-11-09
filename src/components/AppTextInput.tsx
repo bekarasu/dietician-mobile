@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { forwardRef } from 'react';
 import {
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -15,21 +17,44 @@ interface AppTextInputProps extends TextInputProps {
   error?: string;
   // A unit shown inside the field, after the value, such as "kg".
   suffix?: string;
+  // Shows an (x) button inside the field while it has text, which empties it.
+  clearable?: boolean;
 }
 
 export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(function AppTextInput(
-  { label, error, suffix, style, ...props },
+  { label, error, suffix, clearable, style, ...props },
   forwardedRef,
 ) {
   const internalRef = React.useRef<TextInputInstance>(null);
+  // Only used when the field is uncontrolled, so the clear button knows when to show.
+  const [uncontrolledText, setUncontrolledText] = React.useState(props.defaultValue ?? '');
+  const currentText = props.value ?? uncontrolledText;
 
   React.useImperativeHandle(forwardedRef, () => internalRef.current as TextInputInstance);
+
+  const changeText = (text: string) => {
+    if (props.value === undefined) {
+      setUncontrolledText(text);
+    }
+    props.onChangeText?.(text);
+  };
+
+  // The box layout depends on the props only, never on the text, so the
+  // TextInput is not remounted (and does not lose focus) when the button toggles.
+  const boxed = Boolean(suffix || clearable);
+  const showClearButton = clearable && props.editable !== false && currentText.length > 0;
 
   const input = (
     <TextInput
       ref={internalRef}
       placeholderTextColor={theme.colors.muted}
-      style={[styles.input, props.multiline ? styles.multiline : undefined, suffix ? styles.inputWithSuffix : undefined, style]}
+      style={[
+        styles.input,
+        props.multiline ? styles.multiline : undefined,
+        boxed ? styles.inputInBox : undefined,
+        suffix ? styles.inputWithSuffix : undefined,
+        style,
+      ]}
       {...props}
       onChangeText={(text) => {
         if (isNumeric(props)) {
@@ -38,9 +63,9 @@ export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(fun
           if (numericText !== text) {
             internalRef.current?.setNativeProps({ text: numericText });
           }
-          props.onChangeText?.(numericText);
+          changeText(numericText);
         } else {
-          props.onChangeText?.(text);
+          changeText(text);
         }
       }}
     />
@@ -49,10 +74,25 @@ export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(fun
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
-      {suffix ? (
-        <View style={[styles.suffixBox, error ? styles.suffixBoxError : undefined]}>
+      {boxed ? (
+        <View style={[styles.box, error ? styles.boxError : undefined]}>
           {input}
-          <Text style={styles.suffix}>{suffix}</Text>
+          {showClearButton ? (
+            <Pressable
+              accessibilityLabel={`Clear ${label}`}
+              accessibilityRole="button"
+              hitSlop={10}
+              onPress={() => {
+                // clear() does not fire onChangeText, so report the empty text ourselves.
+                internalRef.current?.clear();
+                changeText('');
+              }}
+              style={[styles.clearButton, suffix ? styles.clearButtonBeforeSuffix : undefined]}
+            >
+              <Ionicons color={theme.colors.muted} name="close-circle" size={20} />
+            </Pressable>
+          ) : null}
+          {suffix ? <Text style={styles.suffix}>{suffix}</Text> : null}
         </View>
       ) : (
         input
@@ -96,7 +136,7 @@ const styles = StyleSheet.create({
     minHeight: 120,
     textAlignVertical: 'top',
   },
-  suffixBox: {
+  box: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -105,15 +145,24 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     paddingRight: theme.spacing.md,
   },
-  suffixBoxError: {
+  boxError: {
     borderColor: theme.colors.danger,
   },
-  inputWithSuffix: {
+  inputInBox: {
     flex: 1,
     borderWidth: 0,
     backgroundColor: 'transparent',
+  },
+  inputWithSuffix: {
     fontSize: 20,
     fontWeight: '700',
+  },
+  clearButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonBeforeSuffix: {
+    marginRight: theme.spacing.sm,
   },
   suffix: {
     color: theme.colors.muted,
