@@ -24,6 +24,7 @@ import {
 } from '../features/profile/profileRules';
 import { formatReminderTime, MealReminderSettings, REMINDER_MEAL_TYPES } from '../features/reminders/mealReminderSettings';
 import { AppStackParamList } from '../navigation/navigationTypes';
+import { getErrorMessage } from '../services/apiError';
 import { friendService } from '../services/friendService';
 import { useAuthStore } from '../store/useAuthStore';
 import { selectRemindersOn, useMealReminderStore } from '../store/useMealReminderStore';
@@ -199,7 +200,7 @@ export function ProfileGoalsScreen() {
       refreshProfile().catch(() => undefined);
       showDialog({ title: 'Saved', message: 'Your profile is up to date.', icon: 'checkmark-circle-outline' });
     } catch (error) {
-      showDialog({ title: 'Error', message: 'We couldn\'t save your profile. Please try again.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your profile. Please try again.'), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -211,7 +212,7 @@ export function ProfileGoalsScreen() {
     try {
       await updatePreferences({ dietaryPreferences: next });
     } catch (error) {
-      showDialog({ title: 'Error', message: 'We couldn\'t save your diet. Please try again.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your diet. Please try again.'), tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
     }
@@ -223,7 +224,7 @@ export function ProfileGoalsScreen() {
     try {
       await updateDetails({ countryCode });
     } catch (error) {
-      showDialog({ title: 'Error', message: 'We couldn\'t save your country. Please try again.', tone: 'danger' });
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your country. Please try again.'), tone: 'danger' });
     } finally {
       setIsSavingCountry(false);
     }

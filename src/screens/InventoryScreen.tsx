@@ -6,6 +6,8 @@ import { AppCard } from '../components/AppCard';
 import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
+import { showDialog } from '../features/dialog/dialogStore';
+import { getErrorMessage } from '../services/apiError';
 import { useProfileStore } from '../store/useProfileStore';
 import { theme } from '../theme/theme';
 
@@ -24,14 +26,22 @@ export function InventoryScreen() {
   const onSubmit = async (values: { ingredient: string }) => {
     if (!profile) return;
     const newItems = [values.ingredient, ...items];
-    await updatePreferences({ availableIngredients: newItems });
-    reset({ ingredient: '' });
+    try {
+      await updatePreferences({ availableIngredients: newItems });
+      reset({ ingredient: '' });
+    } catch (error) {
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t add this ingredient. Please try again.'), tone: 'danger' });
+    }
   };
 
   const removeItem = async (ingredientToRemove: string) => {
     if (!profile) return;
     const newItems = items.filter(item => item !== ingredientToRemove);
-    await updatePreferences({ availableIngredients: newItems });
+    try {
+      await updatePreferences({ availableIngredients: newItems });
+    } catch (error) {
+      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t remove this ingredient. Please try again.'), tone: 'danger' });
+    }
   };
 
   return (

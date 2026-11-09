@@ -40,6 +40,7 @@ Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response us
 ## Error handling differs by service
 
 - `profileService`, `bloodTestService`, `recommendationService`, `leaderboardService`, and `friendService` throw.
+- **Throw `ApiError` (`src/services/apiError.ts`), not `new Error('Failed to …')`.** Every service fails with `{ error, code, requestId }`, and `error` is already translated. Use `throw await ApiError.fromResponse(response, fallback)`, which carries `status` and `requestId`. The fallback is used only when the body has no message. In the popup, show `getErrorMessage(error, fallback)`: the server's message for an `ApiError`, and the fallback for anything else, such as a network failure. `profileService` and `fetchData` do this (from 2026-11-09). The other services still throw generic errors, so their popups show fixed text.
 - **`progressService` catches everything** and returns `null`, `[]`, or `false`. Callers must check the return value, because `try/catch` around it never fires.
 
 So anything that logs a meal must check the log first, then touch the plan:

@@ -1,3 +1,4 @@
+import { ApiError } from './apiError';
 import { authService } from './authService';
 import { tokenService } from './tokenService';
 
@@ -62,14 +63,14 @@ export const fetchWithAuth = async (url: RequestInfo | URL, options: RequestInit
   return response;
 };
 
-// Unwraps the `{ message, data }` envelope. Failures throw the server's message,
-// which is translated and safe to show.
+// Unwraps the `{ message, data }` envelope. Failures throw an ApiError with the
+// server's message, which is translated and safe to show.
 export const fetchData = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetchWithAuth(url, options);
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(typeof body?.error === 'string' ? body.error : 'Request failed');
+    throw ApiError.fromBody(body, response.status);
   }
 
   return body?.data as T;
