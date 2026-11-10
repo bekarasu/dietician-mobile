@@ -178,6 +178,16 @@ Where the user lives, so plans use ingredients that are easy to buy there, with 
 - Asked on the onboarding preferences page (optional since 2026-11-09; left empty, `countryCode` is not sent), and changeable in the profile's Food preferences card, which saves straight away. Users onboarded earlier have none, and their plans are made as before until they set one.
 - It changes the next plan, renewal, feedback update and swap, not the plan already made. recommendation-service sends the English country name, which adds `packages/openai/prompts/local-cuisine.txt` to the prompt. Allergies, diets, dislikes, calories and pregnancy rules still win. A shared plan uses the country its members agree on, and none if they disagree.
 
+## Friend search and friend codes
+
+From account-service migration 017 (2026-11-10).
+
+- `GET /friends/search?q=` reads `q` one of three ways and says which in `matchType`: 8 digits (spaces, dashes, a leading `#` allowed) are a friend code (`FRIEND_CODE`), text with an `@` is a whole email address (`EMAIL`), anything else is part of a display name (`NAME`). `src/features/friends/friendSearch.ts` reads the field the same way, so `FriendsScreen` only sends something the server can match. An older server sends no `matchType`; `friendService.search` treats that as `NAME`.
+- Email matches only the whole address, never part of one, so don't send it until it looks complete. Case and the provider's own variants don't matter (Gmail dots, `+tag`, googlemail.com); the server's `email_provider_rules` table decides which, so don't normalize emails in the app. Emails never come back.
+- Names match without case, Turkish letters or accents mattering (`sukru` finds `Şükrü`), best matches first, so keep the server's order.
+- `GET /friends/code` gives `{ friendCode }`, the user's own 8-digit code. It never changes and never starts with 0. Show it as `formatFriendCode` (`4821 7730`). Searching for one's own code finds nobody, so the screen says so instead of searching.
+- Search is limited to 30 requests a minute per user, shared by all three kinds. `FriendsScreen` searches after a 400 ms pause in typing, or straight away on the keyboard's search key; don't search on every keystroke.
+
 ## Leaderboards
 
 - A leaderboard is a 503 rather than a partial list when account-service can't answer. Show the error state, never an empty ranking. A background refresh that fails keeps the rankings already on screen.

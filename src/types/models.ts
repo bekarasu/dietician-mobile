@@ -424,6 +424,14 @@ export interface UserSearchResult {
   requestId?: string;
 }
 
+// How the server read a search: a friend code, a whole email address, or part of a name.
+export type UserSearchMatchType = 'NAME' | 'EMAIL' | 'FRIEND_CODE';
+
+export interface UserSearchResponse {
+  matchType: UserSearchMatchType;
+  users: UserSearchResult[];
+}
+
 // Another user as the viewer sees them. friendsSince is set only for friends.
 export interface PublicProfile {
   userId: string;

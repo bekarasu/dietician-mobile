@@ -1,18 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { ListCard, RowAction, UserRow } from '../components/UserList';
 import { showDialog } from '../features/dialog/dialogStore';
+import { formatFriendCode, getSearchTerm, readSearchInput, SearchInput } from '../features/friends/friendSearch';
+import { getErrorMessage as getRequestErrorMessage } from '../services/apiError';
 import { friendService } from '../services/friendService';
 import { theme } from '../theme/theme';
-import { BlockedUser, Friend, FriendRequestList, UserSearchResult } from '../types/models';
+import { BlockedUser, Friend, FriendRequestList, UserSearchMatchType, UserSearchResponse, UserSearchResult } from '../types/models';
 import { formatDateLabel } from '../utils/date';
 
-const MIN_SEARCH_LENGTH = 2;
+// How long typing has to pause before a search is sent. Search is limited to 30
+// requests a minute, so it must not run on every keystroke.
+const SEARCH_DELAY_MS = 400;
 
 export function FriendsScreen() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -22,12 +26,22 @@ export function FriendsScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  const [friendCode, setFriendCode] = useState<string | null>(null);
+
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[] | null>(null);
+  const [results, setResults] = useState<UserSearchResponse | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
 
-  const searchedQuery = useRef('');
+  // The term of the latest search sent, and a counter so an answer that arrives
+  // after a newer search was sent is dropped.
+  const requestedTerm = useRef('');
+  const searchSeq = useRef(0);
+
+  const searchInput = readSearchInput(query);
+  const isOwnCode = searchInput.kind === 'friendCode' && searchInput.code === friendCode;
+  const searchTerm = isOwnCode ? null : getSearchTerm(searchInput);
 
   const load = useCallback(async () => {
     const [nextFriends, nextRequests, nextBlocked] = await Promise.all([
@@ -57,9 +71,25 @@ export function FriendsScreen() {
     loadScreen();
   }, [loadScreen]);
 
+  // The rest of the screen works without it, so a failure only hides the card.
+  const loadFriendCode = useCallback(async () => {
+    try {
+      setFriendCode(await friendService.getFriendCode());
+    } catch {
+      setFriendCode(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFriendCode();
+  }, [loadFriendCode]);
+
   // Requests arrive while the screen is open, so it can be pulled to refresh.
   const refresh = async () => {
     setIsRefreshing(true);
+    if (!friendCode) {
+      loadFriendCode();
+    }
     try {
       await load();
       setFailed(false);
@@ -70,30 +100,68 @@ export function FriendsScreen() {
     }
   };
 
-  // Clearing the field drops the results, so an action no longer re-runs the old search.
-  const changeQuery = (text: string) => {
-    setQuery(text);
-    if (text.trim().length === 0) {
-      setResults(null);
-      searchedQuery.current = '';
+  const runSearch = useCallback(async (term: string) => {
+    const seq = ++searchSeq.current;
+    requestedTerm.current = term;
+    setIsSearching(true);
+    setSearchError(null);
+    try {
+      const response = await friendService.search(term);
+      if (seq === searchSeq.current) {
+        setResults(response);
+      }
+    } catch (error) {
+      if (seq === searchSeq.current) {
+        // Forgotten, so submitting the same text again retries it.
+        requestedTerm.current = '';
+        setResults(null);
+        setSearchError(getRequestErrorMessage(error, "We couldn't search just now. Please try again."));
+      }
+    } finally {
+      if (seq === searchSeq.current) {
+        setIsSearching(false);
+      }
     }
-  };
+  }, []);
 
-  const search = async () => {
-    const term = query.trim();
-    if (term.length < MIN_SEARCH_LENGTH) {
+  // Searches once typing pauses. Text the server can't match yet, such as half
+  // an email address, clears the results instead, so an action no longer re-runs
+  // an old search.
+  useEffect(() => {
+    if (!searchTerm) {
+      searchSeq.current += 1;
+      requestedTerm.current = '';
+      setResults(null);
+      setSearchError(null);
+      setIsSearching(false);
+      return;
+    }
+    if (searchTerm === requestedTerm.current) {
       return;
     }
 
-    setIsSearching(true);
-    try {
-      setResults(await friendService.search(term));
-      searchedQuery.current = term;
-    } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
-    } finally {
-      setIsSearching(false);
+    const timer = setTimeout(() => {
+      if (searchTerm !== requestedTerm.current) {
+        runSearch(searchTerm);
+      }
+    }, SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [searchTerm, runSearch]);
+
+  // The keyboard's search key doesn't wait for the pause.
+  const submitSearch = () => {
+    if (searchTerm && searchTerm !== requestedTerm.current) {
+      runSearch(searchTerm);
     }
+  };
+
+  const shareFriendCode = () => {
+    if (!friendCode) {
+      return;
+    }
+    Share.share({
+      message: `Add me as a friend on Eativio! My friend code is ${formatFriendCode(friendCode)}.`,
+    }).catch(() => undefined);
   };
 
   // Refreshes search results too, because an action changes each result's relationship.
@@ -102,8 +170,8 @@ export function FriendsScreen() {
     try {
       await action();
       await load();
-      if (searchedQuery.current) {
-        setResults(await friendService.search(searchedQuery.current));
+      if (requestedTerm.current) {
+        await runSearch(requestedTerm.current);
       }
     } catch (error) {
       showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
@@ -172,37 +240,60 @@ export function FriendsScreen() {
       }}
     >
       <View style={styles.card}>
+        {friendCode ? (
+          <View style={styles.codeRow}>
+            <View style={styles.codeIdentity}>
+              <Text style={styles.codeLabel}>Your friend code</Text>
+              <Text
+                accessibilityLabel={`Your friend code: ${friendCode.split('').join(' ')}`}
+                selectable
+                style={styles.code}
+              >
+                {formatFriendCode(friendCode)}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityLabel="Share your friend code"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={shareFriendCode}
+              style={({ pressed }) => [styles.shareButton, pressed && styles.pressed]}
+            >
+              <Ionicons color={theme.colors.primary} name="share-outline" size={18} />
+              <Text style={styles.shareText}>Share</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <AppTextInput
           autoCapitalize="none"
           autoCorrect={false}
+          clearable
           label="Find people"
-          onChangeText={changeQuery}
-          onSubmitEditing={search}
-          placeholder="Name or exact email"
+          onChangeText={setQuery}
+          onSubmitEditing={submitSearch}
+          placeholder="Name, email or friend code"
           returnKeyType="search"
           value={query}
         />
-        <AppButton
-          disabled={query.trim().length < MIN_SEARCH_LENGTH}
-          loading={isSearching}
-          onPress={search}
-          title="Search"
-          variant="secondary"
+        <SearchStatus
+          error={searchError}
+          hint={getSearchHint(searchInput, query, isOwnCode)}
+          searching={isSearching}
         />
         {results ? (
           <View style={styles.results}>
             <View style={styles.rows}>
-              {results.map((result) => (
+              {results.users.map((result) => (
                 <UserRow
                   key={result.userId}
                   actions={getResultActions(result)}
                   busy={busyUserId === result.userId}
-                  detail={RELATIONSHIP_LABELS[result.relationship]}
+                  detail={RELATIONSHIP_LABELS[result.relationship] ?? MATCH_LABELS[results.matchType]}
                   name={result.displayName}
                   userId={result.userId}
                 />
               ))}
-              {results.length === 0 ? <Text style={styles.noResults}>No one found.</Text> : null}
+              {results.users.length === 0 ? <Text style={styles.noResults}>{NO_RESULTS[results.matchType]}</Text> : null}
             </View>
           </View>
         ) : null}
@@ -271,7 +362,9 @@ export function FriendsScreen() {
                   <Ionicons color={theme.colors.primary} name="people-outline" size={28} />
                 </View>
                 <Text style={styles.stateTitle}>No friends yet</Text>
-                <Text style={styles.stateDetail}>Search by name or email above to send your first request.</Text>
+                <Text style={styles.stateDetail}>
+                  Share your friend code, or search for a name, email or code above to send your first request.
+                </Text>
               </View>
             ) : null}
             {friends.map((friend) => (
@@ -320,6 +413,51 @@ const RELATIONSHIP_LABELS: Record<UserSearchResult['relationship'], string | und
   FRIEND: 'Already friends',
   OUTGOING_REQUEST: 'Request sent',
   INCOMING_REQUEST: 'Wants to be friends',
+};
+
+// Says how a search can find someone, or what the text in the field still needs.
+function getSearchHint(input: SearchInput, query: string, isOwnCode: boolean): string | null {
+  if (query.trim().length === 0) {
+    return 'Search for a name, a full email address or an 8-digit friend code.';
+  }
+  if (isOwnCode) {
+    return "That's your own friend code. Share it so friends can add you.";
+  }
+  if (input.kind === 'email' && !input.complete) {
+    return 'Keep typing: email search needs the full address.';
+  }
+  if (input.kind === 'partialCode') {
+    return 'A friend code is 8 digits, like 4821 7730.';
+  }
+  return null;
+}
+
+function SearchStatus({ searching, error, hint }: { searching: boolean; error: string | null; hint: string | null }) {
+  if (searching) {
+    return (
+      <View style={styles.status}>
+        <ActivityIndicator color={theme.colors.primary} size="small" />
+        <Text style={styles.statusText}>Searching…</Text>
+      </View>
+    );
+  }
+  if (error) {
+    return <Text style={[styles.statusText, styles.statusError]}>{error}</Text>;
+  }
+  return hint ? <Text style={styles.statusText}>{hint}</Text> : null;
+}
+
+// Shown under someone with no relationship yet, so it's clear why they came up.
+const MATCH_LABELS: Record<UserSearchMatchType, string | undefined> = {
+  NAME: undefined,
+  EMAIL: 'Matched by email',
+  FRIEND_CODE: 'Matched by friend code',
+};
+
+const NO_RESULTS: Record<UserSearchMatchType, string> = {
+  NAME: 'No one found with that name.',
+  EMAIL: 'No one found with that email address. Check the spelling, or ask for their friend code.',
+  FRIEND_CODE: 'No one has this friend code. Check the digits.',
 };
 
 function getErrorMessage(error: unknown) {
@@ -385,5 +523,58 @@ const styles = StyleSheet.create({
   rows: {
     gap: 4,
     marginHorizontal: -theme.spacing.xs,
+  },
+  codeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border,
+  },
+  codeIdentity: {
+    flex: 1,
+    gap: 2,
+  },
+  codeLabel: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    fontWeight: '700',
+  },
+  code: {
+    color: theme.colors.text,
+    fontSize: 24,
+    fontVariant: ['tabular-nums'],
+    fontWeight: '800',
+    letterSpacing: 1.5,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.round,
+    backgroundColor: theme.colors.primarySoft,
+  },
+  shareText: {
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  status: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  statusText: {
+    color: theme.colors.muted,
+    fontSize: theme.typography.caption.fontSize,
+    lineHeight: 18,
+  },
+  statusError: {
+    color: theme.colors.danger,
   },
 });
