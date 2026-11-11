@@ -12,6 +12,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { ProfileGoalsScreen } from '../screens/ProfileGoalsScreen';
 import { ProgressDashboardScreen } from '../screens/ProgressDashboardScreen';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AppTabParamList } from './navigationTypes';
 import { useOnboardingStore } from '../store/useOnboardingStore';
@@ -57,7 +58,7 @@ export function AppTabNavigator() {
         component={HomeScreen}
         name="Home"
         options={{
-          title: 'Today',
+          title: t('navigation.tabs.today'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
           ),
@@ -67,7 +68,7 @@ export function AppTabNavigator() {
         component={DietPlanScreen}
         name="DietPlan"
         options={{
-          title: 'Diet Plan',
+          title: t('navigation.tabs.dietPlan'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={size} color={color} />
           ),
@@ -77,7 +78,7 @@ export function AppTabNavigator() {
         component={LeaderboardScreen}
         name="Leaderboard"
         options={{
-          title: 'Leaderboard',
+          title: t('navigation.tabs.leaderboard'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'trophy' : 'trophy-outline'} size={size} color={color} />
           ),
@@ -87,7 +88,7 @@ export function AppTabNavigator() {
         component={ProgressDashboardScreen}
         name="ProgressDashboard"
         options={{
-          title: 'Progress',
+          title: t('navigation.tabs.progress'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={size} color={color} />
           ),
@@ -97,7 +98,7 @@ export function AppTabNavigator() {
         component={ProfileGoalsScreen}
         name="ProfileGoals"
         options={{
-          title: 'Profile',
+          title: t('navigation.tabs.profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),

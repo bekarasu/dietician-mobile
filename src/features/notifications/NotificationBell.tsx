@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useNotificationStore } from '../../store/useNotificationStore';
+import { t } from '../../i18n';
 import { theme } from '../../theme/theme';
 
 // Nothing tells the app a notification arrived except a push, which may be off
@@ -40,7 +41,7 @@ export function NotificationBell({ onPress, size = 40 }: NotificationBellProps) 
     }, []),
   );
 
-  const label = unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications';
+  const label = unreadCount > 0 ? t('notifications.bell.unread', { count: unreadCount }) : t('notifications.bell.label');
 
   return (
     <Pressable

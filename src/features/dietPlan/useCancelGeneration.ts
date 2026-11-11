@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { t } from '../../i18n';
 import { recommendationService } from '../../services/recommendationService';
 import { showDialog } from '../dialog/dialogStore';
 
@@ -21,21 +22,21 @@ export function useCancelGeneration(isWaiting: boolean) {
     try {
       if (!(await recommendationService.cancelPlanGeneration())) {
         setIsCancelling(false);
-        showDialog({ title: 'Too late to stop', message: 'Your plan is already being saved.', icon: 'checkmark-circle-outline' });
+        showDialog({ title: t('dietPlan.generation.tooLateTitle'), message: t('dietPlan.generation.tooLateMessage'), icon: 'checkmark-circle-outline' });
       }
     } catch (e) {
       setIsCancelling(false);
-      showDialog({ title: 'Error', message: 'We couldn\'t stop preparing your plan. Please try again.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: t('dietPlan.generation.stopFailed'), tone: 'danger' });
     }
   }, []);
 
   const confirmCancel = useCallback(() => {
     showDialog({
-      title: 'Stop preparing your plan?',
-      message: 'Nothing will be saved, and you can start again.',
+      title: t('dietPlan.generation.stopTitle'),
+      message: t('dietPlan.generation.stopMessage'),
       buttons: [
-        { text: 'Stop', style: 'destructive', onPress: cancel },
-        { text: 'Keep going', style: 'cancel' },
+        { text: t('dietPlan.generation.stop'), style: 'destructive', onPress: cancel },
+        { text: t('common.actions.keepGoing'), style: 'cancel' },
       ],
     });
   }, [cancel]);

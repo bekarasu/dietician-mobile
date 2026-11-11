@@ -1,0 +1,9 @@
+{
+  "addFailed": "Bu malzeme eklenemedi. Lütfen tekrar deneyin.",
+  "removeFailed": "Bu malzeme kaldırılamadı. Lütfen tekrar deneyin.",
+  "title": "Buzdolabım",
+  "subtitle": "Öğün planlarının evde zaten bulunanları tercih edebilmesi için bu listeyi güncel tutun.",
+  "required": "Malzeme adı zorunludur",
+  "label": "Malzeme (ör. Tavuk göğsü)",
+  "add": "Buzdolabına ekle"
+}

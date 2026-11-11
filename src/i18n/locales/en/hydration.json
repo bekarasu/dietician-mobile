@@ -1,0 +1,12 @@
+{
+  "title": "Water and coffee tracking",
+  "subtitle": "Your targets are set for you: 30 ml of water per kg of body weight, between 1.5 and 3 L, and at most 4 cups of coffee a day, or 1 under 18.",
+  "todayPoints": "Today's points",
+  "waterPoints": "Water: {{points}} / {{max}}, for drinking towards {{target}} L, a target based on your weight.",
+  "coffeePoints": "Coffee: {{points}} / {{max}}, for at most {{limit}} cups on a day you log water.",
+  "noExtra": "Drinking more than the target doesn't earn extra points.",
+  "hydration": "Hydration",
+  "waterIntake": "Water intake",
+  "coffee": "Coffee",
+  "coffeeCups": "Coffee cups"
+}

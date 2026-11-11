@@ -4,6 +4,7 @@ import * as DocumentPicker from 'expo-document-picker';
 
 import { AppButton } from './AppButton';
 import { AppCard } from './AppCard';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { bloodTestService } from '../services/bloodTestService';
 import { BloodTestUpload } from '../types/models';
@@ -49,7 +50,7 @@ export function BloodTestUploader({ onUploadComplete, onUploadStateChange }: Blo
   if (uploaded) {
     return (
       <AppCard style={styles.successCard}>
-        <Text style={styles.successText}>Blood test uploaded successfully!</Text>
+        <Text style={styles.successText}>{t('components.bloodTestUploader.success')}</Text>
       </AppCard>
     );
   }
@@ -59,7 +60,7 @@ export function BloodTestUploader({ onUploadComplete, onUploadStateChange }: Blo
       {uploading ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
-        <AppButton title="Select and Upload Document" onPress={handleSelectAndUpload} />
+        <AppButton title={t('components.bloodTestUploader.select')} onPress={handleSelectAndUpload} />
       )}
     </View>
   );

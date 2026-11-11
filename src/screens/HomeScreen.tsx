@@ -8,7 +8,7 @@ import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } 
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SegmentRing } from '../components/SegmentRing';
 import { UserAvatar } from '../components/UserAvatar';
-import { HEALTH_NOTICE } from '../constants/health';
+import { getHealthNotice } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
 import { logPlanMeal } from '../features/dietPlan/logPlanMeal';
 import { NotificationBell } from '../features/notifications/NotificationBell';
@@ -21,10 +21,11 @@ import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useHydrationStore } from '../store/useHydrationStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { getLocaleTag, t } from '../i18n';
 import { theme } from '../theme/theme';
 import { DayPoints, DietMeal, DietPlan, WeekActivity } from '../types/models';
 import { formatCalendarDate, toCalendarDate } from '../utils/date';
-import { formatGoalType, formatKg, formatKgChange, formatLitres } from '../utils/formatters';
+import { formatDecimal, formatGoalType, formatKg, formatKgChange, formatLitres, formatMealType } from '../utils/formatters';
 
 type HomeNavigation = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabParamList, 'Home'>,
@@ -40,14 +41,14 @@ const MEAL_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Dinner: 'moon-outline',
 };
 
-const formatNumber = new Intl.NumberFormat('en-US').format;
+const formatNumber = (value: number) => new Intl.NumberFormat(getLocaleTag()).format(value);
 
 function getGreeting(date: Date) {
   const hour = date.getHours();
   if (hour < 12) {
-    return 'Good morning';
+    return t('home.greeting.morning');
   }
-  return hour < 18 ? 'Good afternoon' : 'Good evening';
+  return hour < 18 ? t('home.greeting.afternoon') : t('home.greeting.evening');
 }
 
 function getPlanLabel(plan: DietPlan | null) {
@@ -56,12 +57,12 @@ function getPlanLabel(plan: DietPlan | null) {
   }
   const { phase, currentDay, totalDays, daysUntilStart } = getPlanSchedule(plan);
   if (phase === 'upcoming' && daysUntilStart !== null) {
-    return `Plan starts ${formatStartsIn(daysUntilStart)}`;
+    return t('home.planStarts', { when: formatStartsIn(daysUntilStart) });
   }
   if (phase === 'ended') {
-    return 'Plan ended';
+    return t('home.planEnded');
   }
-  return totalDays ? `Day ${currentDay} of ${totalDays}` : null;
+  return totalDays ? t('home.dayOf', { day: currentDay, total: totalDays }) : null;
 }
 
 export function HomeScreen() {
@@ -127,7 +128,7 @@ export function HomeScreen() {
       await fetchActivePlan();
       loadActivity();
     } catch (e) {
-      showDialog({ title: 'Error', message: 'We couldn\'t log this meal. Please try again.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: t('home.logMealFailed'), tone: 'danger' });
     } finally {
       setLoggingMealId(null);
     }
@@ -158,7 +159,7 @@ export function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerText}>
           <Text style={styles.date}>
-            {new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(now)}
+            {new Intl.DateTimeFormat(getLocaleTag(), { weekday: 'long', month: 'long', day: 'numeric' }).format(now)}
           </Text>
           <Text style={styles.greeting}>
             {getGreeting(now)}
@@ -171,7 +172,7 @@ export function HomeScreen() {
         </View>
         <View style={styles.headerActions}>
           <NotificationBell onPress={() => navigation.navigate('Notifications')} />
-          <Pressable accessibilityLabel="Profile" accessibilityRole="button" onPress={() => navigation.navigate('ProfileGoals')}>
+          <Pressable accessibilityLabel={t('home.profileA11y')} accessibilityRole="button" onPress={() => navigation.navigate('ProfileGoals')}>
             <UserAvatar name={profile?.name || '?'} />
           </Pressable>
         </View>
@@ -191,9 +192,9 @@ export function HomeScreen() {
           icon="water"
           color={theme.colors.water}
           tint={theme.colors.waterSoft}
-          title="Water"
+          title={t('common.habits.water')}
           value={formatLitres(hydration.waterMl)}
-          target={hydration.targetWaterMl > 0 ? `of ${formatLitres(hydration.targetWaterMl)}` : null}
+          target={hydration.targetWaterMl > 0 ? t('home.waterTarget', { target: formatLitres(hydration.targetWaterMl) }) : null}
           progress={hydration.targetWaterMl > 0 ? hydration.waterMl / hydration.targetWaterMl : 0}
           actionLabel="+250 ml"
           onAction={logWater}
@@ -203,11 +204,11 @@ export function HomeScreen() {
           icon="cafe"
           color={coffee.cups > coffee.targetCups ? theme.colors.danger : theme.colors.coffee}
           tint={theme.colors.coffeeSoft}
-          title="Coffee"
-          value={`${coffee.cups} ${coffee.cups === 1 ? 'cup' : 'cups'}`}
-          target={coffee.targetCups > 0 ? `limit ${coffee.targetCups}` : null}
+          title={t('common.habits.coffee')}
+          value={t('common.units.cups', { count: coffee.cups })}
+          target={coffee.targetCups > 0 ? t('home.coffeeLimit', { limit: coffee.targetCups }) : null}
           progress={coffee.targetCups > 0 ? coffee.cups / coffee.targetCups : 0}
-          actionLabel="+1 cup"
+          actionLabel={t('home.addCup')}
           onAction={logCoffee}
           onOpen={() => navigation.navigate('HydrationTracking')}
         />
@@ -215,7 +216,7 @@ export function HomeScreen() {
 
       <WeightCard onOpen={() => navigation.navigate('WeightProgress')} entries={entries} targetWeightKg={profile?.targetWeightKg} />
 
-      <Text style={styles.notice}>{HEALTH_NOTICE}</Text>
+      <Text style={styles.notice}>{getHealthNotice()}</Text>
     </ScreenContainer>
   );
 }
@@ -251,10 +252,12 @@ function TodayCard({ day, activity, onOpenWeek }: { day: DayPoints | null; activ
   const earned = isCounted ? day : null;
   const week = activity?.week;
 
-  let weekText = 'Your week';
+  let weekText = t('home.week.default');
   if (week && week.totalScore !== null) {
     const consistency = activity?.consistency;
-    weekText = `This week: ${week.totalScore} pts${consistency != null ? ` · ${Math.round(consistency)}% consistent` : ''}`;
+    weekText = consistency != null
+      ? t('home.week.scoreWithConsistency', { score: week.totalScore, consistency: Math.round(consistency) })
+      : t('home.week.score', { score: week.totalScore });
   } else if (week) {
     weekText = getStatusMessage(week.statusReason);
   }
@@ -270,31 +273,31 @@ function TodayCard({ day, activity, onOpenWeek }: { day: DayPoints | null; activ
           ]}
         >
           <Text style={styles.ringValue}>{earned ? earned.points : '–'}</Text>
-          <Text style={styles.ringCaption}>{earned ? `of ${earned.maxPoints} today` : 'points today'}</Text>
+          <Text style={styles.ringCaption}>{earned ? t('home.ring.ofToday', { max: earned.maxPoints }) : t('home.ring.pointsToday')}</Text>
         </SegmentRing>
 
         <View style={styles.todayRows}>
           {earned ? (
             <>
-              <PointsRow color={theme.colors.primary} label="Meals" detail={`${earned.mealsLogged} of 3 logged`} points={earned.mealPoints} max={earned.maxMealPoints} />
+              <PointsRow color={theme.colors.primary} label={t('common.habits.meals')} detail={t('home.mealsLogged', { count: earned.mealsLogged })} points={earned.mealPoints} max={earned.maxMealPoints} />
               <PointsRow
                 color={theme.colors.water}
-                label="Water"
-                detail={`${formatLitres(earned.waterMl)} of ${formatLitres(earned.waterTargetMl)}`}
+                label={t('common.habits.water')}
+                detail={t('home.waterOf', { amount: formatLitres(earned.waterMl), target: formatLitres(earned.waterTargetMl) })}
                 points={earned.waterPoints}
                 max={earned.maxWaterPoints}
               />
               <PointsRow
                 color={theme.colors.coffee}
-                label="Coffee"
-                detail={earned.waterMl === 0 ? 'Log water first' : `${earned.coffeeCups} of ${earned.coffeeLimitCups} cups`}
+                label={t('common.habits.coffee')}
+                detail={earned.waterMl === 0 ? t('home.logWaterFirst') : t('home.coffeeOf', { cups: earned.coffeeCups, limit: earned.coffeeLimitCups })}
                 points={earned.coffeePoints}
                 max={earned.maxCoffeePoints}
               />
             </>
           ) : (
             <Text style={styles.todayMessage}>
-              {day ? getStatusMessage(day.statusReason) : 'Your points for today will show here.'}
+              {day ? getStatusMessage(day.statusReason) : t('home.pointsPlaceholder')}
             </Text>
           )}
         </View>
@@ -319,20 +322,20 @@ interface MealsCardProps {
 function MealsCard({ plan, loggingMealId, onMarkEaten, onOpenPlan }: MealsCardProps) {
   const header = (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>Today's meals</Text>
+      <Text style={styles.sectionTitle}>{t('home.meals.title')}</Text>
       <Pressable accessibilityRole="button" hitSlop={theme.spacing.sm} onPress={onOpenPlan}>
-        <Text style={styles.link}>Open plan</Text>
+        <Text style={styles.link}>{t('home.meals.openPlan')}</Text>
       </Pressable>
     </View>
   );
 
   const schedule = plan ? getPlanSchedule(plan) : null;
   if (!plan || !schedule || schedule.phase !== 'running' || schedule.currentDay === null) {
-    let message = 'Create a diet plan to see your meals here.';
+    let message = t('home.meals.noPlan');
     if (schedule?.phase === 'upcoming' && schedule.daysUntilStart !== null) {
-      message = `Your plan starts ${formatStartsIn(schedule.daysUntilStart)}, on ${formatCalendarDate(schedule.startDate)}. Look through your meals and shop for them.`;
+      message = t('home.meals.upcoming', { when: formatStartsIn(schedule.daysUntilStart), date: formatCalendarDate(schedule.startDate) });
     } else if (schedule?.phase === 'ended') {
-      message = 'Your plan has ended. Check in from the plan to get your next one.';
+      message = t('home.meals.ended');
     }
     return (
       <View style={styles.card}>
@@ -367,7 +370,7 @@ function MealsCard({ plan, loggingMealId, onMarkEaten, onOpenPlan }: MealsCardPr
                   color={meal.isTaken ? theme.colors.surface : isNext ? theme.colors.primary : theme.colors.muted}
                 />
               </View>
-              <Text style={[styles.pathLabel, isNext && styles.pathLabelNext]}>{meal.mealType}</Text>
+              <Text style={[styles.pathLabel, isNext && styles.pathLabelNext]}>{formatMealType(meal.mealType)}</Text>
               <Text style={styles.pathKcal}>{formatNumber(meal.calories || 0)} kcal</Text>
             </View>
           );
@@ -376,11 +379,15 @@ function MealsCard({ plan, loggingMealId, onMarkEaten, onOpenPlan }: MealsCardPr
 
       {nextMeal ? (
         <View style={styles.nextMeal}>
-          <Text style={styles.nextLabel}>Up next · {nextMeal.mealType}</Text>
+          <Text style={styles.nextLabel}>{t('home.meals.upNext', { mealType: formatMealType(nextMeal.mealType) })}</Text>
           <Text style={styles.nextName} numberOfLines={2}>{nextMeal.name}</Text>
           <Text style={styles.nextMacros}>
-            {formatNumber(nextMeal.calories || 0)} kcal · P {Math.round(nextMeal.proteinG || 0)}g · C {Math.round(nextMeal.carbsG || 0)}g · F{' '}
-            {Math.round(nextMeal.fatG || 0)}g
+            {t('home.meals.macros', {
+              kcal: formatNumber(nextMeal.calories || 0),
+              protein: Math.round(nextMeal.proteinG || 0),
+              carbs: Math.round(nextMeal.carbsG || 0),
+              fat: Math.round(nextMeal.fatG || 0),
+            })}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -393,7 +400,7 @@ function MealsCard({ plan, loggingMealId, onMarkEaten, onOpenPlan }: MealsCardPr
             ) : (
               <>
                 <Ionicons name="checkmark-circle-outline" size={18} color={theme.colors.surface} />
-                <Text style={styles.eatButtonText}>I ate this</Text>
+                <Text style={styles.eatButtonText}>{t('home.meals.ateThis')}</Text>
               </>
             )}
           </Pressable>
@@ -401,12 +408,12 @@ function MealsCard({ plan, loggingMealId, onMarkEaten, onOpenPlan }: MealsCardPr
       ) : (
         <View style={styles.allDone}>
           <Ionicons name="sparkles-outline" size={18} color={theme.colors.primary} />
-          <Text style={styles.allDoneText}>Every meal for today is logged.</Text>
+          <Text style={styles.allDoneText}>{t('home.meals.allDone')}</Text>
         </View>
       )}
 
       <View style={styles.kcalRow}>
-        <Text style={styles.muted}>Eaten from your plan</Text>
+        <Text style={styles.muted}>{t('home.meals.eatenFromPlan')}</Text>
         <Text style={styles.kcalValue}>
           {formatNumber(eatenKcal)}
           <Text style={styles.muted}> / {formatNumber(plannedKcal)} kcal</Text>
@@ -466,7 +473,7 @@ function WeightCard({ entries, targetWeightKg, onOpen }: { entries: ReturnType<t
   return (
     <Pressable accessibilityRole="button" onPress={onOpen} style={styles.card}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Weight</Text>
+        <Text style={styles.sectionTitle}>{t('home.weight.title')}</Text>
         <Ionicons name="chevron-forward" size={18} color={theme.colors.muted} />
       </View>
       {latest ? (
@@ -475,7 +482,7 @@ function WeightCard({ entries, targetWeightKg, onOpen }: { entries: ReturnType<t
             <Text style={styles.weightValue}>{formatKg(latest.weightKg)}</Text>
             {change !== null ? (
               <View style={styles.changeChip}>
-                <Text style={styles.changeText}>{formatKgChange(change)} in 7 days</Text>
+                <Text style={styles.changeText}>{t('home.weight.in7Days', { change: formatKgChange(change) })}</Text>
               </View>
             ) : null}
           </View>
@@ -485,13 +492,13 @@ function WeightCard({ entries, targetWeightKg, onOpen }: { entries: ReturnType<t
                 <View style={[styles.fill, { width: `${(goal.doneKg / goal.totalKg) * 100}%` }]} />
               </View>
               <Text style={styles.muted}>
-                {goal.doneKg.toFixed(1)} of {goal.totalKg.toFixed(1)} kg towards your goal
+                {t('home.weight.towardsGoal', { done: formatDecimal(goal.doneKg), total: formatDecimal(goal.totalKg) })}
               </Text>
             </>
           ) : null}
         </>
       ) : (
-        <Text style={styles.muted}>Log your first weigh-in to follow your progress.</Text>
+        <Text style={styles.muted}>{t('home.weight.empty')}</Text>
       )}
     </Pressable>
   );

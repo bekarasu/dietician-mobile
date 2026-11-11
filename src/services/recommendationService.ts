@@ -1,6 +1,7 @@
 import { fetchData, fetchWithAuth } from './apiClient';
 import { ApiError } from './apiError';
-import { AI_GUIDANCE_NOTICE } from '../constants/health';
+import { getAiGuidanceNotice } from '../constants/health';
+import { t } from '../i18n';
 import { DietPlan, FoodResponse, MealEntry, MealRecommendation, PlanCheckIn, PlanGeneration, RecommendationInput } from '../types/models';
 import { formatGoalType } from '../utils/formatters';
 
@@ -153,7 +154,7 @@ export const recommendationService = {
 		});
 
 		if (!response.ok) {
-			throw await ApiError.fromResponse(response, 'Failed to swap meal.');
+			throw await ApiError.fromResponse(response, t('dietPlan.meal.swapFailed'));
 		}
 
 		return response.json();
@@ -214,7 +215,7 @@ export const recommendationService = {
           ? `There is still a ${hydrationGap} ml hydration gap today, so fluid intake is part of the recovery plan.`
           : 'Hydration is already near target, so the plan focuses on structure and protein coverage.',
       ],
-      disclaimer: AI_GUIDANCE_NOTICE,
+      disclaimer: getAiGuidanceNotice(),
     };
   },
 };

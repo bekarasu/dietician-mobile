@@ -4,6 +4,7 @@ import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { Country, deviceCountryCode, findCountry, searchCountries } from '../constants/countries';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 interface CountryPickerProps {
@@ -15,7 +16,7 @@ interface CountryPickerProps {
 }
 
 // The chosen country in a row like FoodPickerRow, opening a searchable list.
-export function CountryPicker({ value, onChange, placeholder = 'Choose where you live', disabled = false }: CountryPickerProps) {
+export function CountryPicker({ value, onChange, placeholder = t('components.countryPicker.placeholder'), disabled = false }: CountryPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selected = findCountry(value);
 
@@ -23,7 +24,7 @@ export function CountryPicker({ value, onChange, placeholder = 'Choose where you
     <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={selected ? `Country, ${selected.name}` : placeholder}
+        accessibilityLabel={selected ? t('components.countryPicker.selectedA11y', { name: selected.name }) : placeholder}
         disabled={disabled}
         onPress={() => setIsOpen(true)}
         style={({ pressed }) => [styles.row, pressed && styles.pressed, disabled && styles.disabled]}
@@ -94,12 +95,12 @@ function CountryList({ selectedCode, onSelect, onClose }: CountryListProps) {
   return (
     <SafeAreaView style={styles.sheet} edges={Platform.OS === 'ios' ? ['bottom'] : ['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Where do you live?</Text>
-        <Pressable accessibilityLabel="Close" accessibilityRole="button" hitSlop={theme.spacing.sm} onPress={onClose} style={styles.closeButton}>
+        <Text style={styles.title}>{t('components.countryPicker.title')}</Text>
+        <Pressable accessibilityLabel={t('components.countryPicker.close')} accessibilityRole="button" hitSlop={theme.spacing.sm} onPress={onClose} style={styles.closeButton}>
           <Ionicons name="close" size={22} color={theme.colors.text} />
         </Pressable>
       </View>
-      <Text style={styles.caption}>Your meals use ingredients you can buy there. Plans stay in English.</Text>
+      <Text style={styles.caption}>{t('components.countryPicker.caption')}</Text>
       <View style={styles.search}>
         <Ionicons name="search" size={18} color={theme.colors.muted} />
         <TextInput
@@ -107,7 +108,7 @@ function CountryList({ selectedCode, onSelect, onClose }: CountryListProps) {
           autoCorrect={false}
           clearButtonMode="while-editing"
           onChangeText={setQuery}
-          placeholder="Search countries"
+          placeholder={t('components.countryPicker.search')}
           placeholderTextColor={theme.colors.muted}
           returnKeyType="search"
           style={styles.searchInput}
@@ -127,11 +128,11 @@ function CountryList({ selectedCode, onSelect, onClose }: CountryListProps) {
           showPinned ? (
             <View style={styles.pinned}>
               {pinned.map(renderCountry)}
-              <Text style={styles.sectionLabel}>All countries</Text>
+              <Text style={styles.sectionLabel}>{t('components.countryPicker.all')}</Text>
             </View>
           ) : undefined
         }
-        ListEmptyComponent={<Text style={styles.empty}>No country matches "{query.trim()}".</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{t('components.countryPicker.empty', { query: query.trim() })}</Text>}
       />
     </SafeAreaView>
   );

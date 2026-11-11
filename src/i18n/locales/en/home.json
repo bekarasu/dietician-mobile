@@ -1,0 +1,47 @@
+{
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "planStarts": "Plan starts {{when}}",
+  "planEnded": "Plan ended",
+  "dayOf": "Day {{day}} of {{total}}",
+  "logMealFailed": "We couldn't log this meal. Please try again.",
+  "profileA11y": "Profile",
+  "waterTarget": "of {{target}}",
+  "coffeeLimit": "limit {{limit}}",
+  "addCup": "+1 cup",
+  "week": {
+    "default": "Your week",
+    "score": "This week: {{score}} pts",
+    "scoreWithConsistency": "This week: {{score}} pts · {{consistency}}% consistent"
+  },
+  "ring": {
+    "ofToday": "of {{max}} today",
+    "pointsToday": "points today"
+  },
+  "mealsLogged": "{{count}} of 3 logged",
+  "waterOf": "{{amount}} of {{target}}",
+  "logWaterFirst": "Log water first",
+  "coffeeOf": "{{cups}} of {{limit}} cups",
+  "pointsPlaceholder": "Your points for today will show here.",
+  "meals": {
+    "title": "Today's meals",
+    "openPlan": "Open plan",
+    "noPlan": "Create a diet plan to see your meals here.",
+    "upcoming": "Your plan starts {{when}}, on {{date}}. Look through your meals and shop for them.",
+    "ended": "Your plan has ended. Check in from the plan to get your next one.",
+    "upNext": "Up next · {{mealType}}",
+    "macros": "{{kcal}} kcal · P {{protein}}g · C {{carbs}}g · F {{fat}}g",
+    "ateThis": "I ate this",
+    "allDone": "Every meal for today is logged.",
+    "eatenFromPlan": "Eaten from your plan"
+  },
+  "weight": {
+    "title": "Weight",
+    "in7Days": "{{change}} in 7 days",
+    "towardsGoal": "{{done}} of {{total}} kg towards your goal",
+    "empty": "Log your first weigh-in to follow your progress."
+  }
+}

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { t } from '../../i18n';
 import { theme } from '../../theme/theme';
 import { LegalDocument } from '../../types/models';
 
@@ -38,7 +39,7 @@ export function LegalConsentList({ documents, checked, onToggle, onOpen, showMis
         return (
           <View key={document.id} style={styles.row}>
             <Pressable
-              accessibilityLabel={document.isRequired ? label : `${label} (optional)`}
+              accessibilityLabel={document.isRequired ? label : t('legal.optionalA11y', { label })}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: isChecked }}
               hitSlop={6}
@@ -50,18 +51,18 @@ export function LegalConsentList({ documents, checked, onToggle, onOpen, showMis
               </View>
               <Text style={styles.label}>
                 {label}
-                {document.isRequired ? null : <Text style={styles.optional}>{'  '}Optional</Text>}
+                {document.isRequired ? null : <Text style={styles.optional}>{'  '}{t('legal.optional')}</Text>}
               </Text>
             </Pressable>
             <Pressable
-              accessibilityHint="Opens the full text"
-              accessibilityLabel={`Read ${document.title}`}
+              accessibilityHint={t('legal.openHint')}
+              accessibilityLabel={t('legal.read', { title: document.title })}
               accessibilityRole="link"
               hitSlop={6}
               onPress={() => onOpen(document)}
               style={({ pressed }) => [styles.readLink, pressed && styles.pressed]}
             >
-              <Text style={styles.readText}>Read {document.title}</Text>
+              <Text style={styles.readText}>{t('legal.read', { title: document.title })}</Text>
               <Ionicons color={theme.colors.primary} name="chevron-forward" size={14} />
             </Pressable>
           </View>

@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { addCalendarDays, formatMonthDay, formatWeekday, toCalendarDate } from '../utils/date';
 
@@ -14,10 +15,10 @@ interface StartDatePickerProps {
 
 function getDayLabel(date: string, today: string) {
   if (date === today) {
-    return 'Today';
+    return t('format.today');
   }
   if (date === addCalendarDays(today, 1)) {
-    return 'Tomorrow';
+    return t('format.tomorrow');
   }
   return formatWeekday(date);
 }

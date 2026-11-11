@@ -1,0 +1,48 @@
+{
+  "status": {
+    "pending": "Reading results",
+    "completed": "Results read",
+    "parse_failed": "Results not read"
+  },
+  "lock": {
+    "setupTitle": "Set up a screen lock",
+    "setupMessage": "Your blood test results are protected by your screen lock. Set up a passcode or biometrics in your phone settings to use this.",
+    "usePasscode": "Use Passcode",
+    "prompt": "Unlock your blood test results",
+    "unlockText": "Unlock to see your blood test results.",
+    "unlock": "Unlock"
+  },
+  "hidePrompt": "Unlock to hide this result",
+  "showPrompt": "Unlock to show this result",
+  "hideFailed": "We couldn't hide this result. Please try again.",
+  "showFailed": "We couldn't show this result. Please try again.",
+  "delete": {
+    "title": "Delete this result?",
+    "message": "It leaves your results, and your next plans won't use it.",
+    "prompt": "Unlock to delete this result",
+    "failed": "We couldn't delete this result. Please try again."
+  },
+  "header": {
+    "title": "Blood test results",
+    "lockedSubtitle": "Your results are protected by your screen lock.",
+    "subtitle": "The reports you've added, and the results read from them."
+  },
+  "hiddenNote": "This result is hidden. Show it to see what was read from it.",
+  "stillReading": "We're still reading this report.",
+  "noResults": "No results could be read from this report.",
+  "table": {
+    "test": "Test",
+    "result": "Result",
+    "reference": "Ref"
+  },
+  "item": {
+    "hidden": "Hidden blood test",
+    "title": "Blood test",
+    "show": "Show result",
+    "hide": "Hide result",
+    "delete": "Delete result"
+  },
+  "loadFailed": "We couldn't load your blood tests. Please try again.",
+  "empty": "You haven't added a blood test yet. You can add one by restarting onboarding from your profile.",
+  "disclaimerTitle": "Medical disclaimer"
+}

@@ -1,0 +1,114 @@
+{
+  "status": {
+    "no_profile": "Complete your profile to join the leaderboard.",
+    "goal_not_weight_loss": "Leaderboards only score weight-loss goals for now, so your goal isn't ranked.",
+    "no_program": "Start a diet plan to join the leaderboard.",
+    "plan_not_started": "Your score starts counting on the day your diet plan starts.",
+    "no_plan_on_day": "No plan covered this day, so it doesn't earn points.",
+    "plan_replaced": "You changed your plan later this week, so this day's points were reset.",
+    "underage": "Leaderboards are for members aged 18 and over.",
+    "missing_target": "Add a target weight to your profile to get a score.",
+    "unsafe_target": "Your target weight is below the healthy range for your height, so it can't be ranked. You can review it in your profile.",
+    "target_reached": "You've reached your target weight, so there's nothing to rank this period. Well done!",
+    "no_baseline": "Log your weight to get a score for this period.",
+    "no_current_measurement": "Log your weight again to get a score for this period.",
+    "window_too_short": "There are too few days of logs in this period to give a fair score.",
+    "default": "Your score appears once you've logged your weight and meals."
+  },
+  "points_one": "{{count}} point",
+  "points_other": "{{count}} points",
+  "comparison": {
+    "nudge": "Logging your meals, water and weight keeps your score up to date.",
+    "finished": "You finished #{{rank}} of {{total}}.",
+    "away": "You're {{points}} away from #{{rank}}! {{nudge}}",
+    "only": "You're the only one with a score so far. {{nudge}}",
+    "first": "You're in first place. Keep your routine going!"
+  },
+  "difference": {
+    "tied": "Tied with you",
+    "ahead": "{{points}} ahead of you",
+    "behind": "{{points}} behind you"
+  },
+  "scope": {
+    "friends": "Friends",
+    "global": "Global"
+  },
+  "period": {
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "loadFailed": "We couldn't load the rankings. Please try again.",
+  "header": {
+    "title": "Leaderboard",
+    "subtitle": "See how your habits compare with friends and everyone else."
+  },
+  "showMore": "Show more",
+  "previousPeriod": "Previous period",
+  "nextPeriod": "Next period",
+  "hero": {
+    "position": "YOUR POSITION",
+    "final": "FINAL",
+    "a11y": "Rank {{rank}} of {{total}}, {{points}} points",
+    "of": " of {{total}}",
+    "points": "POINTS",
+    "explain": "How is my score calculated?",
+    "live": "LIVE"
+  },
+  "rankings": {
+    "title": "Rankings",
+    "people_one": "{{count}} person",
+    "people_other": "{{count}} people",
+    "you": "You",
+    "pts": "pts",
+    "pointsShort": "{{points}} pts",
+    "rowA11y": "Rank {{rank}}, {{name}}, {{points}} points",
+    "youLower": "you",
+    "openHint": "Opens their profile"
+  },
+  "caption": {
+    "live": "Scores update as people log.",
+    "liveWithChange": "Scores update as people log. Last change {{date}}.",
+    "updated": "Updated {{date}}"
+  },
+  "friendsCard": {
+    "manageDetail": "Add or remove the people you compete with.",
+    "searchDetail": "Search by name or email to send a request.",
+    "count_one": "{{count}} friend on your leaderboard.",
+    "count_other": "{{count}} friends on your leaderboard.",
+    "find": "Find friends",
+    "manage": "Manage friends"
+  },
+  "empty": {
+    "global": "No one has a score for this period yet.",
+    "noFriends": "Add friends to compare your progress.",
+    "friends": "No one in your friends list has a score for this period yet."
+  },
+  "breakdown": {
+    "loadFailed": "We couldn't load your score. Please try again.",
+    "weekly": "Weekly score",
+    "monthly": "Monthly score",
+    "points": "{{points}} points",
+    "weightProgress": "Weight progress",
+    "noWeighIn": "No weigh-in yet this period. Log your weight to earn weight points.",
+    "countedLoss": "Your scale shows {{actual}} lost, and the meals you logged explain {{explained}}, so {{counted}} counts. Log every meal to have more of your loss count.",
+    "noMealsDue": "Meal logging: no meals due yet.",
+    "mealLogging": "Meal logging",
+    "water": "Water",
+    "coffee": "Coffee within your limit",
+    "howTitle": "How your score works",
+    "howBody": "55% comes from your weight progress against a safe expected pace. Your loss counts as far as the calorie deficit of the meals you log can explain it, with some room for water weight. 30% comes from logging breakfast, lunch and dinner, 10% from drinking water towards a target based on your weight, and 5% from keeping coffee within your limit on days you log water. Only you can see these details: others only see your total score.",
+    "bonus": "Your program difficulty adds a bonus of {{multiplier}}.",
+    "noExtra": "Losing weight faster than the expected pace, or drinking more than your water target, doesn't earn extra points.",
+    "details": {
+      "start": "Starting weight",
+      "current": "Current weight",
+      "expected": "Expected change",
+      "actual": "Loss on your scale",
+      "deficit": "Calorie deficit logged",
+      "explained": "Loss it explains",
+      "counted": "Loss that counts",
+      "meals": "Meals logged",
+      "mealsValue": "{{done}} of {{total}}"
+    }
+  }
+}

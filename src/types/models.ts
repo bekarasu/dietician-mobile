@@ -15,7 +15,11 @@ export type DietaryPreference =
 // Nutrition values are per portion_size grams, which is 100 for every food so far.
 export interface FoodResponse {
   id: string;
+  // In the app's language, from Accept-Language.
   name: string;
+  // The name the server keeps the food by, the same in every language. Older
+  // servers leave it out.
+  english_name?: string;
   kcal: number;
   kj: number;
   protein: number;

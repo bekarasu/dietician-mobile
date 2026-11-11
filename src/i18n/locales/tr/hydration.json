@@ -1,0 +1,12 @@
+{
+  "title": "Su ve kahve takibi",
+  "subtitle": "Hedefleriniz sizin için belirlenir: vücut ağırlığınızın kg başına 30 ml su (1,5 ile 3 L arası) ve günde en fazla 4 fincan kahve (18 yaş altı için 1).",
+  "todayPoints": "Bugünkü puanlar",
+  "waterPoints": "Su: {{points}} / {{max}}, kilonuza göre belirlenen {{target}} L hedefe doğru içtiğiniz için.",
+  "coffeePoints": "Kahve: {{points}} / {{max}}, su kaydettiğiniz bir günde en fazla {{limit}} fincan içtiğiniz için.",
+  "noExtra": "Hedeften fazla içmek ekstra puan kazandırmaz.",
+  "hydration": "Su",
+  "waterIntake": "Su tüketimi",
+  "coffee": "Kahve",
+  "coffeeCups": "Kahve fincanı"
+}

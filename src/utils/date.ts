@@ -1,7 +1,9 @@
+import { getLocaleTag, t } from '../i18n';
+
 export function formatDateLabel(dateString: string) {
   const date = new Date(dateString);
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getLocaleTag(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -34,19 +36,19 @@ export function calendarDaysBetween(from: string, to: string) {
 }
 
 export function formatCalendarDate(value: string) {
-  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
+  return new Intl.DateTimeFormat(getLocaleTag(), { weekday: 'short', month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
 }
 
 export function formatWeekday(value: string) {
-  return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parseCalendarDate(value));
+  return new Intl.DateTimeFormat(getLocaleTag(), { weekday: 'short' }).format(parseCalendarDate(value));
 }
 
 export function formatMonthDay(value: string) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
+  return new Intl.DateTimeFormat(getLocaleTag(), { month: 'short', day: 'numeric' }).format(parseCalendarDate(value));
 }
 
 export function formatWeekRange(startDate: string, endDateExclusive: string) {
-  const format = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+  const format = new Intl.DateTimeFormat(getLocaleTag(), { month: 'short', day: 'numeric' });
   const lastDay = parseCalendarDate(endDateExclusive);
   lastDay.setDate(lastDay.getDate() - 1);
 
@@ -54,15 +56,15 @@ export function formatWeekRange(startDate: string, endDateExclusive: string) {
 }
 
 export function formatMonth(startDate: string) {
-  return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(parseCalendarDate(startDate));
+  return new Intl.DateTimeFormat(getLocaleTag(), { month: 'long', year: 'numeric' }).format(parseCalendarDate(startDate));
 }
 
 export function formatTime(dateString: string) {
-  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(dateString));
+  return new Intl.DateTimeFormat(getLocaleTag(), { hour: 'numeric', minute: '2-digit' }).format(new Date(dateString));
 }
 
 export function formatDateTimeLabel(dateString: string) {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getLocaleTag(), {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -75,22 +77,22 @@ export function formatRelativeTime(dateString: string, now = new Date()) {
   const date = new Date(dateString);
   const minutes = Math.floor((now.getTime() - date.getTime()) / 60_000);
   if (minutes < 1) {
-    return 'Just now';
+    return t('format.relative.justNow');
   }
   if (minutes < 60) {
-    return `${minutes}m ago`;
+    return t('format.relative.minutesAgo', { count: minutes });
   }
   if (minutes < 24 * 60) {
-    return `${Math.floor(minutes / 60)}h ago`;
+    return t('format.relative.hoursAgo', { count: Math.floor(minutes / 60) });
   }
   const days = calendarDaysBetween(toCalendarDate(date), toCalendarDate(now));
   if (days === 1) {
-    return 'Yesterday';
+    return t('format.relative.yesterday');
   }
   if (days < 7) {
-    return `${days}d ago`;
+    return t('format.relative.daysAgo', { count: days });
   }
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getLocaleTag(), {
     month: 'short',
     day: 'numeric',
     year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',

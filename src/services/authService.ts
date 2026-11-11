@@ -1,5 +1,7 @@
 import { LegalAcceptance, User } from '../types/models';
+import { t } from '../i18n';
 import { ApiError } from './apiError';
+import { withLanguageHeader } from './requestHeaders';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/auth`;
 
@@ -8,7 +10,7 @@ const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/auth`;
 const handleResponse = async (response: Response) => {
   const data = await response.json();
   if (!response.ok) {
-    let errorMessage = 'API request failed';
+    let errorMessage = t('common.errors.generic');
     if (typeof data.error === 'string') {
       errorMessage = data.error;
     } else if (data.error?.message) {
@@ -40,12 +42,12 @@ export const authService = {
     acceptedDocuments: LegalAcceptance[],
   ) {
     if (!firstName || !lastName || !email || !password) {
-      throw new Error('All fields are required.');
+      throw new Error(t('auth.errors.allFieldsRequired'));
     }
 
     const response = await fetch(`${API_URL}/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withLanguageHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ email, password, firstName, lastName, acceptedDocuments }),
     });
 
@@ -57,7 +59,7 @@ export const authService = {
   async verifyOTP(otpToken: string, otp: string) {
     const response = await fetch(`${API_URL}/verify-otp`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withLanguageHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ otpToken, otp }),
     });
 
@@ -74,12 +76,12 @@ export const authService = {
 
   async login(email: string, password: string) {
     if (!email || !password) {
-      throw new Error('Email and password are required.');
+      throw new Error(t('auth.errors.emailPasswordRequired'));
     }
 
     const response = await fetch(`${API_URL}/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withLanguageHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ email, password }),
     });
 
@@ -96,7 +98,7 @@ export const authService = {
   async refresh(refreshToken: string) {
     const response = await fetch(`${API_URL}/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withLanguageHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ refreshToken }),
     });
 
@@ -110,10 +112,10 @@ export const authService = {
   async logout(accessToken: string) {
     const response = await fetch(`${API_URL}/logout`, {
       method: 'POST',
-      headers: {
+      headers: withLanguageHeader({
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
-      },
+      }),
     });
 
     return await handleResponse(response);

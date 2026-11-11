@@ -1,0 +1,18 @@
+{
+  "notSetYet": "Henüz belirlenmedi",
+  "percent": "%{{value}}",
+  "today": "Bugün",
+  "tomorrow": "Yarın",
+  "relative": {
+    "justNow": "Az önce",
+    "minutesAgo": "{{count}} dk önce",
+    "hoursAgo": "{{count}} sa önce",
+    "yesterday": "Dün",
+    "daysAgo": "{{count}} gün önce"
+  },
+  "startsIn": {
+    "tomorrow": "yarın",
+    "inDays_one": "{{count}} gün sonra",
+    "inDays_other": "{{count}} gün sonra"
+  }
+}

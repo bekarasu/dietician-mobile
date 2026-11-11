@@ -1,0 +1,36 @@
+{
+  "channels": {
+    "mealName": "Öğün hatırlatıcıları",
+    "mealDescription": "Planınızdaki her öğünde küçük bir hatırlatma.",
+    "awayName": "Uzak kalma hatırlatıcıları",
+    "awayDescription": "Uygulamayı birkaç gün açmadığınızda küçük bir hatırlatma."
+  },
+  "titles": {
+    "Breakfast": "Kahvaltı zamanı",
+    "Lunch": "Öğle yemeği zamanı",
+    "Snack": "Ara öğün zamanı",
+    "Dinner": "Akşam yemeği zamanı"
+  },
+  "bodyEmpty": "Planınızda şimdi için hazır bir öğün var. Yedikten sonra kaydetmek için dokunun.",
+  "body_one": "Planınızda: {{list}}. Yedikten sonra kaydetmek için dokunun.",
+  "body_other": "Planınızda: {{list}}. Yedikten sonra kaydetmek için dokunun.",
+  "awayTitle": "Planınız sizi bekliyor",
+  "awayBody": "Eativio'yu açmayalı birkaç gün oldu. Hazır olduğunuzda planınıza kaldığınız yerden devam edin.",
+  "screen": {
+    "everyDay": "Her plan günü",
+    "snackDays": "Planınızda ara öğün olan günler",
+    "noPlan": "Henüz bir planınız yok. Hatırlatıcılar ilk planınızla başlar.",
+    "upcoming": "Planınız {{when}} başlıyor; hatırlatıcılar da onunla başlar.",
+    "ended": "Planınız sona erdi. Hatırlatıcılar sonraki planınızla yeniden başlar.",
+    "timeA11y": "{{meal}} hatırlatma saati",
+    "remindAt": "Hatırlatma saati",
+    "introTitle": "Her öğünde küçük bir hatırlatma",
+    "introText": "Her hatırlatıcı planınızdaki o öğünü belirtir ve öğünü kaydettiğinizde atlanır. Öğününüzü kaydetmek için birine dokunun.",
+    "offTitle": "Bildirimler kapalı",
+    "offText": "Ayarlar’dan Eativio bildirimlerine izin verin; hatırlatıcılarınız yeniden başlar.",
+    "switchA11y": "{{meal}} hatırlatıcısı",
+    "awayTitle": "Bir süredir uzaktaysanız",
+    "awayText": "Uygulamayı {{days}} gün açmadığınızda küçük bir hatırlatma; asla gece gönderilmez.",
+    "awayA11y": "Uzak kalma hatırlatıcısı"
+  }
+}

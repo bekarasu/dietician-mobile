@@ -1,4 +1,5 @@
 import { SharedGroup, SharedPlanInvite, SharedPlanOffer } from '../types/models';
+import { t } from '../i18n';
 import { fetchData, fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_RECOMMENDATION_API_URL}/diet-plans/shared`;
@@ -23,7 +24,7 @@ export const sharedPlanService = {
 
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to load shared meals');
+      throw new Error(typeof body?.error === 'string' ? body.error : t('sharedPlan.errors.loadMeals'));
     }
     return body.data;
   },
@@ -72,7 +73,7 @@ export const sharedPlanService = {
 
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to load the shared plan');
+      throw new Error(typeof body?.error === 'string' ? body.error : t('sharedPlan.errors.loadPlan'));
     }
     return body.data;
   },

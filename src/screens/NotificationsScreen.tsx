@@ -11,11 +11,11 @@ import { openNotification } from '../features/notifications/openNotification';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { notificationService } from '../services/notificationService';
 import { useNotificationStore } from '../store/useNotificationStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AppNotification } from '../types/models';
 import { formatRelativeTime } from '../utils/date';
 
-const LOAD_ERROR = 'We couldn\'t load your notifications. Please try again.';
 
 interface NotificationLook {
   icon: keyof typeof Ionicons.glyphMap;
@@ -115,7 +115,7 @@ export function NotificationsScreen() {
       }
     } catch {
       if (request === latestRequest.current) {
-        showDialog({ title: 'Error', message: LOAD_ERROR, tone: 'danger' });
+        showDialog({ title: t('common.errors.title'), message: t('notifications.loadFailed'), tone: 'danger' });
       }
     } finally {
       setIsLoadingMore(false);
@@ -130,7 +130,7 @@ export function NotificationsScreen() {
       setNotifications((current) => current.map((notification) => (notification.readAt ? notification : { ...notification, readAt: now })));
       useNotificationStore.getState().setUnreadCount(count);
     } catch {
-      showDialog({ title: 'Error', message: 'We couldn\'t mark your notifications as read. Please try again.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: t('notifications.markFailed'), tone: 'danger' });
     } finally {
       setIsMarkingAll(false);
     }
@@ -147,7 +147,7 @@ export function NotificationsScreen() {
           hitSlop={8}
           onPress={() => { void markAllRead(); }}
         >
-          <Text style={[styles.headerAction, disabled && styles.headerActionDisabled]}>Mark all read</Text>
+          <Text style={[styles.headerAction, disabled && styles.headerActionDisabled]}>{t('notifications.markAllRead')}</Text>
         </Pressable>
       ),
     });
@@ -174,16 +174,16 @@ export function NotificationsScreen() {
         <ActivityIndicator color={theme.colors.primary} style={styles.loading} />
       ) : failed && notifications.length === 0 ? (
         <View style={styles.message}>
-          <Text style={styles.messageText}>{LOAD_ERROR}</Text>
-          <AppButton title="Try again" variant="secondary" onPress={retry} />
+          <Text style={styles.messageText}>{t('notifications.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} variant="secondary" onPress={retry} />
         </View>
       ) : notifications.length === 0 ? (
         <View style={styles.message}>
           <View style={styles.emptyIcon}>
             <Ionicons color={theme.colors.muted} name="notifications-outline" size={28} />
           </View>
-          <Text style={styles.messageTitle}>No notifications yet</Text>
-          <Text style={styles.messageText}>Friend requests, your weekly and monthly results and plan updates will show up here.</Text>
+          <Text style={styles.messageTitle}>{t('notifications.emptyTitle')}</Text>
+          <Text style={styles.messageText}>{t('notifications.emptyText')}</Text>
         </View>
       ) : (
         <>
@@ -198,7 +198,7 @@ export function NotificationsScreen() {
             ))}
           </View>
           {nextCursor ? (
-            <AppButton title="Show more" variant="secondary" loading={isLoadingMore} onPress={() => { void loadMore(); }} />
+            <AppButton title={t('common.actions.showMore')} variant="secondary" loading={isLoadingMore} onPress={() => { void loadMore(); }} />
           ) : null}
         </>
       )}
@@ -219,7 +219,7 @@ function NotificationRow({ notification, first, onPress }: NotificationRowProps)
 
   return (
     <Pressable
-      accessibilityLabel={`${unread ? 'Unread. ' : ''}${notification.title}. ${notification.body}. ${time}`}
+      accessibilityLabel={t(unread ? 'notifications.itemA11yUnread' : 'notifications.itemA11y', { title: notification.title, body: notification.body, time })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.row, !first && styles.rowDivider, pressed && styles.rowPressed]}

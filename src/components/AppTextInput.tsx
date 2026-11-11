@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 interface AppTextInputProps extends TextInputProps {
@@ -79,7 +80,7 @@ export const AppTextInput = forwardRef<TextInputInstance, AppTextInputProps>(fun
           {input}
           {showClearButton ? (
             <Pressable
-              accessibilityLabel={`Clear ${label}`}
+              accessibilityLabel={t('components.textInput.clear', { label })}
               accessibilityRole="button"
               hitSlop={10}
               onPress={() => {

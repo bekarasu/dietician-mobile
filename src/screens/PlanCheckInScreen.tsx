@@ -8,27 +8,28 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { StartDatePicker } from '../components/StartDatePicker';
-import { HEALTH_NOTICE } from '../constants/health';
+import { getHealthNotice } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
-import { GENERATION_DETAIL, isGenerationCancelled } from '../features/dietPlan/planGeneration';
+import { getGenerationDetail, isGenerationCancelled } from '../features/dietPlan/planGeneration';
 import { useCancelGeneration } from '../features/dietPlan/useCancelGeneration';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { t, translatedOption } from '../i18n';
 import { theme } from '../theme/theme';
 import { PlanEffort, PlanMealChoice } from '../types/models';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'PlanCheckIn'>;
 
-const EFFORT_OPTIONS: { label: string; value: PlanEffort }[] = [
-  { label: 'Too hard', value: 'too_hard' },
-  { label: 'About right', value: 'about_right' },
-  { label: 'Too easy', value: 'too_easy' },
+const EFFORT_OPTIONS: { readonly label: string; value: PlanEffort }[] = [
+  translatedOption<PlanEffort>('too_hard', 'dietPlan.checkIn.effort.too_hard'),
+  translatedOption<PlanEffort>('about_right', 'dietPlan.checkIn.effort.about_right'),
+  translatedOption<PlanEffort>('too_easy', 'dietPlan.checkIn.effort.too_easy'),
 ];
 
-const MEAL_CHOICE_OPTIONS: { label: string; value: PlanMealChoice }[] = [
-  { label: 'Keep favourites', value: 'keep_favourites' },
-  { label: 'Start fresh', value: 'start_fresh' },
+const MEAL_CHOICE_OPTIONS: { readonly label: string; value: PlanMealChoice }[] = [
+  translatedOption<PlanMealChoice>('keep_favourites', 'dietPlan.checkIn.mealChoice.keep_favourites'),
+  translatedOption<PlanMealChoice>('start_fresh', 'dietPlan.checkIn.mealChoice.start_fresh'),
 ];
 
 export function PlanCheckInScreen({ navigation, route }: Props) {
@@ -46,15 +47,15 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
   const handleSubmit = async () => {
     const weightKg = parseFloat(weight);
     if (weight !== '' && (isNaN(weightKg) || weightKg <= 0)) {
-      showDialog({ title: 'Check your weight', message: 'Enter your weight in kilograms, or leave it empty.', icon: 'scale-outline' });
+      showDialog({ title: t('dietPlan.checkIn.checkWeightTitle'), message: t('dietPlan.checkIn.checkWeightMessage'), icon: 'scale-outline' });
       return;
     }
 
     setIsSubmitting(true);
     try {
       // The weight goes first because the next plan is built from the latest one.
-      if (weight !== '' && !(await addWeightLog(weightKg, 'Logged from plan check-in'))) {
-        showDialog({ title: 'Error', message: 'We couldn\'t save your weight. Please try again.', tone: 'danger' });
+      if (weight !== '' && !(await addWeightLog(weightKg, t('dietPlan.checkIn.weightNote')))) {
+        showDialog({ title: t('common.errors.title'), message: t('dietPlan.checkIn.weightFailed'), tone: 'danger' });
         return;
       }
 
@@ -67,7 +68,7 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
       if (isGenerationCancelled(e)) {
         return;
       }
-      showDialog({ title: 'Error', message: e instanceof Error ? e.message : 'We couldn\'t create your next plan. Please try again.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: e instanceof Error ? e.message : t('dietPlan.checkIn.createFailed'), tone: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -76,46 +77,46 @@ export function PlanCheckInScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
       <SectionHeader
-        title="How did this plan go?"
-        subtitle="Your answers and the meals you logged shape your next plan."
+        title={t('dietPlan.checkIn.title')}
+        subtitle={t('dietPlan.checkIn.subtitle')}
       />
 
       <AppTextInput
         keyboardType="numeric"
-        label="Weight today (optional)"
+        label={t('dietPlan.checkIn.weight')}
         onChangeText={setWeight}
-        placeholder="e.g. 72.5"
+        placeholder={t('dietPlan.checkIn.weightPlaceholder')}
         value={weight}
       />
 
       <View style={styles.question}>
-        <Text style={styles.label}>How did the plan feel?</Text>
+        <Text style={styles.label}>{t('dietPlan.checkIn.feel')}</Text>
         <SegmentedControl onChange={setEffort} options={EFFORT_OPTIONS} value={effort} />
       </View>
 
       <View style={styles.question}>
-        <Text style={styles.label}>Your next meals</Text>
+        <Text style={styles.label}>{t('dietPlan.checkIn.nextMeals')}</Text>
         <SegmentedControl onChange={setMealChoice} options={MEAL_CHOICE_OPTIONS} value={mealChoice} />
         <Text style={styles.hint}>
           {mealChoice === 'keep_favourites'
-            ? 'We\'ll bring back meals you marked as taken and add some new ones.'
-            : 'Every meal will be new.'}
+            ? t('dietPlan.checkIn.keepHint')
+            : t('dietPlan.checkIn.freshHint')}
         </Text>
       </View>
 
       <View style={styles.question}>
-        <Text style={styles.label}>Start your next plan on</Text>
+        <Text style={styles.label}>{t('dietPlan.checkIn.startOn')}</Text>
         <StartDatePicker firstDate={earliestStartDate} onChange={setStartDate} value={startDate} />
       </View>
 
-      <AppButton loading={isSubmitting} onPress={handleSubmit} title="Create My Next Plan" />
+      <AppButton loading={isSubmitting} onPress={handleSubmit} title={t('dietPlan.checkIn.create')} />
       {isSubmitting ? (
         <>
-          <Text style={styles.hint}>{GENERATION_DETAIL}</Text>
-          <AppButton loading={isCancelling} onPress={confirmCancel} title="Cancel" variant="ghost" />
+          <Text style={styles.hint}>{getGenerationDetail()}</Text>
+          <AppButton loading={isCancelling} onPress={confirmCancel} title={t('common.actions.cancel')} variant="ghost" />
         </>
       ) : null}
-      <Text style={styles.notice}>{HEALTH_NOTICE}</Text>
+      <Text style={styles.notice}>{getHealthNotice()}</Text>
     </ScreenContainer>
   );
 }

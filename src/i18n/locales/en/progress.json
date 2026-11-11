@@ -1,0 +1,90 @@
+{
+  "activity": {
+    "meal": "Meal",
+    "weighIn": "Weigh-in",
+    "waterOf": "{{amount}} of {{target}}",
+    "coffeeLimit": "{{cups}}, limit {{limit}}",
+    "reasons": {
+      "not_core_meal": "Only breakfast, lunch and dinner earn points.",
+      "meal_already_counted": "This meal already counted today.",
+      "plan_not_started": "Logged before your plan started.",
+      "plan_replaced": "Reset when you changed your plan.",
+      "no_water_logged": "Coffee points need water logged the same day."
+    },
+    "overCoffeeLimit": "Over your limit of {{cups}}.",
+    "dayTotal": "Day total"
+  },
+  "chart": {
+    "trend": "Trend",
+    "lastWeighIns": "Your last {{count}} weigh-ins",
+    "a11y": "Weight trend from {{from}} on {{fromDate}} to {{to}} on {{toDate}}",
+    "tapHint": "Tap the chart to read any weigh-in."
+  },
+  "day": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "notScored": "Not scored",
+    "points": "{{points}} / {{max}}",
+    "pointsSoFar": "{{points}} / {{max}} so far",
+    "nothingYet": "Nothing logged yet.",
+    "nothing": "Nothing logged."
+  },
+  "week": {
+    "current": "This week · {{range}}",
+    "split": "Weight {{weight}} · Meals {{meals}} · Water {{water}} · Coffee {{coffee}}",
+    "final": "final",
+    "soFar": "so far",
+    "score": "score",
+    "nothing": "Nothing logged this week."
+  },
+  "dashboard": {
+    "currentWeight": "Current weight",
+    "last7Days": "Last 7 days",
+    "consistency": "Weekly consistency",
+    "consistencyHint": "The share of this week's meal, water and coffee points you've earned so far.",
+    "goalProgress": "Goal progress",
+    "setTarget": "Set a target weight",
+    "logWeight": "Log your weight",
+    "history": "History",
+    "historyFailed": "Your history couldn't load. Check your connection and try again.",
+    "historyHint": "Each day earns up to 45 points for meals, water and coffee, and a week's habit points are the average of its days. Weigh-ins count towards the week's weight points.",
+    "earlierFailed": "Couldn't load. Try again",
+    "earlier": "Show earlier week",
+    "prev": "< Prev",
+    "next": "Next >",
+    "waterChart": "Water Intake (ml)",
+    "coffeeChart": "Coffee Intake (cups)",
+    "title": "Progress dashboard",
+    "subtitle": "Your weight, your weekly consistency, and the points each thing you log earns.",
+    "tabProgress": "Progress",
+    "tabHydration": "Hydration"
+  },
+  "weight": {
+    "invalid": "Enter your weight in kilograms.",
+    "note": "Logged from Progress Screen",
+    "saveFailed": "We couldn't save your weigh-in. Please try again.",
+    "removeFailed": "We couldn't remove this weigh-in. Please try again.",
+    "removeTitle": "Remove weigh-in",
+    "removeMessage": "Remove {{weight}} from {{date}}?",
+    "removeA11y": "Remove {{weight}} from {{date}}",
+    "current": "Current weight",
+    "in7Days": "{{change}} in 7 days",
+    "lastWeighed": "Last weighed {{date}}",
+    "starting": "Starting",
+    "change": "Change",
+    "target": "Target",
+    "towardsGoal": "{{done}} of {{total}} kg towards your goal",
+    "setTarget": "Set a target weight in your profile to follow your goal progress.",
+    "empty": "No weigh-ins yet. Log your weight below to start following your progress.",
+    "logTitle": "Log a weigh-in",
+    "logCaption": "Weigh-ins count towards your week's weight points. Weighing at the same time of day keeps readings comparable.",
+    "label": "Weight",
+    "placeholder": "e.g. 72.5",
+    "save": "Save weigh-in",
+    "trend": "Trend",
+    "oneMore": "Log one more weigh-in to see your trend.",
+    "history": "History",
+    "showFewer": "Show fewer",
+    "showAll": "Show all {{count}} weigh-ins"
+  }
+}

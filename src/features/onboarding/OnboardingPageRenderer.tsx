@@ -10,6 +10,7 @@ import { ChoiceChips } from '../../components/ChoiceChips';
 import { CountryPicker } from '../../components/CountryPicker';
 import { FoodPickerRow } from '../../components/FoodPickerRow';
 import { OnboardingStackParamList } from '../../navigation/navigationTypes';
+import { getLocaleTag, t } from '../../i18n';
 import { theme } from '../../theme/theme';
 import { OnboardingDraft } from '../../types/models';
 
@@ -73,7 +74,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
 
   const renderField = (field: OnboardingFieldDefinition): ReactNode => {
     const rawValue = draft[field.id];
-    const error = showValidation && isFieldMissing(field, draft) ? `Add your ${field.label.toLowerCase()} to continue.` : null;
+    const error = showValidation && isFieldMissing(field, draft) ? t('onboarding.renderer.fieldMissing', { field: field.label.toLocaleLowerCase(getLocaleTag()) }) : null;
 
     if (field.inputType === 'text' || field.inputType === 'number') {
       return (
@@ -96,7 +97,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
           <FieldLabel label={field.label} helperText={field.helperText} />
           <View style={styles.uploadCard}>
             <Ionicons name="cloud-upload-outline" size={28} color={theme.colors.primary} />
-            <Text style={styles.uploadText}>A PDF or a photo of your lab report</Text>
+            <Text style={styles.uploadText}>{t('onboarding.renderer.uploadHint')}</Text>
             <BloodTestUploader
               onUploadComplete={(upload) => {
                 onChange(field.id, true as DraftValue);
@@ -117,7 +118,7 @@ export function OnboardingPageRenderer({ page, draft, showValidation, onChange, 
           <FieldLabel label={field.label} helperText={field.helperText} />
           <FoodPickerRow
             foods={selectedFoods}
-            placeholder={field.placeholder || 'Choose foods'}
+            placeholder={field.placeholder || t('onboarding.renderer.chooseFoods')}
             onPress={() => navigation.navigate('FoodSelection', { selectedFoods, fieldName: field.id, context: 'onboarding' })}
           />
           {error ? <Text style={styles.errorText}>{error}</Text> : null}

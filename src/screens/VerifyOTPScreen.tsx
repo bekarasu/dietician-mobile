@@ -8,6 +8,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { useAuthStore } from '../store/useAuthStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AuthStackParamList } from '../navigation/navigationTypes';
 
@@ -30,20 +31,20 @@ export function VerifyOTPScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <SectionHeader title="Verify your email" subtitle="Enter the 6-digit code sent to your email address." />
+      <SectionHeader title={t('auth.otp.title')} subtitle={t('auth.otp.subtitle')} />
 
       <AppCard style={styles.form}>
         <Controller
           control={control}
           name="otp"
           rules={{ 
-            required: 'OTP is required',
-            minLength: { value: 6, message: 'OTP must be 6 digits' },
-            maxLength: { value: 6, message: 'OTP must be 6 digits' }
+            required: t('auth.otp.required'),
+            minLength: { value: 6, message: t('auth.otp.length') },
+            maxLength: { value: 6, message: t('auth.otp.length') }
           }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
             <AppTextInput 
-              label="OTP Code" 
+              label={t('auth.otp.label')} 
               keyboardType="number-pad"
               onBlur={onBlur} 
               onChangeText={onChange} 
@@ -57,14 +58,14 @@ export function VerifyOTPScreen({ navigation }: Props) {
 
         <AppButton
           loading={isLoading}
-          title="Verify"
+          title={t('auth.otp.submit')}
           onPress={handleSubmit(async (values) => verifyOTP(values.otp))}
         />
       </AppCard>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Didn't receive the code?</Text>
-        <AppButton title="Go back to register" variant="ghost" onPress={() => navigation.goBack()} />
+        <Text style={styles.footerText}>{t('auth.otp.noCode')}</Text>
+        <AppButton title={t('auth.otp.back')} variant="ghost" onPress={() => navigation.goBack()} />
       </View>
     </ScreenContainer>
   );

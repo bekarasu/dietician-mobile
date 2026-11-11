@@ -5,7 +5,7 @@ import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
-import { AI_GUIDANCE_NOTICE } from '../constants/health';
+import { getAiGuidanceNotice } from '../constants/health';
 import { buildRecommendationNarrative } from '../features/recommendations/recommendationContext';
 import { recommendationService } from '../services/recommendationService';
 import { useDailyLogStore } from '../store/useDailyLogStore';
@@ -102,7 +102,7 @@ export function MealRecommendationScreen() {
       ) : null}
 
       <AppCard style={styles.noticeBox}>
-        <Text style={styles.noticeText}>{AI_GUIDANCE_NOTICE}</Text>
+        <Text style={styles.noticeText}>{getAiGuidanceNotice()}</Text>
       </AppCard>
     </ScreenContainer>
   );

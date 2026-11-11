@@ -75,6 +75,13 @@ Meal and away reminders (since 2026-11-08) are local notifications from `expo-no
 - Android 13 shows its permission prompt only after a channel exists, so `requestReminderPermission` creates `meal-reminders` first. Without `SCHEDULE_EXACT_ALARM` the alarms are inexact, which is fine for meals; don't add that permission, Play restricts it.
 - The Android small icon is `adaptive-icon-monochrome.png`, generated into `drawable-*/notification_icon.png` at prebuild.
 
+## Localization
+
+- The language comes from expo-localization's native module (added 2026-11-11). `src/i18n/deviceLanguage.ts` looks it up with `requireOptionalNativeModule`, because importing `expo-localization` throws in a native build made before it was added; such a build falls back to iOS `AppleLanguages`, `I18nManager` and `Intl`. Run `npm run ios` / `npm run android` once to get the module.
+- The plugin is configured with `supportsRTL: false` (the UI isn't built for right-to-left) and `supportedLocales: [en, tr]`, which adds `CFBundleLocalizations` and the Android 13+ per-app language list. Add a language to both `supportedLocales` and `src/i18n`.
+- Its default `allowDynamicLocaleChangesAndroid` adds `locale` to the activity's `configChanges`, so Android doesn't recreate the activity on a language change; the app hears it through the module's event and remounts the navigation tree.
+- iOS Info.plist strings (Face ID prompt, display name) are translated in `assets/locales/tr.json`, through `expo.locales` in `app.json`.
+
 ## Native projects, config, and env
 
 - `ios/` and `android/` are gitignored prebuild output. Native edits there are lost and never reach teammates. Change `app.json` or a config plugin, then run `npx expo prebuild --clean`.

@@ -6,10 +6,11 @@ import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenContainer } from '../components/ScreenContainer';
-import { HEALTH_NOTICE } from '../constants/health';
+import { getHealthNotice } from '../constants/health';
 import { getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList } from '../navigation/navigationTypes';
 import { leaderboardService } from '../services/leaderboardService';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { ScoreBreakdown } from '../types/models';
 import { formatKg } from '../utils/formatters';
@@ -37,8 +38,8 @@ export function ScoreBreakdownScreen() {
     return (
       <ScreenContainer>
         <AppCard style={styles.stack}>
-          <Text style={styles.body}>We couldn't load your score. Please try again.</Text>
-          <AppButton title="Try again" onPress={load} variant="secondary" />
+          <Text style={styles.body}>{t('leaderboard.breakdown.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={load} variant="secondary" />
         </AppCard>
       </ScreenContainer>
     );
@@ -58,9 +59,9 @@ export function ScoreBreakdownScreen() {
   return (
     <ScreenContainer>
       <AppCard style={styles.heroCard}>
-        <Text style={styles.heroLabel}>{period === 'weekly' ? 'Weekly score' : 'Monthly score'}</Text>
+        <Text style={styles.heroLabel}>{period === 'weekly' ? t('leaderboard.breakdown.weekly') : t('leaderboard.breakdown.monthly')}</Text>
         {isScored ? (
-          <Text style={styles.heroValue}>{breakdown.totalScore} points</Text>
+          <Text style={styles.heroValue}>{t('leaderboard.breakdown.points', { points: breakdown.totalScore })}</Text>
         ) : (
           <Text style={styles.heroMessage}>{getStatusMessage(breakdown.statusReason)}</Text>
         )}
@@ -68,30 +69,32 @@ export function ScoreBreakdownScreen() {
 
       {isScored ? (
         <AppCard style={styles.stack}>
-          <ProgressBar label="Weight progress" current={Math.round(breakdown.progressScore ?? 0)} target={100} />
+          <ProgressBar label={t('leaderboard.breakdown.weightProgress')} current={Math.round(breakdown.progressScore ?? 0)} target={100} />
           {/* Weight scores 0 until the first weigh-in after the starting weight. */}
           {breakdown.currentWeightKg === undefined ? (
-            <Text style={styles.note}>No weigh-in yet this period. Log your weight to earn weight points.</Text>
+            <Text style={styles.note}>{t('leaderboard.breakdown.noWeighIn')}</Text>
           ) : null}
           {breakdown.countedLossKg !== undefined &&
           breakdown.actualLossKg !== undefined &&
           breakdown.countedLossKg < breakdown.actualLossKg ? (
             <Text style={styles.note}>
-              Your scale shows {formatKg(breakdown.actualLossKg)} lost, and the meals you logged explain{' '}
-              {formatKg(breakdown.explainedLossKg ?? 0)}, so {formatKg(breakdown.countedLossKg)} counts. Log every meal
-              to have more of your loss count.
+              {t('leaderboard.breakdown.countedLoss', {
+                actual: formatKg(breakdown.actualLossKg),
+                explained: formatKg(breakdown.explainedLossKg ?? 0),
+                counted: formatKg(breakdown.countedLossKg),
+              })}
             </Text>
           ) : null}
           {breakdown.adherenceScore === null ? (
-            <Text style={styles.note}>Meal logging: no meals due yet.</Text>
+            <Text style={styles.note}>{t('leaderboard.breakdown.noMealsDue')}</Text>
           ) : (
-            <ProgressBar label="Meal logging" current={Math.round(breakdown.adherenceScore)} target={100} />
+            <ProgressBar label={t('leaderboard.breakdown.mealLogging')} current={Math.round(breakdown.adherenceScore)} target={100} />
           )}
           {breakdown.waterScore == null ? null : (
-            <ProgressBar label="Water" current={Math.round(breakdown.waterScore)} target={100} />
+            <ProgressBar label={t('leaderboard.breakdown.water')} current={Math.round(breakdown.waterScore)} target={100} />
           )}
           {breakdown.coffeeScore == null ? null : (
-            <ProgressBar label="Coffee within your limit" current={Math.round(breakdown.coffeeScore)} target={100} />
+            <ProgressBar label={t('leaderboard.breakdown.coffee')} current={Math.round(breakdown.coffeeScore)} target={100} />
           )}
         </AppCard>
       ) : null}
@@ -108,18 +111,15 @@ export function ScoreBreakdownScreen() {
       ) : null}
 
       <AppCard style={styles.noticeCard}>
-        <Text style={styles.noticeTitle}>How your score works</Text>
+        <Text style={styles.noticeTitle}>{t('leaderboard.breakdown.howTitle')}</Text>
         <Text style={styles.noticeText}>
-          55% comes from your weight progress against a safe expected pace. Your loss counts as far as the calorie
-          deficit of the meals you log can explain it, with some room for water weight. 30% comes from logging breakfast, lunch and
-          dinner, 10% from drinking water towards a target based on your weight, and 5% from keeping coffee within
-          your limit on days you log water. Only you can see these details: others only see your total score.
+          {t('leaderboard.breakdown.howBody')}
         </Text>
-        {multiplier ? <Text style={styles.noticeText}>Your program difficulty adds a bonus of {multiplier}.</Text> : null}
+        {multiplier ? <Text style={styles.noticeText}>{t('leaderboard.breakdown.bonus', { multiplier })}</Text> : null}
         <Text style={styles.noticeText}>
-          Losing weight faster than the expected pace, or drinking more than your water target, doesn't earn extra points.
+          {t('leaderboard.breakdown.noExtra')}
         </Text>
-        <Text style={styles.noticeText}>{HEALTH_NOTICE}</Text>
+        <Text style={styles.noticeText}>{getHealthNotice()}</Text>
       </AppCard>
     </ScreenContainer>
   );
@@ -129,28 +129,28 @@ function getDetails(breakdown: ScoreBreakdown) {
   const details: { label: string; value: string }[] = [];
 
   if (breakdown.baselineWeightKg !== undefined) {
-    details.push({ label: 'Starting weight', value: formatKg(breakdown.baselineWeightKg) });
+    details.push({ label: t('leaderboard.breakdown.details.start'), value: formatKg(breakdown.baselineWeightKg) });
   }
   if (breakdown.currentWeightKg !== undefined) {
-    details.push({ label: 'Current weight', value: formatKg(breakdown.currentWeightKg) });
+    details.push({ label: t('leaderboard.breakdown.details.current'), value: formatKg(breakdown.currentWeightKg) });
   }
   if (breakdown.expectedLossKg !== undefined) {
-    details.push({ label: 'Expected change', value: formatKg(breakdown.expectedLossKg) });
+    details.push({ label: t('leaderboard.breakdown.details.expected'), value: formatKg(breakdown.expectedLossKg) });
   }
   if (breakdown.actualLossKg !== undefined) {
-    details.push({ label: 'Loss on your scale', value: formatKg(breakdown.actualLossKg) });
+    details.push({ label: t('leaderboard.breakdown.details.actual'), value: formatKg(breakdown.actualLossKg) });
   }
   if (breakdown.deficitKcal !== undefined) {
-    details.push({ label: 'Calorie deficit logged', value: `${Math.round(breakdown.deficitKcal)} kcal` });
+    details.push({ label: t('leaderboard.breakdown.details.deficit'), value: `${Math.round(breakdown.deficitKcal)} kcal` });
   }
   if (breakdown.explainedLossKg !== undefined) {
-    details.push({ label: 'Loss it explains', value: formatKg(breakdown.explainedLossKg) });
+    details.push({ label: t('leaderboard.breakdown.details.explained'), value: formatKg(breakdown.explainedLossKg) });
   }
   if (breakdown.countedLossKg !== undefined) {
-    details.push({ label: 'Loss that counts', value: formatKg(breakdown.countedLossKg) });
+    details.push({ label: t('leaderboard.breakdown.details.counted'), value: formatKg(breakdown.countedLossKg) });
   }
   if (breakdown.totalActivities > 0) {
-    details.push({ label: 'Meals logged', value: `${breakdown.completedActivities} of ${breakdown.totalActivities}` });
+    details.push({ label: t('leaderboard.breakdown.details.meals'), value: t('leaderboard.breakdown.details.mealsValue', { done: breakdown.completedActivities, total: breakdown.totalActivities }) });
   }
 
   const hasBonus = breakdown.difficultyMultiplier !== undefined && breakdown.difficultyMultiplier > 1;

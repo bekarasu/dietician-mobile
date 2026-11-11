@@ -2,6 +2,7 @@ import { requireOptionalNativeModule } from 'expo';
 import type * as NotificationsModule from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { t, TranslationKey } from '../../i18n';
 import { DietPlan } from '../../types/models';
 import { MealReminderSettings } from './mealReminderSettings';
 import {
@@ -22,9 +23,10 @@ const Notifications: typeof NotificationsModule | null = requireOptionalNativeMo
   : null;
 
 // Separate Android channels, so either kind can be muted in the system settings.
-const CHANNELS: Record<ReminderKind, { id: string; name: string; description: string }> = {
-  [MEAL_REMINDER_KIND]: { id: 'meal-reminders', name: 'Meal reminders', description: 'A nudge at each meal in your plan.' },
-  [AWAY_REMINDER_KIND]: { id: 'away-reminders', name: 'Away reminders', description: 'A nudge after a few days without opening the app.' },
+// Their names are set again in the current language each time they're created.
+const CHANNELS: Record<ReminderKind, { id: string; nameKey: TranslationKey; descriptionKey: TranslationKey }> = {
+  [MEAL_REMINDER_KIND]: { id: 'meal-reminders', nameKey: 'reminders.channels.mealName', descriptionKey: 'reminders.channels.mealDescription' },
+  [AWAY_REMINDER_KIND]: { id: 'away-reminders', nameKey: 'reminders.channels.awayName', descriptionKey: 'reminders.channels.awayDescription' },
 };
 
 // 'ask' can still show the system prompt; 'blocked' needs the Settings app.
@@ -62,8 +64,8 @@ async function ensureChannels() {
   }
   for (const channel of Object.values(CHANNELS)) {
     await Notifications.setNotificationChannelAsync(channel.id, {
-      name: channel.name,
-      description: channel.description,
+      name: t(channel.nameKey),
+      description: t(channel.descriptionKey),
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }

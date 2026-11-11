@@ -1,3 +1,5 @@
+import { memoizeForLanguage, t } from '../../i18n';
+
 export interface OnboardingIntroHighlight {
   label: string;
   value: string;
@@ -14,56 +16,45 @@ export interface OnboardingIntroPage {
   highlights: OnboardingIntroHighlight[];
 }
 
-export const ONBOARDING_INTRO_PAGES: OnboardingIntroPage[] = [
+// Built in the current language when first read after a language change.
+export const getOnboardingIntroPages = memoizeForLanguage((): OnboardingIntroPage[] => [
   {
     id: 'plans',
-    title: 'Personal plans that feel doable',
-    subtitle: 'Set up a dietician flow that fits your day with quick intake and adaptive meal ideas.',
-    bullets: [
-      'AI assisted meal ideas tuned to your goal',
-      'Inventory nudges that reduce waste',
-      'Portion cues you can adjust anytime',
-    ],
+    title: t('onboarding.intro.plans.title'),
+    subtitle: t('onboarding.intro.plans.subtitle'),
+    bullets: [t('onboarding.intro.plans.bullet1'), t('onboarding.intro.plans.bullet2'), t('onboarding.intro.plans.bullet3')],
     imageUri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f957.png',
     accent: '#DFF5F1',
     accentSoft: '#C6EEE7',
     highlights: [
-      { label: 'Plan window', value: '7 days' },
-      { label: 'Prep time', value: '15 min' },
+      { label: t('onboarding.intro.plans.highlight1Label'), value: t('onboarding.intro.plans.highlight1Value') },
+      { label: t('onboarding.intro.plans.highlight2Label'), value: t('onboarding.intro.plans.highlight2Value') },
     ],
   },
   {
     id: 'habits',
-    title: 'Hydration and habit nudges',
-    subtitle: 'Gentle prompts keep water, coffee, and consistency in view without noise.',
-    bullets: [
-      'Hydration targets and streaks',
-      'Water and coffee targets set from your weight and age',
-      'Daily check ins that stay light',
-    ],
+    title: t('onboarding.intro.habits.title'),
+    subtitle: t('onboarding.intro.habits.subtitle'),
+    bullets: [t('onboarding.intro.habits.bullet1'), t('onboarding.intro.habits.bullet2'), t('onboarding.intro.habits.bullet3')],
     imageUri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4a7.png',
     accent: '#E0F2FE',
     accentSoft: '#C7E8FD',
     highlights: [
-      { label: 'Water target', value: '2.4 L' },
-      { label: 'Coffee cap', value: '4 cups' },
+      { label: t('onboarding.intro.habits.highlight1Label'), value: t('onboarding.intro.habits.highlight1Value') },
+      { label: t('onboarding.intro.habits.highlight2Label'), value: t('onboarding.intro.habits.highlight2Value') },
     ],
   },
   {
     id: 'progress',
-    title: 'Progress you can trust',
-    subtitle: 'Weekly signals and coaching notes turn logs into steady momentum.',
-    bullets: [
-      'Trend views from daily logs',
-      'Guided reflections for the week',
-      'Milestones that celebrate consistency',
-    ],
+    title: t('onboarding.intro.progress.title'),
+    subtitle: t('onboarding.intro.progress.subtitle'),
+    bullets: [t('onboarding.intro.progress.bullet1'), t('onboarding.intro.progress.bullet2'), t('onboarding.intro.progress.bullet3')],
     imageUri: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4c8.png',
     accent: '#FDE7D9',
     accentSoft: '#FAD3BB',
     highlights: [
-      { label: 'Weekly check in', value: 'Sunday' },
-      { label: 'Consistency goal', value: '5 days' },
+      { label: t('onboarding.intro.progress.highlight1Label'), value: t('onboarding.intro.progress.highlight1Value') },
+      { label: t('onboarding.intro.progress.highlight2Label'), value: t('onboarding.intro.progress.highlight2Value') },
     ],
   },
-];
+]);

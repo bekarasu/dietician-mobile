@@ -31,9 +31,10 @@ import { selectRemindersOn, useMealReminderStore } from '../store/useMealReminde
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
-import { formatGoalType, formatKg, formatLitres } from '../utils/formatters';
+import { formatGoalType, formatKg, formatLitres, formatMealType } from '../utils/formatters';
 
 interface ProfileFormValues {
   name: string;
@@ -65,14 +66,14 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
 // then ends it.
 const isPregnant = (values: ProfileFormValues) => canHavePregnancyPlan(values.gender) && values.pregnant;
 
-const positiveNumber = (label: string) => (value: string) => Number(value) > 0 || `Enter your ${label}.`;
+const positiveNumber = (messageKey: TranslationKey) => (value: string) => Number(value) > 0 || t(messageKey);
 
 // "Breakfast 8:30 AM · Lunch 12:30 PM"
 function summarizeReminders(settings: MealReminderSettings) {
   const times = REMINDER_MEAL_TYPES.filter((mealType) => settings.meals[mealType].enabled).map(
-    (mealType) => `${mealType} ${formatReminderTime(settings.meals[mealType].minutes)}`,
+    (mealType) => `${formatMealType(mealType)} ${formatReminderTime(settings.meals[mealType].minutes)}`,
   );
-  return times.length ? times.join(' · ') : 'No meals chosen';
+  return times.length ? times.join(' · ') : t('profile.reminders.noMeals');
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -198,9 +199,9 @@ export function ProfileGoalsScreen() {
       reset(values);
       // The server sets the water target and coffee limit from age and pregnancy, so reload to show them.
       refreshProfile().catch(() => undefined);
-      showDialog({ title: 'Saved', message: 'Your profile is up to date.', icon: 'checkmark-circle-outline' });
+      showDialog({ title: t('profile.saved.title'), message: t('profile.saved.message'), icon: 'checkmark-circle-outline' });
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your profile. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('profile.errors.saveProfile')), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -212,7 +213,7 @@ export function ProfileGoalsScreen() {
     try {
       await updatePreferences({ dietaryPreferences: next });
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your diet. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('profile.errors.saveDiet')), tone: 'danger' });
     } finally {
       setIsSavingDiet(false);
     }
@@ -224,7 +225,7 @@ export function ProfileGoalsScreen() {
     try {
       await updateDetails({ countryCode });
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your country. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('profile.errors.saveCountry')), tone: 'danger' });
     } finally {
       setIsSavingCountry(false);
     }
@@ -239,27 +240,27 @@ export function ProfileGoalsScreen() {
     }
     if (permission === 'blocked') {
       showDialog({
-        title: 'Notifications are off',
-        message: 'Allow notifications for Eativio in Settings to get meal reminders.',
+        title: t('profile.reminders.blockedTitle'),
+        message: t('profile.reminders.blockedMessage'),
         icon: 'notifications-off-outline',
         buttons: [
-          { text: 'Not now', style: 'cancel' },
-          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          { text: t('common.actions.notNow'), style: 'cancel' },
+          { text: t('common.actions.openSettings'), onPress: () => Linking.openSettings() },
         ],
       });
     } else {
-      showDialog({ title: 'Update needed', message: 'This version of the app can\'t send reminders. Install the latest one to use them.' });
+      showDialog({ title: t('profile.reminders.updateTitle'), message: t('profile.reminders.updateMessage') });
     }
   };
 
   const confirmLogout = () => {
     showDialog({
-      title: 'Log out',
-      message: 'Are you sure you want to log out?',
+      title: t('profile.logout.title'),
+      message: t('profile.logout.message'),
       icon: 'log-out-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log out', style: 'destructive', onPress: logout },
+        { text: t('common.actions.cancel'), style: 'cancel' },
+        { text: t('common.actions.logOut'), style: 'destructive', onPress: logout },
       ],
     });
   };
@@ -275,31 +276,31 @@ export function ProfileGoalsScreen() {
           <Text style={styles.avatarText}>{(profile?.name || '?').trim().charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.headerText}>
-          <Text style={styles.name}>{profile?.name || 'Your profile'}</Text>
+          <Text style={styles.name}>{profile?.name || t('profile.header.fallbackName')}</Text>
           <View style={styles.tags}>
             {profile ? <Text style={styles.tag}>{formatGoalType(profile.goalType)}</Text> : null}
-            {profile?.pregnancyWeek ? <Text style={styles.tag}>Pregnancy · week {profile.pregnancyWeek}</Text> : null}
+            {profile?.pregnancyWeek ? <Text style={styles.tag}>{t('profile.header.pregnancyWeek', { week: profile.pregnancyWeek })}</Text> : null}
             {activityLabel ? <Text style={styles.tag}>{activityLabel}</Text> : null}
           </View>
         </View>
       </View>
 
       <View style={styles.stats}>
-        <Stat label="Weight" value={latestWeight ? formatKg(latestWeight) : '--'} />
+        <Stat label={t('profile.stats.weight')} value={latestWeight ? formatKg(latestWeight) : '--'} />
         <View style={styles.statDivider} />
-        <Stat label="Target" value={profile?.targetWeightKg ? formatKg(profile.targetWeightKg) : '--'} />
+        <Stat label={t('profile.stats.target')} value={profile?.targetWeightKg ? formatKg(profile.targetWeightKg) : '--'} />
         <View style={styles.statDivider} />
-        <Stat label="Height" value={profile?.heightCm ? `${profile.heightCm} cm` : '--'} />
+        <Stat label={t('profile.stats.height')} value={profile?.heightCm ? `${profile.heightCm} cm` : '--'} />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Personal details</Text>
+        <Text style={styles.cardTitle}>{t('profile.personalDetails')}</Text>
         <Controller
           control={control}
           name="name"
-          rules={{ validate: (value) => value.trim().length > 0 || 'Enter your name.' }}
+          rules={{ validate: (value) => value.trim().length > 0 || t('profile.form.enterName') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AppTextInput label="Name" onBlur={onBlur} onChangeText={onChange} value={value} error={error?.message} />
+            <AppTextInput label={t('profile.form.name')} onBlur={onBlur} onChangeText={onChange} value={value} error={error?.message} />
           )}
         />
         <View style={styles.row}>
@@ -307,9 +308,9 @@ export function ProfileGoalsScreen() {
             <Controller
               control={control}
               name="age"
-              rules={{ validate: positiveNumber('age') }}
+              rules={{ validate: positiveNumber('profile.form.enterAge') }}
               render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-                <AppTextInput inputMode="decimal" label="Age" onBlur={onBlur} onChangeText={onChange} suffix="years" value={value} error={error?.message} />
+                <AppTextInput inputMode="decimal" label={t('profile.form.age')} onBlur={onBlur} onChangeText={onChange} suffix={t('profile.form.ageUnit')} value={value} error={error?.message} />
               )}
             />
           </View>
@@ -317,9 +318,9 @@ export function ProfileGoalsScreen() {
             <Controller
               control={control}
               name="heightCm"
-              rules={{ validate: positiveNumber('height') }}
+              rules={{ validate: positiveNumber('profile.form.enterHeight') }}
               render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-                <AppTextInput inputMode="decimal" label="Height" onBlur={onBlur} onChangeText={onChange} suffix="cm" value={value} error={error?.message} />
+                <AppTextInput inputMode="decimal" label={t('profile.form.height')} onBlur={onBlur} onChangeText={onChange} suffix="cm" value={value} error={error?.message} />
               )}
             />
           </View>
@@ -329,7 +330,7 @@ export function ProfileGoalsScreen() {
           name="targetWeightKg"
           rules={{
             validate: (value, values) => {
-              const positive = positiveNumber('target weight')(value);
+              const positive = positiveNumber('profile.form.enterTarget')(value);
               if (positive !== true) {
                 return positive;
               }
@@ -341,11 +342,11 @@ export function ProfileGoalsScreen() {
             },
           }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AppTextInput inputMode="decimal" label="Target weight" onBlur={onBlur} onChangeText={onChange} suffix="kg" value={value} error={error?.message} />
+            <AppTextInput inputMode="decimal" label={t('profile.form.targetWeight')} onBlur={onBlur} onChangeText={onChange} suffix="kg" value={value} error={error?.message} />
           )}
         />
         <View style={styles.field}>
-          <Text style={styles.label}>Goal</Text>
+          <Text style={styles.label}>{t('profile.form.goal')}</Text>
           <Controller
             control={control}
             name="goalType"
@@ -359,7 +360,7 @@ export function ProfileGoalsScreen() {
           />
         </View>
         <View style={styles.field}>
-          <Text style={styles.label}>Sex</Text>
+          <Text style={styles.label}>{t('profile.form.sex')}</Text>
           <Controller
             control={control}
             name="gender"
@@ -371,8 +372,8 @@ export function ProfileGoalsScreen() {
         {showSpecialPrograms ? (
           <View style={styles.field}>
             <View>
-              <Text style={styles.label}>Special program</Text>
-              <Text style={styles.cardCaption}>Pregnancy adds the energy each trimester needs and leaves out foods to avoid.</Text>
+              <Text style={styles.label}>{t('profile.form.specialProgram')}</Text>
+              <Text style={styles.cardCaption}>{t('profile.form.specialProgramHelp')}</Text>
             </View>
             <Controller
               control={control}
@@ -391,10 +392,10 @@ export function ProfileGoalsScreen() {
             render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
               <AppTextInput
                 inputMode="numeric"
-                label="Weeks pregnant"
+                label={t('profile.form.pregnancyWeek')}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                suffix="weeks"
+                suffix={t('profile.form.pregnancyWeekUnit')}
                 value={value}
                 error={error?.message}
               />
@@ -402,7 +403,7 @@ export function ProfileGoalsScreen() {
           />
         ) : null}
         <View style={styles.field}>
-          <Text style={styles.label}>Activity</Text>
+          <Text style={styles.label}>{t('profile.form.activity')}</Text>
           <Controller
             control={control}
             name="activityLevel"
@@ -412,7 +413,7 @@ export function ProfileGoalsScreen() {
           />
         </View>
         <AppButton
-          title={formState.isDirty ? 'Save changes' : 'Saved'}
+          title={formState.isDirty ? t('profile.form.saveChanges') : t('profile.form.saved')}
           disabled={!formState.isDirty || !profile}
           loading={isSaving}
           onPress={handleSubmit(onSubmit)}
@@ -421,18 +422,18 @@ export function ProfileGoalsScreen() {
 
       <View style={styles.card}>
         <View>
-          <Text style={styles.cardTitle}>Food preferences</Text>
-          <Text style={styles.cardCaption}>Every meal in your plan respects these. Changes save straight away.</Text>
+          <Text style={styles.cardTitle}>{t('profile.food.title')}</Text>
+          <Text style={styles.cardCaption}>{t('profile.food.caption')}</Text>
         </View>
         <View style={styles.field}>
           <View>
-            <Text style={styles.label}>Country</Text>
-            <Text style={styles.cardCaption}>Meals use ingredients you can buy there, from your next plan or swap.</Text>
+            <Text style={styles.label}>{t('profile.food.country')}</Text>
+            <Text style={styles.cardCaption}>{t('profile.food.countryCaption')}</Text>
           </View>
           <CountryPicker value={profile?.countryCode ?? ''} onChange={saveCountry} disabled={isSavingCountry || !profile} />
         </View>
         <View style={styles.field}>
-          <Text style={styles.label}>Diet</Text>
+          <Text style={styles.label}>{t('profile.food.diet')}</Text>
           <ChoiceChips
             options={DIETARY_OPTIONS}
             isSelected={(value) => (profile?.dietaryPreferences ?? []).includes(value as DietaryPreference)}
@@ -441,18 +442,18 @@ export function ProfileGoalsScreen() {
           />
         </View>
         <View style={styles.field}>
-          <Text style={styles.label}>Foods you don't like</Text>
+          <Text style={styles.label}>{t('profile.food.disliked')}</Text>
           <FoodPickerRow
             foods={profile?.dislikedFoods ?? []}
-            placeholder="Choose foods to leave out"
+            placeholder={t('profile.food.dislikedPlaceholder')}
             onPress={() => navigation.navigate('FoodSelection', { selectedFoods: profile?.dislikedFoods ?? [], fieldName: 'dislikedFoods' })}
           />
         </View>
         <View style={styles.field}>
-          <Text style={styles.label}>Allergies</Text>
+          <Text style={styles.label}>{t('profile.food.allergies')}</Text>
           <FoodPickerRow
             foods={profile?.allergies ?? []}
-            placeholder="Choose any allergies"
+            placeholder={t('profile.food.allergiesPlaceholder')}
             onPress={() => navigation.navigate('FoodSelection', { selectedFoods: profile?.allergies ?? [], fieldName: 'allergies' })}
           />
         </View>
@@ -460,38 +461,38 @@ export function ProfileGoalsScreen() {
 
       <View style={styles.card}>
         <View>
-          <Text style={styles.cardTitle}>Daily targets</Text>
+          <Text style={styles.cardTitle}>{t('profile.targets.title')}</Text>
           <Text style={styles.cardCaption}>
-            {profile?.pregnancyWeek ? 'Set for you from your weight, age and pregnancy.' : 'Set for you from your weight and age.'}
+            {profile?.pregnancyWeek ? t('profile.targets.pregnancyCaption') : t('profile.targets.caption')}
           </Text>
         </View>
         <View style={styles.targets}>
           <View style={[styles.target, { backgroundColor: theme.colors.waterSoft }]}>
             <Ionicons name="water" size={18} color={theme.colors.water} />
             <Text style={styles.targetValue}>{profile?.targetWaterMl ? formatLitres(profile.targetWaterMl) : '--'}</Text>
-            <Text style={styles.targetLabel}>water a day</Text>
+            <Text style={styles.targetLabel}>{t('profile.targets.waterLabel')}</Text>
           </View>
           <View style={[styles.target, { backgroundColor: theme.colors.coffeeSoft }]}>
             <Ionicons name="cafe" size={18} color={theme.colors.coffee} />
-            <Text style={styles.targetValue}>{profile?.targetCoffeeCups ?? '--'} cups</Text>
-            <Text style={styles.targetLabel}>coffee at most</Text>
+            <Text style={styles.targetValue}>{t('profile.targets.cups', { cups: profile?.targetCoffeeCups ?? '--' })}</Text>
+            <Text style={styles.targetLabel}>{t('profile.targets.coffeeLabel')}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.menu}>
-        <MenuRow icon="trending-down-outline" label="Weight history" onPress={() => navigation.navigate('WeightProgress')} />
+        <MenuRow icon="trending-down-outline" label={t('profile.menu.weightHistory')} onPress={() => navigation.navigate('WeightProgress')} />
         <MenuRow
           icon="snow-outline"
-          label="My fridge"
-          detail={fridgeCount ? `${fridgeCount} ${fridgeCount === 1 ? 'ingredient' : 'ingredients'}` : 'Plans prefer what you have'}
+          label={t('profile.menu.fridge')}
+          detail={fridgeCount ? t('profile.menu.ingredients', { count: fridgeCount }) : t('profile.menu.fridgeEmpty')}
           onPress={() => navigation.navigate('Inventory')}
         />
-        <MenuRow icon="document-text-outline" label="Blood tests" onPress={() => navigation.navigate('BloodTestUpload')} />
+        <MenuRow icon="document-text-outline" label={t('profile.menu.bloodTests')} onPress={() => navigation.navigate('BloodTestUpload')} />
         <MenuRow
           icon="people-outline"
-          label="Friends"
-          detail={incomingRequestCount ? `${incomingRequestCount} ${incomingRequestCount === 1 ? 'request' : 'requests'} waiting` : undefined}
+          label={t('profile.menu.friends')}
+          detail={incomingRequestCount ? t('profile.menu.requests', { count: incomingRequestCount }) : undefined}
           badge={incomingRequestCount}
           onPress={() => navigation.navigate('Friends')}
         />
@@ -499,15 +500,15 @@ export function ProfileGoalsScreen() {
 
       <View style={styles.menu}>
         <SettingRow
-          title="Meal reminders"
-          text="A nudge at each meal in your plan."
+          title={t('profile.menu.mealReminders')}
+          text={t('profile.menu.mealRemindersText')}
           value={pendingReminders ?? remindersOn}
           onChange={toggleReminders}
         />
         {remindersOn ? (
           <MenuRow
             icon="time-outline"
-            label="Reminder times"
+            label={t('profile.menu.reminderTimes')}
             detail={summarizeReminders(reminderSettings)}
             onPress={() => navigation.navigate('MealReminders')}
           />
@@ -515,22 +516,22 @@ export function ProfileGoalsScreen() {
         {IOS_PUSH_ENABLED ? (
           <MenuRow
             icon="notifications-outline"
-            label="Push notifications"
-            detail="Friends, shared meals and plan updates"
+            label={t('profile.menu.push')}
+            detail={t('profile.menu.pushDetail')}
             onPress={() => navigation.navigate('PushNotifications')}
           />
         ) : null}
         <SettingRow
-          title="Safe guidance mode"
-          text="Keeps suggestions sustainable and never compensatory."
+          title={t('profile.menu.safeGuidance')}
+          text={t('profile.menu.safeGuidanceText')}
           value={safeGuidanceMode}
           onChange={setSafeGuidanceMode}
         />
       </View>
 
       <View style={styles.menu}>
-        <MenuRow icon="refresh-outline" label="Restart onboarding" detail="Answer the setup questions again" onPress={restartOnboarding} />
-        <MenuRow icon="log-out-outline" label="Log out" danger onPress={confirmLogout} />
+        <MenuRow icon="refresh-outline" label={t('profile.menu.restart')} detail={t('profile.menu.restartDetail')} onPress={restartOnboarding} />
+        <MenuRow icon="log-out-outline" label={t('common.actions.logOut')} danger onPress={confirmLogout} />
       </View>
 
       <Text selectable style={styles.buildInfo}>

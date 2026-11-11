@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { LegalText } from '../features/legal/LegalText';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { LegalDocument } from '../types/models';
 import { formatDateLabel } from '../utils/date';
@@ -33,7 +34,7 @@ export function LegalDocumentScreen() {
           {document.title}
         </Text>
         <Text style={styles.meta}>
-          Version {document.version} · Effective {formatDateLabel(document.publishedAt)}
+          {t('legal.meta', { version: document.version, date: formatDateLabel(document.publishedAt) })}
         </Text>
       </View>
       <AppCard>

@@ -7,6 +7,7 @@ import { AppCard } from '../../components/AppCard';
 import { AppTextInput } from '../../components/AppTextInput';
 import { progressService } from '../../services/progressService';
 import { recommendationService } from '../../services/recommendationService';
+import { t } from '../../i18n';
 import { theme } from '../../theme/theme';
 import { FoodResponse, MealEntry } from '../../types/models';
 import { showDialog } from '../dialog/dialogStore';
@@ -24,15 +25,15 @@ function parseAmount(text: string) {
 
 function getSearchHint(foodsState: FoodsState, query: string, hasSuggestions: boolean) {
   if (foodsState === 'loading') {
-    return 'Loading foods…';
+    return t('dietPlan.extraMeal.loadingFoods');
   }
   if (foodsState === 'failed') {
-    return 'Couldn\'t load the food list. Enter the meal and its calories yourself.';
+    return t('dietPlan.extraMeal.foodsFailed');
   }
   if (query.trim().length >= 2 && !hasSuggestions) {
-    return 'Not in the list. Enter its calories yourself below.';
+    return t('dietPlan.extraMeal.notInList');
   }
-  return 'Pick a food to fill in its calories and macros, or enter your own.';
+  return t('dietPlan.extraMeal.pickHint');
 }
 
 function MacroBadges({ meal }: { meal: MealEntry }) {
@@ -42,13 +43,13 @@ function MacroBadges({ meal }: { meal: MealEntry }) {
         <Text style={styles.macroText}>{meal.calories} kcal</Text>
       </View>
       <View style={styles.macroBadge}>
-        <Text style={styles.macroText}>P: {meal.proteinG}g</Text>
+        <Text style={styles.macroText}>{t('common.macros.protein')}: {meal.proteinG}g</Text>
       </View>
       <View style={styles.macroBadge}>
-        <Text style={styles.macroText}>C: {meal.carbsG}g</Text>
+        <Text style={styles.macroText}>{t('common.macros.carbs')}: {meal.carbsG}g</Text>
       </View>
       <View style={styles.macroBadge}>
-        <Text style={styles.macroText}>F: {meal.fatG}g</Text>
+        <Text style={styles.macroText}>{t('common.macros.fat')}: {meal.fatG}g</Text>
       </View>
     </View>
   );
@@ -138,13 +139,13 @@ export function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate:
       // here rather than adding a meal that never counted.
       const log = await progressService.upsertDailyLog({ logDate, meals: [entry] });
       if (!log) {
-        throw new Error('Failed to log extra meal.');
+        throw new Error(t('dietPlan.extraMeal.logFailed'));
       }
       await recommendationService.addExtraMeal(selectedDay, entry);
       onMealLogged?.();
       close();
     } catch (e) {
-      showDialog({ title: 'Error', message: 'Failed to log extra meal.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: t('dietPlan.extraMeal.logFailed'), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -153,25 +154,25 @@ export function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate:
   if (!show) {
     return (
       <View style={{ marginTop: theme.spacing.lg }}>
-        <AppButton title="Add Extra Meal" variant="ghost" onPress={() => setShow(true)} />
+        <AppButton title={t('dietPlan.extraMeal.add')} variant="ghost" onPress={() => setShow(true)} />
       </View>
     );
   }
 
   return (
     <AppCard style={{ marginTop: theme.spacing.lg }}>
-      <Text style={styles.title}>Log Extra Meal</Text>
+      <Text style={styles.title}>{t('dietPlan.extraMeal.title')}</Text>
       <View style={styles.fields}>
         {food ? (
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Food</Text>
+            <Text style={styles.label}>{t('dietPlan.extraMeal.food')}</Text>
             <View style={styles.selectedFood}>
               <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
               <View style={styles.selectedText}>
                 <Text style={styles.foodName}>{food.name}</Text>
-                <Text style={styles.hint}>{food.kcal} kcal per {food.portion_size} g</Text>
+                <Text style={styles.hint}>{t('dietPlan.extraMeal.kcalPer', { kcal: food.kcal, portion: food.portion_size })}</Text>
               </View>
-              <Pressable accessibilityRole="button" accessibilityLabel="Change food" hitSlop={8} onPress={clearFood}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('dietPlan.extraMeal.changeFood')} hitSlop={8} onPress={clearFood}>
                 <Ionicons name="close" size={20} color={theme.colors.muted} />
               </Pressable>
             </View>
@@ -179,8 +180,8 @@ export function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate:
         ) : (
           <View style={styles.fieldGroup}>
             <AppTextInput
-              label="Food"
-              placeholder="Search foods or type your own"
+              label={t('dietPlan.extraMeal.food')}
+              placeholder={t('dietPlan.extraMeal.searchPlaceholder')}
               value={query}
               onChangeText={setQuery}
               autoCorrect={false}
@@ -196,7 +197,7 @@ export function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate:
                   >
                     <Text style={styles.foodName}>{item.name}</Text>
                     <Text style={styles.hint}>
-                      {item.kcal} kcal · P {item.protein}g · C {item.carbs}g · F {item.fats}g per {item.portion_size} g
+                      {t('dietPlan.extraMeal.suggestionMacros', { kcal: item.kcal, protein: item.protein, carbs: item.carbs, fats: item.fats, portion: item.portion_size })}
                     </Text>
                   </Pressable>
                 ))}
@@ -208,30 +209,30 @@ export function ExtraMealForm({ logDate, selectedDay, onMealLogged }: { logDate:
 
         {food ? (
           <View style={styles.fieldGroup}>
-            <AppTextInput label="Amount" inputMode="decimal" suffix="g" value={grams} onChangeText={setGrams} />
-            {meal ? <MacroBadges meal={meal} /> : <Text style={styles.hint}>Enter how many grams you had.</Text>}
+            <AppTextInput label={t('dietPlan.extraMeal.amount')} inputMode="decimal" suffix={t('common.units.gramsSuffix')} value={grams} onChangeText={setGrams} />
+            {meal ? <MacroBadges meal={meal} /> : <Text style={styles.hint}>{t('dietPlan.extraMeal.amountHint')}</Text>}
           </View>
         ) : (
           <>
-            <AppTextInput label="Calories (optional)" placeholder="e.g. 250" value={calories} onChangeText={setCalories} inputMode="numeric" />
+            <AppTextInput label={t('dietPlan.extraMeal.calories')} placeholder={t('dietPlan.extraMeal.caloriesPlaceholder')} value={calories} onChangeText={setCalories} inputMode="numeric" />
             <View style={styles.macroInputs}>
               <View style={styles.macroInput}>
-                <AppTextInput label="Protein (g)" placeholder="0" value={protein} onChangeText={setProtein} inputMode="decimal" />
+                <AppTextInput label={t('dietPlan.extraMeal.protein')} placeholder="0" value={protein} onChangeText={setProtein} inputMode="decimal" />
               </View>
               <View style={styles.macroInput}>
-                <AppTextInput label="Carbs (g)" placeholder="0" value={carbs} onChangeText={setCarbs} inputMode="decimal" />
+                <AppTextInput label={t('dietPlan.extraMeal.carbs')} placeholder="0" value={carbs} onChangeText={setCarbs} inputMode="decimal" />
               </View>
               <View style={styles.macroInput}>
-                <AppTextInput label="Fat (g)" placeholder="0" value={fat} onChangeText={setFat} inputMode="decimal" />
+                <AppTextInput label={t('dietPlan.extraMeal.fat')} placeholder="0" value={fat} onChangeText={setFat} inputMode="decimal" />
               </View>
             </View>
           </>
         )}
 
-        <AppTextInput label="Meal Type" placeholder="e.g. Snack, Dessert" value={mealType} onChangeText={setMealType} />
+        <AppTextInput label={t('dietPlan.extraMeal.mealType')} placeholder={t('dietPlan.extraMeal.mealTypePlaceholder')} value={mealType} onChangeText={setMealType} />
         <View style={styles.actions}>
-          <AppButton title="Cancel" variant="ghost" onPress={close} style={{ flex: 1 }} />
-          <AppButton title="Save" onPress={handleSubmit} disabled={!canSave} loading={isSaving} style={{ flex: 1 }} />
+          <AppButton title={t('common.actions.cancel')} variant="ghost" onPress={close} style={{ flex: 1 }} />
+          <AppButton title={t('common.actions.save')} onPress={handleSubmit} disabled={!canSave} loading={isSaving} style={{ flex: 1 }} />
         </View>
       </View>
     </AppCard>

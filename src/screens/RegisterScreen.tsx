@@ -16,6 +16,7 @@ import {
 } from '../features/legal/LegalConsentList';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLegalStore } from '../store/useLegalStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AuthStackParamList } from '../navigation/navigationTypes';
 
@@ -76,34 +77,34 @@ export function RegisterScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
-      <SectionHeader title="Create your profile" subtitle="Keep registration light here. Production builds can add social auth, MFA, and consent flows." />
+      <SectionHeader title={t('auth.register.title')} subtitle={t('auth.register.subtitle')} />
 
       <AppCard style={styles.form}>
         <Controller
           control={control}
           name="firstName"
-          rules={{ required: 'First name is required' }}
+          rules={{ required: t('auth.fields.firstNameRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
-            <AppTextInput label="First name" onBlur={onBlur} onChangeText={onChange} value={value} error={fieldError?.message} />
+            <AppTextInput label={t('auth.fields.firstName')} onBlur={onBlur} onChangeText={onChange} value={value} error={fieldError?.message} />
           )}
         />
         <Controller
           control={control}
           name="lastName"
-          rules={{ required: 'Last name is required' }}
+          rules={{ required: t('auth.fields.lastNameRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
-            <AppTextInput label="Last name" onBlur={onBlur} onChangeText={onChange} value={value} error={fieldError?.message} />
+            <AppTextInput label={t('auth.fields.lastName')} onBlur={onBlur} onChangeText={onChange} value={value} error={fieldError?.message} />
           )}
         />
         <Controller
           control={control}
           name="email"
-          rules={{ required: 'Email is required' }}
+          rules={{ required: t('auth.fields.emailRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
             <AppTextInput
               autoCapitalize="none"
               keyboardType="email-address"
-              label="Email"
+              label={t('auth.fields.email')}
               onBlur={onBlur}
               onChangeText={onChange}
               textContentType="username"
@@ -115,10 +116,10 @@ export function RegisterScreen({ navigation }: Props) {
         <Controller
           control={control}
           name="password"
-          rules={{ required: 'Password is required' }}
+          rules={{ required: t('auth.fields.passwordRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
             <AppTextInput
-              label="Password"
+              label={t('auth.fields.password')}
               onBlur={onBlur}
               onChangeText={onChange}
               secureTextEntry
@@ -131,8 +132,8 @@ export function RegisterScreen({ navigation }: Props) {
 
         {documentsStatus === 'error' ? (
           <View style={styles.consentState}>
-            <Text style={styles.error}>We couldn't load the terms you need to accept.</Text>
-            <AppButton title="Try again" variant="secondary" onPress={() => void loadDocuments()} />
+            <Text style={styles.error}>{t('auth.register.termsLoadFailed')}</Text>
+            <AppButton title={t('common.actions.tryAgain')} variant="secondary" onPress={() => void loadDocuments()} />
           </View>
         ) : !documentsReady ? (
           <ActivityIndicator color={theme.colors.primary} style={styles.consentState} />
@@ -147,21 +148,21 @@ export function RegisterScreen({ navigation }: Props) {
         ) : null}
 
         {showMissingConsent && consentMissing ? (
-          <Text style={styles.error}>Please accept the required documents to continue.</Text>
+          <Text style={styles.error}>{t('auth.register.acceptRequired')}</Text>
         ) : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <AppButton
           disabled={!documentsReady}
           loading={isLoading}
-          title="Create account"
+          title={t('auth.register.submit')}
           onPress={submit}
         />
       </AppCard>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account?</Text>
-        <AppButton title="Go to login" variant="ghost" onPress={() => navigation.navigate('Login')} />
+        <Text style={styles.footerText}>{t('auth.register.haveAccount')}</Text>
+        <AppButton title={t('auth.register.goToLogin')} variant="ghost" onPress={() => navigation.navigate('Login')} />
       </View>
     </ScreenContainer>
   );

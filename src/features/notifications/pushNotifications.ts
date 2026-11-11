@@ -1,6 +1,8 @@
 import type { RemoteMessage } from '@react-native-firebase/messaging';
 import * as SecureStore from 'expo-secure-store';
 import { AppState } from 'react-native';
+
+import { t } from '../../i18n';
 import { create } from 'zustand';
 
 import { deviceService } from '../../services/deviceService';
@@ -44,7 +46,7 @@ let queue: Promise<void> = Promise.resolve();
 function enqueue(task: () => Promise<void>) {
   queue = queue.then(task).catch((error) => {
     console.warn('Push notification sync failed', error);
-    usePushNotificationStore.setState({ error: 'Could not update notifications. Please try again.' });
+    usePushNotificationStore.setState({ error: t('notifications.push.updateFailed') });
   }).finally(() => usePushNotificationStore.setState({ busy: false }));
   return queue;
 }
@@ -181,7 +183,7 @@ export function startPushNotifications(onOpened: (message: RemoteMessage) => voi
     }
   }).catch((error) => {
     console.warn('Push notification startup failed', error);
-    usePushNotificationStore.setState({ error: 'Could not start notifications. Please reopen the app.' });
+    usePushNotificationStore.setState({ error: t('notifications.push.startFailed') });
   });
 
   return () => dispose(current);
@@ -194,7 +196,7 @@ export async function setPushNotificationsEnabled(enabled: boolean) {
     await syncPushNotifications(enabled);
   } catch (error) {
     console.warn('Push notification preference failed', error);
-    usePushNotificationStore.setState({ error: 'Could not save your notification preference. Please try again.' });
+    usePushNotificationStore.setState({ error: t('notifications.push.preferenceFailed') });
   }
 }
 

@@ -1,0 +1,114 @@
+{
+  "status": {
+    "no_profile": "Sıralamaya katılmak için profilinizi tamamlayın.",
+    "goal_not_weight_loss": "Sıralamalar şimdilik yalnızca kilo verme hedeflerini puanlıyor, bu yüzden hedefiniz sıralanmıyor.",
+    "no_program": "Sıralamaya katılmak için bir diyet planı başlatın.",
+    "plan_not_started": "Puanınız diyet planınızın başladığı gün sayılmaya başlar.",
+    "no_plan_on_day": "Bu günü kapsayan bir plan yoktu, bu yüzden puan kazandırmaz.",
+    "plan_replaced": "Bu hafta daha sonra planınızı değiştirdiğiniz için bu günün puanları sıfırlandı.",
+    "underage": "Sıralamalar 18 yaş ve üzeri üyeler içindir.",
+    "missing_target": "Puan almak için profilinize bir hedef kilo ekleyin.",
+    "unsafe_target": "Hedef kilonuz boyunuz için sağlıklı aralığın altında olduğundan sıralanamaz. Profilinizden gözden geçirebilirsiniz.",
+    "target_reached": "Hedef kilonuza ulaştınız, bu dönem sıralanacak bir şey yok. Tebrikler!",
+    "no_baseline": "Bu dönem için puan almak üzere kilonuzu kaydedin.",
+    "no_current_measurement": "Bu dönem için puan almak üzere kilonuzu yeniden kaydedin.",
+    "window_too_short": "Bu dönemde adil bir puan verecek kadar kayıtlı gün yok.",
+    "default": "Puanınız, kilonuzu ve öğünlerinizi kaydettiğinizde görünür."
+  },
+  "points_one": "{{count}} puan",
+  "points_other": "{{count}} puan",
+  "comparison": {
+    "nudge": "Öğünlerinizi, suyunuzu ve kilonuzu kaydetmek puanınızı güncel tutar.",
+    "finished": "{{total}} kişi arasında {{rank}}. oldunuz.",
+    "away": "{{rank}}. sıraya {{points}} kaldı! {{nudge}}",
+    "only": "Şimdilik puanı olan tek kişi sizsiniz. {{nudge}}",
+    "first": "Birinci sıradasınız. Rutininizi sürdürün!"
+  },
+  "difference": {
+    "tied": "Sizinle berabere",
+    "ahead": "Sizden {{points}} önde",
+    "behind": "Sizden {{points}} geride"
+  },
+  "scope": {
+    "friends": "Arkadaşlar",
+    "global": "Genel"
+  },
+  "period": {
+    "weekly": "Haftalık",
+    "monthly": "Aylık"
+  },
+  "loadFailed": "Sıralama yüklenemedi. Lütfen tekrar deneyin.",
+  "header": {
+    "title": "Sıralama",
+    "subtitle": "Alışkanlıklarınızın arkadaşlarınız ve diğer herkesle karşılaştırmasını görün."
+  },
+  "showMore": "Daha fazla göster",
+  "previousPeriod": "Önceki dönem",
+  "nextPeriod": "Sonraki dönem",
+  "hero": {
+    "position": "SIRALAMANIZ",
+    "final": "KESİN",
+    "a11y": "{{total}} kişi arasında {{rank}}. sıra, {{points}} puan",
+    "of": " / {{total}}",
+    "points": "PUAN",
+    "explain": "Puanım nasıl hesaplanıyor?",
+    "live": "CANLI"
+  },
+  "rankings": {
+    "title": "Sıralama",
+    "people_one": "{{count}} kişi",
+    "people_other": "{{count}} kişi",
+    "you": "Siz",
+    "pts": "puan",
+    "pointsShort": "{{points}} puan",
+    "rowA11y": "{{rank}}. sıra, {{name}}, {{points}} puan",
+    "youLower": "siz",
+    "openHint": "Profilini açar"
+  },
+  "caption": {
+    "live": "Puanlar kişiler kayıt yaptıkça güncellenir.",
+    "liveWithChange": "Puanlar kişiler kayıt yaptıkça güncellenir. Son değişiklik {{date}}.",
+    "updated": "Güncellendi: {{date}}"
+  },
+  "friendsCard": {
+    "manageDetail": "Yarıştığınız kişileri ekleyin veya çıkarın.",
+    "searchDetail": "İstek göndermek için ad veya e-posta ile arayın.",
+    "count_one": "Sıralamanızda {{count}} arkadaş var.",
+    "count_other": "Sıralamanızda {{count}} arkadaş var.",
+    "find": "Arkadaş bul",
+    "manage": "Arkadaşları yönet"
+  },
+  "empty": {
+    "global": "Bu dönem için henüz kimsenin puanı yok.",
+    "noFriends": "İlerlemenizi karşılaştırmak için arkadaş ekleyin.",
+    "friends": "Arkadaş listenizde bu dönem için henüz puanı olan kimse yok."
+  },
+  "breakdown": {
+    "loadFailed": "Puanınız yüklenemedi. Lütfen tekrar deneyin.",
+    "weekly": "Haftalık puan",
+    "monthly": "Aylık puan",
+    "points": "{{points}} puan",
+    "weightProgress": "Kilo ilerlemesi",
+    "noWeighIn": "Bu dönem henüz tartım yok. Kilo puanı kazanmak için kilonuzu kaydedin.",
+    "countedLoss": "Tartınız {{actual}} kayıp gösteriyor; kaydettiğiniz öğünler bunun {{explained}} kadarını açıklıyor, bu yüzden {{counted}} sayılıyor. Kaybınızın daha fazlasının sayılması için her öğünü kaydedin.",
+    "noMealsDue": "Öğün kaydı: henüz zamanı gelen öğün yok.",
+    "mealLogging": "Öğün kaydı",
+    "water": "Su",
+    "coffee": "Sınırınız içinde kahve",
+    "howTitle": "Puanınız nasıl hesaplanır",
+    "howBody": "Puanın %55'i güvenli bir beklenen tempoya göre kilo ilerlemenizden gelir. Kaybınız, kaydettiğiniz öğünlerin kalori açığının açıklayabildiği kadar sayılır; su kilosu için biraz pay bırakılır. %30'u kahvaltı, öğle ve akşam yemeğini kaydetmekten, %10'u kilonuza göre belirlenen hedefe doğru su içmekten, %5'i ise su kaydettiğiniz günlerde kahveyi sınırınız içinde tutmaktan gelir. Bu ayrıntıları yalnızca siz görebilirsiniz: diğerleri yalnızca toplam puanınızı görür.",
+    "bonus": "Program zorluğunuz {{multiplier}} bonus ekliyor.",
+    "noExtra": "Beklenen tempodan hızlı kilo vermek veya su hedefinizden fazla içmek ekstra puan kazandırmaz.",
+    "details": {
+      "start": "Başlangıç kilosu",
+      "current": "Mevcut kilo",
+      "expected": "Beklenen değişim",
+      "actual": "Tartıdaki kayıp",
+      "deficit": "Kaydedilen kalori açığı",
+      "explained": "Açıkladığı kayıp",
+      "counted": "Sayılan kayıp",
+      "meals": "Kaydedilen öğünler",
+      "mealsValue": "{{done}} / {{total}}"
+    }
+  }
+}

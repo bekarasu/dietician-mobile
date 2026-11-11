@@ -11,6 +11,7 @@ import { LegalStackParamList } from '../navigation/navigationTypes';
 import { getErrorMessage } from '../services/apiError';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLegalStore } from '../store/useLegalStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<LegalStackParamList, 'LegalUpdate'>;
@@ -32,7 +33,7 @@ export function LegalUpdateScreen({ navigation }: Props) {
   const accept = async () => {
     if (!hasAcceptedRequired(pending, checked)) {
       setShowMissing(true);
-      setError('Please accept the updated documents to continue.');
+      setError(t('legal.update.acceptRequired'));
       return;
     }
     setError(null);
@@ -41,7 +42,7 @@ export function LegalUpdateScreen({ navigation }: Props) {
       // Pending documents are all required, so every one is sent.
       await acceptPending(pending);
     } catch (acceptError) {
-      setError(getErrorMessage(acceptError, "We couldn't save your answer. Please try again."));
+      setError(getErrorMessage(acceptError, t('legal.update.saveFailed')));
     } finally {
       setIsSaving(false);
     }
@@ -55,8 +56,8 @@ export function LegalUpdateScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <SectionHeader
-        title="We've updated our terms"
-        subtitle="Please read the documents below and accept them to keep using the app."
+        title={t('legal.update.title')}
+        subtitle={t('legal.update.subtitle')}
       />
 
       <AppCard style={styles.card}>
@@ -70,12 +71,12 @@ export function LegalUpdateScreen({ navigation }: Props) {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <AppButton disabled={isSigningOut} loading={isSaving} onPress={accept} title="Accept and continue" />
+        <AppButton disabled={isSigningOut} loading={isSaving} onPress={accept} title={t('legal.update.accept')} />
       </AppCard>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't want to accept?</Text>
-        <AppButton disabled={isSaving} loading={isSigningOut} onPress={signOut} title="Sign out" variant="ghost" />
+        <Text style={styles.footerText}>{t('legal.update.decline')}</Text>
+        <AppButton disabled={isSaving} loading={isSigningOut} onPress={signOut} title={t('common.actions.signOut')} variant="ghost" />
       </View>
     </ScreenContainer>
   );

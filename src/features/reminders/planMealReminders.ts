@@ -1,3 +1,4 @@
+import { t, TranslationKey } from '../../i18n';
 import { DietMeal, DietPlan } from '../../types/models';
 import { addCalendarDays, toCalendarDate } from '../../utils/date';
 import { getPlanDayDate } from '../dietPlan/planSchedule';
@@ -50,11 +51,13 @@ export interface MealReminderPlan {
   loggedIds: string[];
 }
 
-const TITLES: Record<ReminderMealType, string> = {
-  Breakfast: 'Time for breakfast',
-  Lunch: 'Time for lunch',
-  Snack: 'Snack time',
-  Dinner: 'Time for dinner',
+// The texts go into the signature, so reminders scheduled in another language
+// are replaced on the next sync.
+const TITLES: Record<ReminderMealType, TranslationKey> = {
+  Breakfast: 'reminders.titles.Breakfast',
+  Lunch: 'reminders.titles.Lunch',
+  Snack: 'reminders.titles.Snack',
+  Dinner: 'reminders.titles.Dinner',
 };
 
 export function mealReminderId(date: string, mealType: ReminderMealType) {
@@ -64,10 +67,10 @@ export function mealReminderId(date: string, mealType: ReminderMealType) {
 function buildBody(meals: DietMeal[]) {
   const names = meals.map((meal) => meal.name.trim()).filter(Boolean);
   if (names.length === 0) {
-    return 'Your plan has a meal ready for now. Tap to log it once you\'ve eaten.';
+    return t('reminders.bodyEmpty');
   }
-  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-  return `On your plan: ${list}. Tap to log ${names.length === 1 ? 'it' : 'them'} once you've eaten.`;
+  const list = names.length === 1 ? names[0] : t('common.list.and', { items: names.slice(0, -1).join(', '), last: names[names.length - 1] });
+  return t('reminders.body', { count: names.length, list });
 }
 
 function toFireAt(date: string, minutes: number) {
@@ -127,7 +130,7 @@ export function planMealReminders(plan: DietPlan | null, settings: MealReminderS
     if (fireAt.getTime() <= now.getTime()) {
       continue;
     }
-    const title = TITLES[group.mealType];
+    const title = t(TITLES[group.mealType]);
     const body = buildBody(remaining);
     upcoming.push({
       identifier,
@@ -168,8 +171,8 @@ export function planAwayReminder(settings: MealReminderSettings, lastOpenedAt: D
   }
 
   // Works whatever state the plan is in by then, since it isn't re-planned while the app is closed.
-  const title = 'Your plan is waiting';
-  const body = 'It\'s been a few days since you opened Eativio. Pick up your plan whenever you\'re ready.';
+  const title = t('reminders.awayTitle');
+  const body = t('reminders.awayBody');
   return {
     identifier: AWAY_REMINDER_KIND,
     fireAt,

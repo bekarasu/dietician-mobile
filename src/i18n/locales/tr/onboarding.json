@@ -1,0 +1,147 @@
+{
+  "intro": {
+    "kicker": "Başlarken",
+    "plans": {
+      "title": "Uygulanabilir kişisel planlar",
+      "subtitle": "Hızlı bir başlangıç ve uyarlanabilir öğün fikirleriyle gününüze uyan bir beslenme düzeni kurun.",
+      "bullet1": "Hedefinize göre ayarlanan, yapay zekâ destekli öğün fikirleri",
+      "bullet2": "İsrafı azaltan dolap hatırlatmaları",
+      "bullet3": "Dilediğiniz zaman ayarlayabileceğiniz porsiyon önerileri",
+      "highlight1Label": "Plan süresi",
+      "highlight1Value": "7 gün",
+      "highlight2Label": "Hazırlık süresi",
+      "highlight2Value": "15 dk"
+    },
+    "habits": {
+      "title": "Su ve alışkanlık hatırlatmaları",
+      "subtitle": "Nazik hatırlatmalar su, kahve ve istikrarı rahatsız etmeden gözünüzün önünde tutar.",
+      "bullet1": "Su hedefleri ve seriler",
+      "bullet2": "Kilonuza ve yaşınıza göre belirlenen su ve kahve hedefleri",
+      "bullet3": "Hafif kalan günlük kontroller",
+      "highlight1Label": "Su hedefi",
+      "highlight1Value": "2,4 L",
+      "highlight2Label": "Kahve sınırı",
+      "highlight2Value": "4 fincan"
+    },
+    "progress": {
+      "title": "Güvenebileceğiniz ilerleme",
+      "subtitle": "Haftalık göstergeler ve koçluk notları kayıtlarınızı istikrarlı bir ilerlemeye dönüştürür.",
+      "bullet1": "Günlük kayıtlardan eğilim görünümleri",
+      "bullet2": "Haftayı değerlendirmeniz için rehberli sorular",
+      "bullet3": "İstikrarı kutlayan kilometre taşları",
+      "highlight1Label": "Haftalık kontrol",
+      "highlight1Value": "Pazar",
+      "highlight2Label": "İstikrar hedefi",
+      "highlight2Value": "5 gün"
+    }
+  },
+  "pages": {
+    "activity": {
+      "sedentary": "Az ya da hiç egzersiz",
+      "lightly_active": "Haftada 1–3 gün hafif egzersiz",
+      "moderately_active": "Haftada 3–5 gün orta düzey egzersiz",
+      "very_active": "Haftada 6–7 gün yoğun egzersiz",
+      "extra_active": "Çok yoğun egzersiz ve fiziksel bir iş"
+    },
+    "goal": {
+      "weight_loss": "İstikrarlı ve güvenli bir tempoda kilo verin",
+      "maintenance": "Kilonuzu olduğu yerde tutun",
+      "body_recomposition": "Yağ yakarken kas kazanın",
+      "habit_building": "Kilo hedefi olmadan daha iyi beslenin"
+    },
+    "basics": {
+      "title": "Biraz sizden bahsedin",
+      "subtitle": "Bu bilgiler gün içinde ne kadar enerji harcadığınızı belirler; böylece porsiyonlarınız size uygun olur.",
+      "age": "Yaş",
+      "ageUnit": "yaş",
+      "height": "Boy",
+      "sex": "Cinsiyet",
+      "specialProgram": "Özel program",
+      "specialProgramHelp": "İsteğe bağlı. Bebek mi bekliyorsunuz? Planınız her trimesterin ihtiyaç duyduğu enerjiyi ekler ve hamilelikte kaçınılması gereken yiyecekleri çıkarır.",
+      "pregnancyWeek": "Hamilelik haftası",
+      "pregnancyWeekUnit": "hafta",
+      "activity": "Ne kadar aktifsiniz?"
+    },
+    "goals": {
+      "title": "Neyi hedefliyorsunuz?",
+      "subtitle": "Planınız sizi hedefinize güvenli bir tempoyla ulaştırır.",
+      "goal": "Hedefiniz",
+      "weight": "Mevcut kilo",
+      "target": "Hedef kilo"
+    },
+    "preferences": {
+      "title": "Nasıl beslenmeyi seversiniz?",
+      "subtitle": "Planınızdaki her öğün bunlara uyar. Daha sonra profilinizden değiştirebilirsiniz.",
+      "country": "Ülke",
+      "countryHelp": "İsteğe bağlı. Öğünlerinizde orada bulabileceğiniz malzemeler, yerel mutfaktan hafif dokunuşlarla kullanılır.",
+      "diet": "Beslenme şekli",
+      "dietHelp": "Omnivor, vejetaryen, vegan veya pesketaryenden birini seçin. Glutensiz ve süt ürünsüz bunların hepsiyle birlikte seçilebilir.",
+      "disliked": "Sevmediğiniz yiyecekler",
+      "dislikedPlaceholder": "Çıkarılacak yiyecekleri seçin",
+      "allergies": "Alerjiler",
+      "allergiesPlaceholder": "Varsa alerjilerinizi seçin"
+    },
+    "bloodTest": {
+      "title": "Yakın tarihli bir kan tahlili ekleyin",
+      "subtitle": "İsteğe bağlı. Sonuçlarınız öğünlerinizi daha da kişiselleştirmeye yardımcı olur.",
+      "hint": "Günlük su hedefiniz ve kahve sınırınız kilonuza ve yaşınıza göre sizin için belirlenir.",
+      "finish": "Bitir",
+      "results": "Kan tahlili sonuçları"
+    }
+  },
+  "renderer": {
+    "fieldMissing": "Devam etmek için {{field}} bilgisini girin.",
+    "uploadHint": "Laboratuvar raporunuzun PDF'i veya fotoğrafı",
+    "chooseFoods": "Yiyecek seçin"
+  },
+  "preview": {
+    "pregnancy": "Planınız hamileliğinizi takip eder ve {{trimester}} trimesterde ihtiyacınız olan enerjiyi sağlar. Hedef ne olursa olsun asla kalori kısıtlamaz. Doktorunuzun veya ebenizin önerilerine uymaya devam edin.",
+    "trimesterFirst": "ilk",
+    "trimesterSecond": "ikinci",
+    "trimesterThird": "üçüncü",
+    "lowBmi": "{{target}} hedefi boyunuz için sağlıklı kilo aralığının altında. Daha yüksek bir hedef seçebilirsiniz.",
+    "weeksUnit_one": "hafta",
+    "weeksUnit_other": "hafta",
+    "weightLoss_one": "Haftada istikrarlı {{weekly}} kg ile {{loss}} vermek yaklaşık {{count}} hafta sürer. Yavaş ve istikrarlı ilerlemek kalıcı olur.",
+    "weightLoss_other": "Haftada istikrarlı {{weekly}} kg ile {{loss}} vermek yaklaşık {{count}} hafta sürer. Yavaş ve istikrarlı ilerlemek kalıcı olur.",
+    "maintenance": "Planınız sizi {{weight}} civarında tutar."
+  },
+  "leave": {
+    "title": "Kurulumdan çıkılsın mı?",
+    "message": "Burada girdiğiniz hiçbir şey, eklediğiniz kan tahlili dahil, kaydedilmez. Profiliniz ve planınız olduğu gibi kalır.",
+    "confirm": "Çık",
+    "a11y": "Kurulumdan çık"
+  },
+  "submitFailed": "Sayfa gönderilemedi.",
+  "initialWeightNote": "Kurulumdaki başlangıç kilosu",
+  "startDate": {
+    "title": "Ne zaman başlamak istersiniz?",
+    "subtitle": "Alışverişe vakit bulabileceğiniz bir gün seçin. Öğünleriniz ve sıralama puanınız o günden itibaren sayılır.",
+    "replaceRunning": "Yeni planınız bugünden itibaren mevcut planınızın yerini alır. Bu hafta kazandığınız öğün, su ve kahve puanları sıfırlanır; yeni plan başlamadan önceki günler puanlanmaz.",
+    "replaceUpcoming": "Yeni planınız mevcut planınızın yerini alır. Kazandığınız puanlar korunur; yeni plan başlamadan önceki günler puanlanmaz.",
+    "create": "Planımı Oluştur",
+    "keepCurrent": "Mevcut planımı koru",
+    "reset": {
+      "title": "Bu haftanın puanları sıfırlansın mı?",
+      "messageUnknown": "Yeni bir plan, bu hafta planınızdan kazandığınız puanları sıfırlar; o günler yine de haftalık ortalamanıza dahil edilir. Bazı öğünler size uymuyorsa bunun yerine mevcut planınızda değiştirebilirsiniz.",
+      "message_one": "Yeni bir plan, bu hafta planınızdan kazandığınız {{count}} puanı sıfırlar; o günler yine de haftalık ortalamanıza dahil edilir. Bazı öğünler size uymuyorsa bunun yerine mevcut planınızda değiştirebilirsiniz.",
+      "message_other": "Yeni bir plan, bu hafta planınızdan kazandığınız {{count}} puanı sıfırlar; o günler yine de haftalık ortalamanıza dahil edilir. Bazı öğünler size uymuyorsa bunun yerine mevcut planınızda değiştirebilirsiniz.",
+      "confirm": "Sıfırla ve devam et",
+      "swapInstead": "Bunun yerine öğünleri değiştir"
+    }
+  },
+  "generating": {
+    "title": "Planınız hazırlanıyor...",
+    "failedTitle": "Planınız hazırlanamadı",
+    "resumedCreate": "Bu planın ait olduğu kurulumdan hiçbir şey saklanmadı; kurulumu yeniden yapabilirsiniz.",
+    "resumedOther": "Mevcut planınız olduğu gibi kalır.",
+    "failedHint": "Bu ekranda kaldığınız sürece yanıtlarınız korunur. Tekrar deneyin ya da geri dönün; bu kurulumdan hiçbir şey kaydedilmez.",
+    "aiWarning": "Yapay zekâmız planınızı özenle hazırlıyor! Sürekli öğrendiği için lütfen planı uygulamadan önce gözden geçirin.",
+    "tips": {
+      "hydration": "Su içmek çok önemli! Yeterli su içmek metabolizmanızı destekler.",
+      "protein": "Yağsız proteinlere odaklanmak kasların gelişmesine ve onarılmasına yardımcı olur.",
+      "colors": "Farklı renklerde besinler tüketmek geniş bir besin öğesi yelpazesi sağlar.",
+      "consistency": "Beslenmenizde istikrar, mükemmellikten daha önemlidir."
+    }
+  }
+}

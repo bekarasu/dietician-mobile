@@ -1,0 +1,31 @@
+{
+  "loadFailed": "Bildirimleriniz yüklenemedi. Lütfen tekrar deneyin.",
+  "markFailed": "Bildirimleriniz okundu olarak işaretlenemedi. Lütfen tekrar deneyin.",
+  "markAllRead": "Tümünü okundu yap",
+  "emptyTitle": "Henüz bildirim yok",
+  "emptyText": "Arkadaşlık istekleri, haftalık ve aylık sonuçlarınız ve plan güncellemeleri burada görünecek.",
+  "itemA11y": "{{title}}. {{body}}. {{time}}",
+  "itemA11yUnread": "Okunmadı. {{title}}. {{body}}. {{time}}",
+  "bell": {
+    "label": "Bildirimler",
+    "unread": "Bildirimler, {{count}} okunmamış"
+  },
+  "push": {
+    "unavailableIos": "Bu sürümde bildirimler kullanılamıyor.",
+    "unavailableAndroid": "Anlık bildirimler henüz Android'de kullanılamıyor.",
+    "off": "Bu telefonda anlık bildirimler kapalı.",
+    "blocked": "Ayarlar’dan Eativio bildirimlerine izin verin.",
+    "ready": "Bu telefon bildirim almaya hazır.",
+    "settingUp": "Bildirimler ayarlanıyor…",
+    "offline": "İnternete bağlanıp tekrar deneyin.",
+    "title": "Planınızdan haberdar olun",
+    "text": "Arkadaşlık istekleri, haftalık ve aylık sonuçlarınız, ortak öğün davetleri ve planınız hazır olduğunda güncellemeler.",
+    "switchA11y": "Anlık bildirimler",
+    "testTitle": "Test cihazı",
+    "testText": "Firebase Console'dan test bildirimi göndermek için bu FCM token'ını kullanın.",
+    "shareToken": "Token'ı paylaş",
+    "updateFailed": "Bildirimler güncellenemedi. Lütfen tekrar deneyin.",
+    "startFailed": "Bildirimler başlatılamadı. Lütfen uygulamayı yeniden açın.",
+    "preferenceFailed": "Bildirim tercihiniz kaydedilemedi. Lütfen tekrar deneyin."
+  }
+}

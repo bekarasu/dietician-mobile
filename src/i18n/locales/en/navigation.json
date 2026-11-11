@@ -1,0 +1,23 @@
+{
+  "tabs": {
+    "today": "Today",
+    "dietPlan": "Diet Plan",
+    "leaderboard": "Leaderboard",
+    "progress": "Progress",
+    "profile": "Profile"
+  },
+  "home": "Home",
+  "fridge": "My Fridge",
+  "hydration": "Water & Coffee",
+  "friends": "Friends",
+  "sharedMeals": "Shared Meals",
+  "profile": "Profile",
+  "score": "Your Score",
+  "bloodTests": "Blood tests",
+  "weightProgress": "Weight Progress",
+  "mealReminders": "Meal Reminders",
+  "pushNotifications": "Push Notifications",
+  "notifications": "Notifications",
+  "planCheckIn": "Plan Check-In",
+  "selectFoods": "Select Foods"
+}

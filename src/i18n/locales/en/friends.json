@@ -1,0 +1,77 @@
+{
+  "searchFailed": "We couldn't search just now. Please try again.",
+  "shareMessage": "Add me as a friend on Eativio! My friend code is {{code}}.",
+  "remove": {
+    "title": "Remove friend",
+    "message": "Remove {{name}} from your friends?"
+  },
+  "block": {
+    "title": "Block user",
+    "message": "{{name}} won't be able to find you, and you won't see each other on leaderboards. Any friendship or request between you ends."
+  },
+  "code": {
+    "label": "Your friend code",
+    "a11y": "Your friend code: {{digits}}",
+    "shareA11y": "Share your friend code"
+  },
+  "search": {
+    "label": "Find people",
+    "placeholder": "Name, email or friend code",
+    "searching": "Searching…",
+    "hintEmpty": "Search for a name, a full email address or an 8-digit friend code.",
+    "hintOwnCode": "That's your own friend code. Share it so friends can add you.",
+    "hintEmail": "Keep typing: email search needs the full address.",
+    "hintCode": "A friend code is 8 digits, like 4821 7730.",
+    "matchedEmail": "Matched by email",
+    "matchedCode": "Matched by friend code",
+    "noName": "No one found with that name.",
+    "noEmail": "No one found with that email address. Check the spelling, or ask for their friend code.",
+    "noCode": "No one has this friend code. Check the digits."
+  },
+  "loadFailed": "We couldn't load your friends. Please try again.",
+  "requests": {
+    "title": "Requests",
+    "new": "{{count}} new",
+    "incoming": "Wants to be friends · {{date}}",
+    "outgoing": "Request sent · {{date}}"
+  },
+  "list": {
+    "title": "Your friends",
+    "emptyTitle": "No friends yet",
+    "emptyText": "Share your friend code, or search for a name, email or code above to send your first request.",
+    "since": "Friends since {{date}}"
+  },
+  "blocked": {
+    "title": "Blocked",
+    "since": "Blocked {{date}}"
+  },
+  "relationship": {
+    "friend": "Already friends",
+    "outgoing": "Request sent",
+    "incoming": "Wants to be friends",
+    "friends": "Friends"
+  },
+  "count": {
+    "friends_one": "{{count}} friend",
+    "friends_other": "{{count}} friends",
+    "people_one": "{{count}} person",
+    "people_other": "{{count}} people"
+  },
+  "profile": {
+    "friendsLeaderboard": "Friends leaderboard",
+    "globalLeaderboard": "Global leaderboard",
+    "loadFailed": "We couldn't load this profile. Please try again.",
+    "unavailable": "This profile isn't available.",
+    "addFriend": "Add friend",
+    "addHint": "Once they accept, you'll see each other on your friends leaderboard.",
+    "cancelRequest": "Cancel request",
+    "cancelHint": "We'll add them to your friends leaderboard when they accept.",
+    "acceptRequest": "Accept request",
+    "standingA11y": "Rank {{rank}}, {{points}} points",
+    "rank": "RANK",
+    "points": "POINTS"
+  },
+  "errors": {
+    "fetchProfile": "Failed to fetch profile"
+  }
+}

@@ -9,6 +9,7 @@ import { SectionHeader } from '../components/SectionHeader';
 import { showDialog } from '../features/dialog/dialogStore';
 import { getErrorMessage } from '../services/apiError';
 import { useProfileStore } from '../store/useProfileStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 export function InventoryScreen() {
@@ -30,7 +31,7 @@ export function InventoryScreen() {
       await updatePreferences({ availableIngredients: newItems });
       reset({ ingredient: '' });
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t add this ingredient. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('inventory.addFailed')), tone: 'danger' });
     }
   };
 
@@ -40,27 +41,27 @@ export function InventoryScreen() {
     try {
       await updatePreferences({ availableIngredients: newItems });
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t remove this ingredient. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('inventory.removeFailed')), tone: 'danger' });
     }
   };
 
   return (
     <ScreenContainer>
       <SectionHeader
-        title="My Fridge"
-        subtitle="Keep this list close to the recommendation engine so meal plans can prefer what is already available at home."
+        title={t('inventory.title')}
+        subtitle={t('inventory.subtitle')}
       />
 
       <AppCard style={styles.formCard}>
         <Controller
           control={control}
           name="ingredient"
-          rules={{ required: 'Ingredient name is required' }}
+          rules={{ required: t('inventory.required') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-            <AppTextInput label="Ingredient (e.g. Chicken breast)" onBlur={onBlur} onChangeText={onChange} value={value} error={error?.message} />
+            <AppTextInput label={t('inventory.label')} onBlur={onBlur} onChangeText={onChange} value={value} error={error?.message} />
           )}
         />
-        <AppButton title="Add to fridge" onPress={handleSubmit(onSubmit)} />
+        <AppButton title={t('inventory.add')} onPress={handleSubmit(onSubmit)} />
       </AppCard>
 
       {items.map((item, index) => (
@@ -69,7 +70,7 @@ export function InventoryScreen() {
             <View style={styles.itemTitleBlock}>
               <Text style={styles.itemTitle}>{item}</Text>
             </View>
-            <AppButton title="Remove" variant="ghost" onPress={() => removeItem(item)} />
+            <AppButton title={t('common.actions.remove')} variant="ghost" onPress={() => removeItem(item)} />
           </View>
         </AppCard>
       ))}

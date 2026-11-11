@@ -9,8 +9,10 @@ import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { leaderboardService } from '../services/leaderboardService';
 import { useHydrationStore } from '../store/useHydrationStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { DayPoints } from '../types/models';
+import { formatDecimal } from '../utils/formatters';
 import { toCalendarDate } from '../utils/date';
 
 export function HydrationTrackingScreen() {
@@ -51,28 +53,30 @@ export function HydrationTrackingScreen() {
   return (
     <ScreenContainer>
       <SectionHeader
-        title="Water and coffee tracking"
-        subtitle="Your targets are set for you: 30 ml of water per kg of body weight, between 1.5 and 3 L, and at most 4 cups of coffee a day, or 1 under 18."
+        title={t('hydration.title')}
+        subtitle={t('hydration.subtitle')}
       />
 
       {todayPoints?.status === 'IN_PROGRESS' ? (
         <AppCard style={styles.stack}>
-          <Text style={styles.cardTitle}>Today's points</Text>
+          <Text style={styles.cardTitle}>{t('hydration.todayPoints')}</Text>
           <Text style={styles.scoreText}>
-            Water: {todayPoints.waterPoints} / {todayPoints.maxWaterPoints}, for drinking towards{' '}
-            {(todayPoints.waterTargetMl / 1000).toFixed(1)} L, a target based on your weight.
+            {t('hydration.waterPoints', {
+              points: todayPoints.waterPoints,
+              max: todayPoints.maxWaterPoints,
+              target: formatDecimal(todayPoints.waterTargetMl / 1000),
+            })}
           </Text>
           <Text style={styles.scoreText}>
-            Coffee: {todayPoints.coffeePoints} / {todayPoints.maxCoffeePoints}, for at most {todayPoints.coffeeLimitCups}{' '}
-            cups on a day you log water.
+            {t('hydration.coffeePoints', { points: todayPoints.coffeePoints, max: todayPoints.maxCoffeePoints, limit: todayPoints.coffeeLimitCups })}
           </Text>
-          <Text style={styles.scoreNote}>Drinking more than the target doesn't earn extra points.</Text>
+          <Text style={styles.scoreNote}>{t('hydration.noExtra')}</Text>
         </AppCard>
       ) : null}
 
       <AppCard style={styles.stack}>
-        <Text style={styles.cardTitle}>Hydration</Text>
-        <ProgressBar label="Water intake" current={hydration.waterMl} target={hydration.targetWaterMl} suffix=" ml" />
+        <Text style={styles.cardTitle}>{t('hydration.hydration')}</Text>
+        <ProgressBar label={t('hydration.waterIntake')} current={hydration.waterMl} target={hydration.targetWaterMl} suffix={t('common.units.mlSuffix')} />
         <View style={styles.actions}>
           <AppButton title="+250 ml" onPress={() => logWater(250)} />
           <AppButton title="+500 ml" variant="secondary" onPress={() => logWater(500)} />
@@ -80,11 +84,11 @@ export function HydrationTrackingScreen() {
       </AppCard>
 
       <AppCard style={styles.stack}>
-        <Text style={styles.cardTitle}>Coffee</Text>
-        <ProgressBar label="Coffee cups" current={coffee.cups} target={coffee.targetCups} suffix=" cups" />
+        <Text style={styles.cardTitle}>{t('hydration.coffee')}</Text>
+        <ProgressBar label={t('hydration.coffeeCups')} current={coffee.cups} target={coffee.targetCups} suffix={t('common.units.cupsSuffix')} />
         <View style={styles.actions}>
-          <AppButton title="+1 cup" onPress={() => logCoffee(1)} />
-          <AppButton title="+2 cups" variant="secondary" onPress={() => logCoffee(2)} />
+          <AppButton title={t('common.units.addCups', { count: 1 })} onPress={() => logCoffee(1)} />
+          <AppButton title={t('common.units.addCups', { count: 2 })} variant="secondary" onPress={() => logCoffee(2)} />
         </View>
       </AppCard>
     </ScreenContainer>

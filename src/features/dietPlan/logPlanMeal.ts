@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { progressService } from '../../services/progressService';
 import { recommendationService } from '../../services/recommendationService';
 import { DietMeal } from '../../types/models';
@@ -18,7 +19,7 @@ export async function logPlanMeal(meal: DietMeal, logDate: string) {
     }],
   });
   if (!log) {
-    throw new Error('Failed to log meal.');
+    throw new Error(t('dietPlan.meal.logFailed'));
   }
   await recommendationService.markMealAsTaken(meal.id);
 }

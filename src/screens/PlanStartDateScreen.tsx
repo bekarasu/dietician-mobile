@@ -13,6 +13,7 @@ import { OnboardingStackParamList } from '../navigation/navigationTypes';
 import { leaderboardService } from '../services/leaderboardService';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { ActivityDay } from '../types/models';
 import { toCalendarDate } from '../utils/date';
@@ -72,7 +73,7 @@ export function PlanStartDateScreen({ navigation }: Props) {
       navigation.navigate('GeneratingDietPlan', { startDate });
     } catch (error) {
       console.error('Failed to save onboarding answers', error);
-      showDialog({ title: "We couldn't save your answers", message: 'Check your connection and try again.', tone: 'danger' });
+      showDialog({ title: t('common.errors.saveAnswersTitle'), message: t('common.errors.checkConnection'), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -85,15 +86,14 @@ export function PlanStartDateScreen({ navigation }: Props) {
       return;
     }
 
-    const earned = points === null ? 'the points' : `the ${points} ${points === 1 ? 'point' : 'points'}`;
     showDialog({
-      title: "Reset this week's points?",
-      message: `A new plan resets ${earned} you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.`,
+      title: t('onboarding.startDate.reset.title'),
+      message: points === null ? t('onboarding.startDate.reset.messageUnknown') : t('onboarding.startDate.reset.message', { count: points }),
       icon: 'refresh-outline',
       buttons: [
-        { text: 'Reset and continue', style: 'destructive', onPress: createPlan },
-        { text: 'Swap meals instead', onPress: () => leaveOnboarding('DietPlan') },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('onboarding.startDate.reset.confirm'), style: 'destructive', onPress: createPlan },
+        { text: t('onboarding.startDate.reset.swapInstead'), onPress: () => leaveOnboarding('DietPlan') },
+        { text: t('common.actions.cancel'), style: 'cancel' },
       ],
     });
   };
@@ -101,23 +101,23 @@ export function PlanStartDateScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <SectionHeader
-        title="When do you want to start?"
-        subtitle="Pick a day you'll have time to shop for. Your meals and leaderboard score count from that day."
+        title={t('onboarding.startDate.title')}
+        subtitle={t('onboarding.startDate.subtitle')}
       />
       <StartDatePicker firstDate={today} onChange={setStartDate} value={startDate} />
       {hasPlan ? (
         <AppCard style={styles.notice}>
           <Text style={styles.noticeText}>
             {isRunning
-              ? "Your new plan replaces your current one from today. Meal, water and coffee points you've earned this week are reset, and days before the new plan starts aren't scored."
-              : "Your new plan replaces your current one. Points you've already earned stay, and days before the new plan starts aren't scored."}
+              ? t('onboarding.startDate.replaceRunning')
+              : t('onboarding.startDate.replaceUpcoming')}
           </Text>
         </AppCard>
       ) : null}
-      <AppButton title="Create My Plan" loading={isSaving} onPress={handleCreate} />
+      <AppButton title={t('onboarding.startDate.create')} loading={isSaving} onPress={handleCreate} />
       {isRestarting ? (
         <AppButton
-          title={hasPlan ? 'Keep my current plan' : 'Not now'}
+          title={hasPlan ? t('onboarding.startDate.keepCurrent') : t('common.actions.notNow')}
           variant="ghost"
           disabled={isSaving}
           onPress={() => leaveOnboarding()}

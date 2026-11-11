@@ -1,0 +1,93 @@
+{
+  "member": {
+    "invited": "Invited, waiting for an answer",
+    "owner": "Started the group",
+    "joinedOn": "Joined {{date}}",
+    "joined": "Joined"
+  },
+  "accept": {
+    "title": "Share meals with {{name}}?",
+    "message": "You'll eat the same meals as the group, in portions for your own goal and weight. When {{name}} starts a shared plan, you'll be asked whether to switch to it, and your plan only changes if you do. You can leave at any time."
+  },
+  "remove": {
+    "withdrawTitle": "Withdraw invitation",
+    "removeTitle": "Remove from group",
+    "withdrawMessage": "Withdraw {{name}}'s invitation?",
+    "removeMessage": "Remove {{name}}? Their current plan stays as it is, and your next shared plans won't include them."
+  },
+  "leave": {
+    "deleteTitle": "Delete your group?",
+    "leaveTitle": "Leave the group?",
+    "deleteMessage": "Everyone's current plan stays as it is, but you won't share new plans any more.",
+    "leaveMessage": "Your current plan stays as it is, and you won't be offered {{name}}'s next shared plans.",
+    "theOwner": "the owner",
+    "deleteGroup": "Delete group",
+    "leaveGroup": "Leave group"
+  },
+  "ready": {
+    "title": "Your shared plan is ready",
+    "message": "{{names}} will be asked whether to switch to it when they next open the app. Their plans change only if they do.",
+    "seePlan": "See my plan"
+  },
+  "createFailed": "We couldn't prepare the shared plan",
+  "start": {
+    "title": "Start a shared plan?",
+    "message": "Your plan is replaced from {{date}} with meals that suit {{names}} too. If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset. {{names}} will be asked whether to switch, and get portions for their own goal and weight if they do.",
+    "confirm": "Start shared plan"
+  },
+  "offerCard": {
+    "switching": "Switching to the shared plan",
+    "title": "{{name}} started a shared plan",
+    "body": "It runs from {{start}} to {{end}}. Your plan stays as it is until you choose. If you switch, you get the group's meals in portions for your own goal and weight.",
+    "switch": "Switch to the shared plan",
+    "keep": "Keep my plan"
+  },
+  "planCard": {
+    "memberTitle": "Shared plans",
+    "theOwner": "The owner",
+    "memberBody": "{{name}} starts the group's shared plans and renews them. You're asked each time whether to switch, and your plan only changes if you do. Swapping a shared meal changes only yours, and it stops being shared.",
+    "startTitle": "Start a shared plan",
+    "waiting": "Once a friend accepts your invitation, you can start a plan for all of you.",
+    "preparing": "Preparing your shared plan",
+    "startBody": "You get your plan straight away. Your friends are asked whether to switch, and get the same meals with portions worked out from their own goal and weight. Where someone's allergies, dislikes or diet rule out an ingredient, only their own version of the meal changes, yours included. Pick a day you'll all have time to shop for.",
+    "create": "Create shared plan"
+  },
+  "header": {
+    "title": "Share meals",
+    "subtitle": "Eat the same meals with up to {{count}} friends. Each of you gets portions for your own goal and weight."
+  },
+  "loadFailed": "We couldn't load your shared meals. Please try again.",
+  "invitations": "Invitations",
+  "withNames": "With {{names}}",
+  "invitedOn": "Invited {{date}}",
+  "group": {
+    "title": "Your group",
+    "meta": "{{count}} of {{max}} friends"
+  },
+  "inviteFriends": {
+    "title": "Invite friends",
+    "spotsLeft_one": "{{count}} spot left",
+    "spotsLeft_other": "{{count}} spots left",
+    "noFriends": "Add friends first, then invite them to share meals.",
+    "allInvited": "Everyone you could invite is already in your group.",
+    "findFriends": "Find friends",
+    "friendsSince": "Friends since {{date}}"
+  },
+  "offer": {
+    "title": "Switch to the shared plan?",
+    "message": "{{name}} started a shared plan, until {{end}}. If you switch, you'll eat the same meals as your group, in portions worked out for your own goal and weight and adapted to your own allergies, dislikes and diet, and it replaces your plan from {{from}}.",
+    "today": "today",
+    "pointsUnknown": "If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset to zero, and those days still count towards your weekly average.",
+    "points_one": "This resets the {{count}} point you've earned from your plan this week to zero, and those days still count towards your weekly average.",
+    "points_other": "This resets the {{count}} points you've earned from your plan this week to zero, and those days still count towards your weekly average.",
+    "prepTime": "Your portions take about a minute to prepare.",
+    "switch": "Switch",
+    "acceptedTitle": "You're on the shared plan",
+    "acceptedMessage": "You have the same meals as your group now, in portions for your own goal and weight.",
+    "acceptFailed": "We couldn't switch you to the shared plan"
+  },
+  "errors": {
+    "loadMeals": "Failed to load shared meals",
+    "loadPlan": "Failed to load the shared plan"
+  }
+}

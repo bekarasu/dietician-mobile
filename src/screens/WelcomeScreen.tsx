@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
 import { ScreenContainer } from '../components/ScreenContainer';
-import { HEALTH_NOTICE } from '../constants/health';
+import { getHealthNotice } from '../constants/health';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AuthStackParamList } from '../navigation/navigationTypes';
 
@@ -17,9 +18,9 @@ export function WelcomeScreen({ navigation }: Props) {
           <View style={styles.logoBadge}>
             <Text style={styles.logoText}>🌿 NutriAI</Text>
           </View>
-          <Text style={styles.heroTitle}>Your Personal{'\n'}AI Dietician</Text>
+          <Text style={styles.heroTitle}>{t('auth.welcome.heroTitle')}</Text>
           <Text style={styles.heroSubtitle}>
-            Achieve your health goals with adaptive meal planning, smart macro tracking, and personalized guidance.
+            {t('auth.welcome.heroSubtitle')}
           </Text>
         </View>
 
@@ -27,22 +28,22 @@ export function WelcomeScreen({ navigation }: Props) {
           <View style={styles.featureItem}>
             <Text style={styles.featureIcon}>✨</Text>
             <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>AI-Powered Plans</Text>
-              <Text style={styles.featureDescription}>Meals tailored to your unique biology and goals.</Text>
+              <Text style={styles.featureTitle}>{t('auth.welcome.plansTitle')}</Text>
+              <Text style={styles.featureDescription}>{t('auth.welcome.plansBody')}</Text>
             </View>
           </View>
           <View style={styles.featureItem}>
             <Text style={styles.featureIcon}>📊</Text>
             <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>Smart Tracking</Text>
-              <Text style={styles.featureDescription}>Log your food effortlessly with AI recognition.</Text>
+              <Text style={styles.featureTitle}>{t('auth.welcome.trackingTitle')}</Text>
+              <Text style={styles.featureDescription}>{t('auth.welcome.trackingBody')}</Text>
             </View>
           </View>
           <View style={styles.featureItem}>
             <Text style={styles.featureIcon}>🧠</Text>
             <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>Expert Guidance</Text>
-              <Text style={styles.featureDescription}>24/7 coaching to keep you on the right path.</Text>
+              <Text style={styles.featureTitle}>{t('auth.welcome.guidanceTitle')}</Text>
+              <Text style={styles.featureDescription}>{t('auth.welcome.guidanceBody')}</Text>
             </View>
           </View>
         </View>
@@ -50,12 +51,12 @@ export function WelcomeScreen({ navigation }: Props) {
 
       <View style={styles.bottomSection}>
         <View style={styles.actions}>
-          <AppButton title="Get Started" onPress={() => navigation.navigate('Register')} />
-          <AppButton title="I already have an account" variant="secondary" onPress={() => navigation.navigate('Login')} />
+          <AppButton title={t('auth.welcome.getStarted')} onPress={() => navigation.navigate('Register')} />
+          <AppButton title={t('auth.welcome.haveAccount')} variant="secondary" onPress={() => navigation.navigate('Login')} />
         </View>
         
         <Text style={styles.healthNotice}>
-          {HEALTH_NOTICE}
+          {getHealthNotice()}
         </Text>
       </View>
     </ScreenContainer>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GestureResponderEvent, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 
+import { t } from '../../i18n';
 import { theme } from '../../theme/theme';
 import { ProgressEntry } from '../../types/models';
 import { formatDateTimeLabel } from '../../utils/date';
@@ -71,8 +72,8 @@ export function WeightTrendChart({ entries }: { entries: ProgressEntry[] }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerText}>
-          <Text style={styles.title}>Trend</Text>
-          <Text style={styles.caption}>Your last {points.length} weigh-ins</Text>
+          <Text style={styles.title}>{t('progress.chart.trend')}</Text>
+          <Text style={styles.caption}>{t('progress.chart.lastWeighIns', { count: points.length })}</Text>
         </View>
         <View style={styles.readout}>
           <Text style={styles.readoutValue}>{formatKg(selected.weightKg)}</Text>
@@ -81,7 +82,7 @@ export function WeightTrendChart({ entries }: { entries: ProgressEntry[] }) {
       </View>
 
       <Pressable
-        accessibilityLabel={`Weight trend from ${formatKg(first.weightKg)} on ${formatDate(first.date)} to ${formatKg(last.weightKg)} on ${formatDate(last.date)}`}
+        accessibilityLabel={t('progress.chart.a11y', { from: formatKg(first.weightKg), fromDate: formatDate(first.date), to: formatKg(last.weightKg), toDate: formatDate(last.date) })}
         onLayout={onLayout}
         onPress={select}
         style={styles.chart}
@@ -143,7 +144,7 @@ export function WeightTrendChart({ entries }: { entries: ProgressEntry[] }) {
           </View>
         ) : null}
       </Pressable>
-      <Text style={styles.caption}>Tap the chart to read any weigh-in.</Text>
+      <Text style={styles.caption}>{t('progress.chart.tapHint')}</Text>
     </View>
   );
 }

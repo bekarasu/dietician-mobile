@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { DietPlan } from '../../types/models';
 import { addCalendarDays, calendarDaysBetween, toCalendarDate } from '../../utils/date';
 
@@ -16,7 +17,7 @@ export interface PlanSchedule {
 
 // "tomorrow" or "in 3 days", for a plan that hasn't started.
 export function formatStartsIn(daysUntilStart: number) {
-  return daysUntilStart === 1 ? 'tomorrow' : `in ${daysUntilStart} days`;
+  return daysUntilStart === 1 ? t('format.startsIn.tomorrow') : t('format.startsIn.inDays', { count: daysUntilStart });
 }
 
 // Plan dates arrive as midnight UTC timestamps, so the date part is the calendar

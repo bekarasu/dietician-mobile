@@ -1,0 +1,67 @@
+{
+  "errors": {
+    "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "title": "Hata",
+    "saveAnswersTitle": "Yanıtlarınız kaydedilemedi",
+    "checkConnection": "Bağlantınızı kontrol edip tekrar deneyin."
+  },
+  "actions": {
+    "tryAgain": "Tekrar dene",
+    "signOut": "Çıkış yap",
+    "continue": "Devam et",
+    "next": "İleri",
+    "skip": "Atla",
+    "back": "Geri",
+    "goBack": "Geri dön",
+    "cancel": "Vazgeç",
+    "keepGoing": "Devam et",
+    "notNow": "Şimdi değil",
+    "save": "Kaydet",
+    "join": "Katıl",
+    "decline": "Reddet",
+    "invite": "Davet et",
+    "remove": "Çıkar",
+    "withdraw": "Geri çek",
+    "leave": "Ayrıl",
+    "accept": "Kabul et",
+    "add": "Ekle",
+    "block": "Engelle",
+    "unblock": "Engeli kaldır",
+    "share": "Paylaş",
+    "openSettings": "Ayarları Aç",
+    "logOut": "Çıkış yap",
+    "showMore": "Daha fazla göster",
+    "ok": "Tamam",
+    "delete": "Sil"
+  },
+  "mealTypes": {
+    "Breakfast": "Kahvaltı",
+    "Lunch": "Öğle yemeği",
+    "Snack": "Ara öğün",
+    "Dinner": "Akşam yemeği"
+  },
+  "units": {
+    "cups_one": "{{count}} fincan",
+    "cups_other": "{{count}} fincan",
+    "gramsSuffix": "g",
+    "cupsSuffix": " fincan",
+    "kgSuffix": " kg",
+    "mlSuffix": " ml",
+    "addCups_one": "+{{count}} fincan",
+    "addCups_other": "+{{count}} fincan"
+  },
+  "macros": {
+    "protein": "P",
+    "carbs": "K",
+    "fat": "Y"
+  },
+  "habits": {
+    "meals": "Öğünler",
+    "water": "Su",
+    "coffee": "Kahve"
+  },
+  "list": {
+    "and": "{{items}} ve {{last}}"
+  },
+  "you": "{{name}} (siz)"
+}

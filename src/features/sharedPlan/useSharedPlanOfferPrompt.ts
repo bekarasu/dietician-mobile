@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { t } from '../../i18n';
 import { AppStackParamList } from '../../navigation/navigationTypes';
 import { useSharedPlanOfferStore } from '../../store/useSharedPlanOfferStore';
 import { acceptSharedPlanOffer, askToSwitch } from './sharedPlanOffer';
@@ -44,7 +45,7 @@ export function useSharedPlanOfferPrompt() {
     }
     useSharedPlanOfferStore.getState().markSeen(offer.id);
     void askToSwitch(offer, {
-      dismissText: 'Not now',
+      dismissText: t('common.actions.notNow'),
       withKeepOption: true,
       onSwitch: () => {
         // The screen shows the portions being prepared, and lets them stop it.

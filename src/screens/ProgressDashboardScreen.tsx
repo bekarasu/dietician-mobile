@@ -23,6 +23,7 @@ import { progressService } from '../services/progressService';
 import { useHydrationStore } from '../store/useHydrationStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { getLocaleTag, t } from '../i18n';
 import { theme } from '../theme/theme';
 import { Activity, ActivityDay, WeekActivity } from '../types/models';
 import { addCalendarDays, formatCalendarDate, formatTime, formatWeekRange, toCalendarDate } from '../utils/date';
@@ -33,10 +34,10 @@ const screenWidth = Dimensions.get('window').width - theme.spacing.lg * 2;
 function getDayLabel(date: string) {
   const today = toCalendarDate(new Date());
   if (date === today) {
-    return 'Today';
+    return t('progress.day.today');
   }
   if (date === addCalendarDays(today, -1)) {
-    return 'Yesterday';
+    return t('progress.day.yesterday');
   }
   return formatCalendarDate(date);
 }
@@ -54,7 +55,7 @@ function ActivityRow({ activity, isCounted }: { activity: Activity; isCounted: b
 
   return (
     <View style={styles.activityRow}>
-      <Text style={styles.activityTime}>{activity.loggedAt ? formatTime(activity.loggedAt) : 'Day total'}</Text>
+      <Text style={styles.activityTime}>{activity.loggedAt ? formatTime(activity.loggedAt) : t('progress.activity.dayTotal')}</Text>
       <View style={styles.activityText}>
         <Text style={styles.activityTitle}>
           {getActivityTitle(activity)}
@@ -72,14 +73,14 @@ function ActivityRow({ activity, isCounted }: { activity: Activity; isCounted: b
 function DayHistory({ day }: { day: ActivityDay }) {
   const isCounted = day.status === 'SCORED' || day.status === 'IN_PROGRESS';
 
-  let summary = 'Not scored';
+  let summary = t('progress.day.notScored');
   if (isCounted) {
-    summary = `${day.points} / ${day.maxPoints}${day.status === 'IN_PROGRESS' ? ' so far' : ''}`;
+    summary = t(day.status === 'IN_PROGRESS' ? 'progress.day.pointsSoFar' : 'progress.day.points', { points: day.points, max: day.maxPoints });
   }
 
   let empty: string | null = null;
   if (day.activities.length === 0) {
-    empty = day.status === 'IN_PROGRESS' ? 'Nothing logged yet.' : 'Nothing logged.';
+    empty = day.status === 'IN_PROGRESS' ? t('progress.day.nothingYet') : t('progress.day.nothing');
   }
 
   return (
@@ -107,7 +108,7 @@ function WeekHistory({ activity, isCurrent, onOpen }: { activity: WeekActivity; 
 
   let label = formatWeekRange(week.periodStart, week.periodEndExclusive);
   if (isCurrent) {
-    label = `This week · ${label}`;
+    label = t('progress.week.current', { range: label });
   }
 
   return (
@@ -117,7 +118,7 @@ function WeekHistory({ activity, isCurrent, onOpen }: { activity: WeekActivity; 
           <Text style={styles.weekTitle}>{label}</Text>
           {week.totalScore !== null ? (
             <Text style={styles.weekSplit}>
-              Weight {week.weightPoints} · Meals {week.mealPoints} · Water {week.waterPoints} · Coffee {week.coffeePoints}
+              {t('progress.week.split', { weight: week.weightPoints, meals: week.mealPoints, water: week.waterPoints, coffee: week.coffeePoints })}
             </Text>
           ) : (
             <Text style={styles.weekSplit}>{getStatusMessage(week.statusReason)}</Text>
@@ -126,12 +127,12 @@ function WeekHistory({ activity, isCurrent, onOpen }: { activity: WeekActivity; 
         <View style={styles.weekScore}>
           <Text style={styles.weekScoreValue}>{week.totalScore ?? '–'}</Text>
           {week.totalScore !== null ? (
-            <Text style={styles.weekScoreLabel}>{finalized ? 'final' : isCurrent ? 'so far' : 'score'}</Text>
+            <Text style={styles.weekScoreLabel}>{finalized ? t('progress.week.final') : isCurrent ? t('progress.week.soFar') : t('progress.week.score')}</Text>
           ) : null}
         </View>
         <Ionicons name="chevron-forward" size={18} color={theme.colors.muted} />
       </Pressable>
-      {days.length === 0 ? <Text style={styles.activityReason}>Nothing logged this week.</Text> : null}
+      {days.length === 0 ? <Text style={styles.activityReason}>{t('progress.week.nothing')}</Text> : null}
       {days.map((day) => (
         <DayHistory key={day.date} day={day} />
       ))}
@@ -229,45 +230,45 @@ export function ProgressDashboardScreen() {
       <View style={styles.tabContent}>
         <View style={styles.metricsRow}>
           <AppCard style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Current weight</Text>
+            <Text style={styles.metricLabel}>{t('progress.dashboard.currentWeight')}</Text>
             <Text style={styles.metricValue}>{latestEntry ? formatKg(latestEntry.weightKg) : '--'}</Text>
           </AppCard>
           <AppCard style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Last 7 days</Text>
+            <Text style={styles.metricLabel}>{t('progress.dashboard.last7Days')}</Text>
             <Text style={styles.metricValue}>{weeklyChange === null ? '--' : formatKgChange(weeklyChange)}</Text>
           </AppCard>
         </View>
 
         <AppCard style={styles.stack}>
           {consistency !== null ? (
-            <ProgressBar label="Weekly consistency" current={Math.round(consistency)} target={100} suffix="%" />
+            <ProgressBar label={t('progress.dashboard.consistency')} current={Math.round(consistency)} target={100} suffix="%" />
           ) : (
             <View style={styles.emptyMetric}>
-              <Text style={styles.emptyMetricLabel}>Weekly consistency</Text>
+              <Text style={styles.emptyMetricLabel}>{t('progress.dashboard.consistency')}</Text>
               <Text style={styles.emptyMetricValue}>--</Text>
             </View>
           )}
           <Text style={styles.metricHint}>
             {consistency !== null || !currentWeek
-              ? 'The share of this week\'s meal, water and coffee points you\'ve earned so far.'
+              ? t('progress.dashboard.consistencyHint')
               : getStatusMessage(currentWeek.week.statusReason)}
           </Text>
           {goalProgress ? (
-            <ProgressBar label="Goal progress" current={goalProgress.doneKg} target={goalProgress.totalKg} suffix=" kg" />
+            <ProgressBar label={t('progress.dashboard.goalProgress')} current={goalProgress.doneKg} target={goalProgress.totalKg} suffix={t('common.units.kgSuffix')} />
           ) : (
             <View style={styles.emptyMetric}>
-              <Text style={styles.emptyMetricLabel}>Goal progress</Text>
-              <Text style={styles.emptyMetricValue}>{latestEntry ? 'Set a target weight' : 'Log your weight'}</Text>
+              <Text style={styles.emptyMetricLabel}>{t('progress.dashboard.goalProgress')}</Text>
+              <Text style={styles.emptyMetricValue}>{latestEntry ? t('progress.dashboard.setTarget') : t('progress.dashboard.logWeight')}</Text>
             </View>
           )}
         </AppCard>
 
-        <Text style={styles.sectionTitle}>History</Text>
+        <Text style={styles.sectionTitle}>{t('progress.dashboard.history')}</Text>
         {historyFailed && weeks.length === 0 ? (
           <AppCard style={styles.stack}>
-            <Text style={styles.activityReason}>Your history couldn't load. Check your connection and try again.</Text>
+            <Text style={styles.activityReason}>{t('progress.dashboard.historyFailed')}</Text>
             <TouchableOpacity onPress={loadCurrentWeek}>
-              <Text style={styles.linkText}>Try again</Text>
+              <Text style={styles.linkText}>{t('common.actions.tryAgain')}</Text>
             </TouchableOpacity>
           </AppCard>
         ) : null}
@@ -282,8 +283,7 @@ export function ProgressDashboardScreen() {
         ))}
         {weeks.length > 0 ? (
           <Text style={styles.metricHint}>
-            Each day earns up to 45 points for meals, water and coffee, and a week's habit points are the average of its days.
-            Weigh-ins count towards the week's weight points.
+            {t('progress.dashboard.historyHint')}
           </Text>
         ) : null}
         {oldest?.previousPeriodStart ? (
@@ -291,7 +291,7 @@ export function ProgressDashboardScreen() {
             {isLoadingEarlier ? (
               <ActivityIndicator color={theme.colors.primary} />
             ) : (
-              <Text style={styles.linkText}>{earlierFailed ? 'Couldn\'t load. Try again' : 'Show earlier week'}</Text>
+              <Text style={styles.linkText}>{earlierFailed ? t('progress.dashboard.earlierFailed') : t('progress.dashboard.earlier')}</Text>
             )}
           </TouchableOpacity>
         ) : null}
@@ -329,9 +329,9 @@ export function ProgressDashboardScreen() {
       const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
       const today = new Date();
       if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
-        return 'Today';
+        return t('progress.day.today');
       }
-      return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+      return new Intl.DateTimeFormat(getLocaleTag(), { weekday: 'short' }).format(date);
     };
 
     const hydrationLabels = weekDays.map(formatChartDate);
@@ -385,7 +385,7 @@ export function ProgressDashboardScreen() {
     const formatShortDate = (dateString: string) => {
       const [y, m, d] = dateString.split('-');
       const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-      return new Intl.DateTimeFormat('en-US', {
+      return new Intl.DateTimeFormat(getLocaleTag(), {
         month: 'short',
         day: 'numeric',
       }).format(date);
@@ -397,16 +397,16 @@ export function ProgressDashboardScreen() {
       <View style={styles.tabContent}>
         <View style={styles.weekSelector}>
           <TouchableOpacity onPress={handlePreviousWeek}>
-            <Text style={styles.weekSelectorText}>{"<"} Prev</Text>
+            <Text style={styles.weekSelectorText}>{t('progress.dashboard.prev')}</Text>
           </TouchableOpacity>
           <Text style={styles.weekRangeText}>{weekRangeText}</Text>
           <TouchableOpacity onPress={handleNextWeek}>
-            <Text style={styles.weekSelectorText}>Next {">"}</Text>
+            <Text style={styles.weekSelectorText}>{t('progress.dashboard.next')}</Text>
           </TouchableOpacity>
         </View>
 
         <AppCard style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Water Intake (ml)</Text>
+          <Text style={styles.chartTitle}>{t('progress.dashboard.waterChart')}</Text>
           <View>
             <BarChart
               data={{
@@ -435,7 +435,7 @@ export function ProgressDashboardScreen() {
         </AppCard>
 
         <AppCard style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Coffee Intake (cups)</Text>
+          <Text style={styles.chartTitle}>{t('progress.dashboard.coffeeChart')}</Text>
           <View>
             <BarChart
               data={{
@@ -470,8 +470,8 @@ export function ProgressDashboardScreen() {
   return (
     <ScreenContainer>
       <SectionHeader
-        title="Progress dashboard"
-        subtitle="Your weight, your weekly consistency, and the points each thing you log earns."
+        title={t('progress.dashboard.title')}
+        subtitle={t('progress.dashboard.subtitle')}
       />
 
       <View style={styles.tabsContainer}>
@@ -479,13 +479,13 @@ export function ProgressDashboardScreen() {
           style={[styles.tabButton, activeTab === 'progress' && styles.tabButtonActive]}
           onPress={() => setActiveTab('progress')}
         >
-          <Text style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}>Progress</Text>
+          <Text style={[styles.tabText, activeTab === 'progress' && styles.tabTextActive]}>{t('progress.dashboard.tabProgress')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'hydration' && styles.tabButtonActive]}
           onPress={() => setActiveTab('hydration')}
         >
-          <Text style={[styles.tabText, activeTab === 'hydration' && styles.tabTextActive]}>Hydration</Text>
+          <Text style={[styles.tabText, activeTab === 'hydration' && styles.tabTextActive]}>{t('progress.dashboard.tabHydration')}</Text>
         </TouchableOpacity>
       </View>
 

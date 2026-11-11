@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AppButton } from '../components/AppButton';
-import { ONBOARDING_INTRO_PAGES } from '../features/onboarding/introPages';
+import { getOnboardingIntroPages } from '../features/onboarding/introPages';
 import { useAuthStore } from '../store/useAuthStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 import type { AuthStackParamList } from '../navigation/navigationTypes';
@@ -15,6 +16,7 @@ const SCROLL_EVENT_THROTTLE = 16;
 type Props = NativeStackScreenProps<AuthStackParamList, 'OnboardingIntro'>;
 
 export function OnboardingIntroScreen({ navigation }: Props) {
+  const ONBOARDING_INTRO_PAGES = getOnboardingIntroPages();
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -92,7 +94,7 @@ export function OnboardingIntroScreen({ navigation }: Props) {
                 </Animated.View>
 
                 <View style={styles.copy}>
-                  <Text style={styles.kicker}>Dietician onboarding</Text>
+                  <Text style={styles.kicker}>{t('onboarding.intro.kicker')}</Text>
                   <Text style={styles.title}>{page.title}</Text>
                   <Text style={styles.subtitle}>{page.subtitle}</Text>
                 </View>
@@ -151,9 +153,9 @@ export function OnboardingIntroScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.actions}>
-            <AppButton title="Skip" onPress={handleSkip} variant="ghost" />
+            <AppButton title={t('common.actions.skip')} onPress={handleSkip} variant="ghost" />
             <AppButton
-              title={currentIndex === ONBOARDING_INTRO_PAGES.length - 1 ? 'Continue' : 'Next'}
+              title={currentIndex === ONBOARDING_INTRO_PAGES.length - 1 ? t('common.actions.continue') : t('common.actions.next')}
               onPress={handleNext}
               style={styles.primaryAction}
             />

@@ -7,6 +7,7 @@ import { isApiError } from '../services/apiError';
 import { authService } from '../services/authService';
 import { toLegalAcceptance } from '../services/legalService';
 import { tokenService } from '../services/tokenService';
+import { t } from '../i18n';
 import { LegalDocument, User } from '../types/models';
 import { useDietPlanStore } from './useDietPlanStore';
 import { useLegalStore } from './useLegalStore';
@@ -114,7 +115,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Login failed.',
+        error: error instanceof Error ? error.message : t('auth.errors.loginFailed'),
       });
     }
   },
@@ -139,7 +140,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Registration failed.',
+        error: error instanceof Error ? error.message : t('auth.errors.registrationFailed'),
       });
     }
   },
@@ -147,7 +148,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   verifyOTP: async (otp: string) => {
     const { otpToken } = get();
     if (!otpToken) {
-      set({ error: 'No OTP flow is active.' });
+      set({ error: t('auth.errors.noOtpFlow') });
       return;
     }
 
@@ -178,7 +179,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Verification failed.',
+        error: error instanceof Error ? error.message : t('auth.errors.verificationFailed'),
       });
     }
   },

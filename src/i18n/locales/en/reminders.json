@@ -1,0 +1,36 @@
+{
+  "channels": {
+    "mealName": "Meal reminders",
+    "mealDescription": "A nudge at each meal in your plan.",
+    "awayName": "Away reminders",
+    "awayDescription": "A nudge after a few days without opening the app."
+  },
+  "titles": {
+    "Breakfast": "Time for breakfast",
+    "Lunch": "Time for lunch",
+    "Snack": "Snack time",
+    "Dinner": "Time for dinner"
+  },
+  "bodyEmpty": "Your plan has a meal ready for now. Tap to log it once you've eaten.",
+  "body_one": "On your plan: {{list}}. Tap to log it once you've eaten.",
+  "body_other": "On your plan: {{list}}. Tap to log them once you've eaten.",
+  "awayTitle": "Your plan is waiting",
+  "awayBody": "It's been a few days since you opened Eativio. Pick up your plan whenever you're ready.",
+  "screen": {
+    "everyDay": "Every plan day",
+    "snackDays": "On days your plan has a snack",
+    "noPlan": "You don't have a plan yet. Reminders start with your first one.",
+    "upcoming": "Your plan starts {{when}}, and reminders start with it.",
+    "ended": "Your plan has ended. Reminders start again with your next plan.",
+    "timeA11y": "{{meal}} reminder time",
+    "remindAt": "Remind me at",
+    "introTitle": "A nudge at each meal",
+    "introText": "Each reminder names that meal from your plan, and is skipped once you've logged it. Tap one to log your meal.",
+    "offTitle": "Notifications are off",
+    "offText": "Allow notifications for Eativio in Settings, and your reminders start again.",
+    "switchA11y": "{{meal}} reminder",
+    "awayTitle": "If you've been away",
+    "awayText": "A nudge when you haven't opened the app for {{days}} days, never at night.",
+    "awayA11y": "Away reminder"
+  }
+}

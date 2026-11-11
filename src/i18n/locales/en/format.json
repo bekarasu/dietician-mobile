@@ -1,0 +1,18 @@
+{
+  "notSetYet": "Not set yet",
+  "percent": "{{value}}%",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "relative": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}}d ago"
+  },
+  "startsIn": {
+    "tomorrow": "tomorrow",
+    "inDays_one": "in {{count}} day",
+    "inDays_other": "in {{count}} days"
+  }
+}

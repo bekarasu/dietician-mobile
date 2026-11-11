@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { isOnboardingComplete } from '../features/onboarding/validation';
+import { t } from '../i18n';
 import type { AppTabParamList } from '../navigation/navigationTypes';
 import { bloodTestService } from '../services/bloodTestService';
 import { onboardingService } from '../services/onboardingService';
@@ -122,7 +123,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     } catch (error) {
       set({
         isSubmitting: false,
-        error: error instanceof Error ? error.message : 'Unable to submit onboarding page.',
+        error: error instanceof Error ? error.message : t('onboarding.submitFailed'),
       });
 
       return null;
@@ -163,7 +164,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     // The answers stay now, so the weight they start from is logged.
     const { draft, hasSavedAnswers } = get();
     if (hasSavedAnswers && draft.weightKg) {
-      void useProgressStore.getState().addWeightLog(Number(draft.weightKg), 'Initial weight from onboarding');
+      void useProgressStore.getState().addWeightLog(Number(draft.weightKg), t('onboarding.initialWeightNote'));
     }
     set({ isCompleted: true, isRestarting: false, landingTab: 'DietPlan', hasSavedAnswers: false, bloodTestUploadIds: [] });
   },

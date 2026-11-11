@@ -3,11 +3,11 @@ import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../../components/AppButton';
+import { t } from '../../i18n';
 import { theme } from '../../theme/theme';
 import { DialogButton, QueuedDialog, useDialogStore } from './dialogStore';
 
 const BACKDROP = 'rgba(11, 19, 32, 0.45)';
-const DEFAULT_BUTTONS: DialogButton[] = [{ text: 'OK' }];
 
 function buttonVariant(button: DialogButton, hasDestructive: boolean) {
   if (button.style === 'destructive') {
@@ -46,7 +46,7 @@ export function DialogHost() {
     return null;
   }
 
-  const buttons = dialog.buttons ?? DEFAULT_BUTTONS;
+  const buttons: DialogButton[] = dialog.buttons ?? [{ text: t('common.actions.ok') }];
   const cancelButton = buttons.find((button) => button.style === 'cancel');
   const orderedButtons = [...buttons.filter((button) => button !== cancelButton), ...(cancelButton ? [cancelButton] : [])];
   const hasDestructive = buttons.some((button) => button.style === 'destructive');

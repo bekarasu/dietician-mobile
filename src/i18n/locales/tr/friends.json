@@ -1,0 +1,77 @@
+{
+  "searchFailed": "Şu anda arama yapılamadı. Lütfen tekrar deneyin.",
+  "shareMessage": "Eativio'da beni arkadaş olarak ekle! Arkadaş kodum: {{code}}.",
+  "remove": {
+    "title": "Arkadaşı çıkar",
+    "message": "{{name}} arkadaşlarınızdan çıkarılsın mı?"
+  },
+  "block": {
+    "title": "Kullanıcıyı engelle",
+    "message": "{{name}} sizi bulamayacak ve sıralamalarda birbirinizi görmeyeceksiniz. Aranızdaki arkadaşlık veya istekler sona erer."
+  },
+  "code": {
+    "label": "Arkadaş kodunuz",
+    "a11y": "Arkadaş kodunuz: {{digits}}",
+    "shareA11y": "Arkadaş kodunuzu paylaşın"
+  },
+  "search": {
+    "label": "Kişi bul",
+    "placeholder": "Ad, e-posta veya arkadaş kodu",
+    "searching": "Aranıyor…",
+    "hintEmpty": "Bir ad, tam bir e-posta adresi veya 8 haneli bir arkadaş kodu arayın.",
+    "hintOwnCode": "Bu sizin kendi arkadaş kodunuz. Arkadaşlarınızın sizi ekleyebilmesi için paylaşın.",
+    "hintEmail": "Yazmaya devam edin: e-posta araması için tam adres gerekir.",
+    "hintCode": "Arkadaş kodu 8 hanelidir, örneğin 4821 7730.",
+    "matchedEmail": "E-posta ile eşleşti",
+    "matchedCode": "Arkadaş kodu ile eşleşti",
+    "noName": "Bu adla kimse bulunamadı.",
+    "noEmail": "Bu e-posta adresiyle kimse bulunamadı. Yazımı kontrol edin veya arkadaş kodunu isteyin.",
+    "noCode": "Bu arkadaş koduna sahip kimse yok. Rakamları kontrol edin."
+  },
+  "loadFailed": "Arkadaşlarınız yüklenemedi. Lütfen tekrar deneyin.",
+  "requests": {
+    "title": "İstekler",
+    "new": "{{count}} yeni",
+    "incoming": "Arkadaş olmak istiyor · {{date}}",
+    "outgoing": "İstek gönderildi · {{date}}"
+  },
+  "list": {
+    "title": "Arkadaşlarınız",
+    "emptyTitle": "Henüz arkadaşınız yok",
+    "emptyText": "İlk isteğinizi göndermek için arkadaş kodunuzu paylaşın veya yukarıda bir ad, e-posta ya da kod arayın.",
+    "since": "{{date}} tarihinden beri arkadaş"
+  },
+  "blocked": {
+    "title": "Engellenenler",
+    "since": "{{date}} tarihinde engellendi"
+  },
+  "relationship": {
+    "friend": "Zaten arkadaşsınız",
+    "outgoing": "İstek gönderildi",
+    "incoming": "Arkadaş olmak istiyor",
+    "friends": "Arkadaşsınız"
+  },
+  "count": {
+    "friends_one": "{{count}} arkadaş",
+    "friends_other": "{{count}} arkadaş",
+    "people_one": "{{count}} kişi",
+    "people_other": "{{count}} kişi"
+  },
+  "profile": {
+    "friendsLeaderboard": "Arkadaş sıralaması",
+    "globalLeaderboard": "Genel sıralama",
+    "loadFailed": "Bu profil yüklenemedi. Lütfen tekrar deneyin.",
+    "unavailable": "Bu profil görüntülenemiyor.",
+    "addFriend": "Arkadaş ekle",
+    "addHint": "Kabul ettiğinde arkadaş sıralamanızda birbirinizi göreceksiniz.",
+    "cancelRequest": "İsteği iptal et",
+    "cancelHint": "Kabul ettiğinde onu arkadaş sıralamanıza ekleyeceğiz.",
+    "acceptRequest": "İsteği kabul et",
+    "standingA11y": "Sıra {{rank}}, {{points}} puan",
+    "rank": "SIRA",
+    "points": "PUAN"
+  },
+  "errors": {
+    "fetchProfile": "Profil alınamadı"
+  }
+}

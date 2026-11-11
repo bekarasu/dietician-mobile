@@ -22,12 +22,16 @@ The backend code is not in this repo. This file records what the client shows as
 
 Use `fetchWithAuth` for authenticated calls, or `fetchData` when the response uses the `{ message, data }` envelope and failures should throw. `authService` uses raw `fetch` on purpose, because `apiClient` imports it for token refresh.
 
+**Every request sends `Accept-Language: tr` or `en`** (from 2026-11-11), the app's language (see `src/i18n/README.md`). `fetchWithAuth` adds it; a raw `fetch` to the API must wrap its headers in `withLanguageHeader` (`src/services/requestHeaders.ts`), as `authService` and `legalService` do. The servers answer in Turkish for `tr` and English otherwise, including no header, and set `Content-Language`. Error messages, notification texts, legal documents, plan content and food names follow it; success `message` strings are English only.
+
+**Plans are kept in English and translated by the server** (recommendation-service from 2026-11-11). Every response with a plan (`/diet-plans/active`, `/:id`, create, renew, feedback, shared create and offer accept) has `name`, `description`, `ingredients` and `goals` in the header's language, so a plan follows the app's current language. A text the server can't translate within about 8 seconds comes back English and is ready on the next request, so refetching is the fix, never translating in the app. After a change of system language, refetch rather than keep a plan from before it. Extra meals stay as the user typed them. Ingredients keep their amount first and `g`, `kg`, `ml`, `l` as they are; other measures become Turkish words (`yemek kaşığı`, `su bardağı`, `adet`...), which `ShoppingListCard` parses as units. `GET /foods` gives `name` in the header's language, from a table on the server, and `english_name`, the name the server keeps the food by.
+
 ## Response shapes are not uniform
 
 | Endpoint | Shape | Client behavior |
 | --- | --- | --- |
 | Most endpoints | `{ data: ... }` | Service unwraps `json.data` |
-| `GET /foods` | `{ foods: [...] }` | No `data` wrapper. Fields are snake_case (`portion_size`), and `kcal`/`protein`/`carbs`/`fats` are per `portion_size` grams (100 for all foods), so scale them to the amount eaten (`foodToMealEntry`) |
+| `GET /foods` | `{ foods: [...] }` | No `data` wrapper. Fields are snake_case (`portion_size`, `english_name`), and `kcal`/`protein`/`carbs`/`fats` are per `portion_size` grams (100 for all foods), so scale them to the amount eaten (`foodToMealEntry`). Sorted by the translated `name`. Disliked foods and allergies are saved by the name shown, so `FoodSelectionList` and `searchFoods` match `english_name` too |
 | `/diet-plans*` | `{ message, data }` | Service returns raw JSON; **the store** unwraps `response?.data` |
 | `POST /diet-plans/active/renew` | `{ message, data }` | Exception: uses `fetchData`, so the check-in can show the server's translated error |
 | `GET /uploads` | `data` can be null | Falls back to `[]` |
@@ -122,7 +126,7 @@ The fridge lives in `profile.availableIngredients` (`InventoryScreen`). `useInve
 - `DietPlanScreen` refetches on focus, because the tab stays mounted while the current plan changes with the date.
 - `meal.isTaken` and `meal.isExtra` drive the UI. Extra meals are saved with `addExtraMeal` and always render as logged. Its body takes `proteinG`, `carbsG` and `fatG` beside `calories`; recommendation-service before 2026-11-06 ignores them.
 - `mealType` values are capitalized (`Breakfast`, `Lunch`, `Snack`, `Dinner`) for sorting. Other values sort last.
-- `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`.
+- `plan.goals` is free text. `GoalsCard` splits it on the literal `Target overview:`, `Rationale:`, `Tips:`, and `•`. Translation keeps these labels in English, and the server drops a translation that loses one, so the split works in every language.
 - After a plan mutation, the UI calls `fetchActivePlan()` rather than patching state.
 - **Generating a plan outlives its request.** Create, renew and feedback update take about a minute, and the server finishes and saves the plan even when the app is backgrounded or killed. iOS suspends the app in the background, so the request then fails or stalls. Start these through `runPlanGeneration` (`src/features/dietPlan/planGeneration.ts`): after an interruption it follows `GET /diet-plans/generation`, and recognizes its generation by an id different from the one read before starting. A saved plan's generation reads `completed` for a day, like `failed` and `cancelled`; a 404 after following one means it stopped without an end (its server crashed). Until recommendation-service from 2026-11-08 it was deleted instead, so the 404 made the app report a failure for a saved plan, and "Go back" reverted the onboarding answers. One generation runs per user, and starting another is a 409. A generation left running by an earlier session is found once, at launch (see dietician-session-flow), and opens `GeneratingDietPlanScreen`. Don't add checks on screen focus. The generating and check-in screens can cancel through `POST /diet-plans/generation/cancel` (`useCancelGeneration`). Nothing is saved, and the wait then throws an error that `isGenerationCancelled` recognizes, which is where a screen moves on. A cancel is a 409 once the generation is saving its plan, which then still arrives.
 
@@ -155,6 +159,7 @@ notification-service is the only place notifications are kept, and the app reads
 - Each item has `title` and `body` already rendered, in the `Accept-Language` language (English without it), and `data`, the same strings a push carries, `type` included. Route both through `openNotification` (`src/features/notifications/openNotification.ts`), so the inbox and a push open the same screen.
 - `POST /notifications/:id/read` and `POST /notifications/read-all` return `{ unreadCount }`; keep the badge (`useNotificationStore`) from those answers. Marking one already read is fine; another user's ID is a 404.
 - Every push carries `notificationId`, the inbox ID, and opening the push marks it read.
+- A push goes in the language of the phone it goes to: account-service keeps `Accept-Language` from the latest `PUT /devices` for each token (from 2026-11-11). `syncPushNotifications` registers again on every return to the foreground, which picks up a change of system language; keep that if you change it. A token registered before then gets English until it registers again.
 - Every notification to the user is in the inbox even when push is off, its channel lists it nowhere else, or the phone has no FCM token. Nothing tells the app one arrived except a push, so `NotificationBell` reads the count on focus, on foreground and every minute.
 - Requests are limited to 120 a minute per user.
 
@@ -222,5 +227,5 @@ From account-service migration 017 (2026-11-10).
 ## Health data and copy
 
 - Do not log health data. **Open:** `console.log` of the whole profile in `useProfileStore`. Remove it when working there.
-- Reuse `HEALTH_NOTICE`, `BLOOD_TEST_DISCLAIMER`, and `AI_GUIDANCE_NOTICE` from `src/constants/health.ts` instead of writing new disclaimers.
+- Reuse `getHealthNotice()`, `getBloodTestDisclaimer()`, and `getAiGuidanceNotice()` from `src/constants/health.ts` instead of writing new disclaimers. Their texts are under `health` in `src/i18n/locales`; change both languages.
 - User-facing guidance must not suggest severe restriction or compensating for overeating. Match the tone of `buildRecoveryRecommendation`. Never present output as diagnosis.

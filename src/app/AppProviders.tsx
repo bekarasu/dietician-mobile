@@ -9,6 +9,7 @@ import { DialogHost } from '../features/dialog/DialogHost';
 import { NetworkInspector } from '../features/networkInspector/NetworkInspector';
 import { usePushNotificationRegistration } from '../features/notifications/usePushNotifications';
 import { useAppBootstrap } from '../hooks/useAppBootstrap';
+import { useTranslationsKey } from '../i18n';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { theme } from '../theme/theme';
 
@@ -26,13 +27,16 @@ const navigationTheme = {
 
 export function AppProviders() {
   const isReady = useAppBootstrap();
+  // Screens read their texts while rendering and in navigator options, so the
+  // whole navigation tree remounts when the phone's language changes.
+  const translationsKey = useTranslationsKey();
   usePushNotificationRegistration(isReady);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         {isReady ? (
-          <NavigationContainer theme={navigationTheme}>
+          <NavigationContainer key={translationsKey} theme={navigationTheme}>
             <StatusBar style="dark" />
             <RootNavigator />
           </NavigationContainer>

@@ -1,6 +1,7 @@
 import { AppState, NativeEventSubscription } from 'react-native';
 
 import { recommendationService } from '../../services/recommendationService';
+import { t } from '../../i18n';
 import { PlanGeneration, PlanGenerationStatus } from '../../types/models';
 
 const POLL_INTERVAL_MS = 3000;
@@ -9,20 +10,18 @@ const POLL_INTERVAL_MS = 3000;
 // way, and the plan screens show it once saved.
 const MAX_IDLE_CHECKS = 5;
 
-const GENERATION_FAILED = 'We couldn\'t prepare your plan. Please try again.';
-const GENERATION_CANCELLED = 'Preparing your plan was cancelled.';
 const CANCELLED_ERROR_NAME = 'GenerationCancelled';
 
-export const GENERATION_DETAIL = 'This usually takes about a minute, and carries on if you leave the app.';
+export const getGenerationDetail = () => t('dietPlan.generation.detail');
 
 type Outcome = { ok: true } | { ok: false; error: unknown };
 
 // The error for a generation that ended without saving a plan.
 function generationError(status: PlanGenerationStatus) {
   if (status !== 'cancelled') {
-    return new Error(GENERATION_FAILED);
+    return new Error(t('dietPlan.generation.failed'));
   }
-  const error = new Error(GENERATION_CANCELLED);
+  const error = new Error(t('dietPlan.generation.cancelled'));
   error.name = CANCELLED_ERROR_NAME;
   return error;
 }
@@ -129,12 +128,12 @@ export async function runPlanGeneration(start: () => Promise<unknown>): Promise<
       idleChecks = 0;
     } else if (generation !== undefined && isFollowing) {
       // It expired before finishing, which happens when its server stops.
-      throw new Error(GENERATION_FAILED);
+      throw new Error(t('dietPlan.generation.failed'));
     } else if (generation !== undefined && outcome) {
       // The request failed before starting a generation, such as with a 409.
       throw outcome.error;
     } else if (++idleChecks >= MAX_IDLE_CHECKS) {
-      throw outcome ? outcome.error : new Error(GENERATION_FAILED);
+      throw outcome ? outcome.error : new Error(t('dietPlan.generation.failed'));
     }
 
     // A request still waiting can answer before the next check.

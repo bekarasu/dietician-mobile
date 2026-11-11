@@ -9,7 +9,7 @@ import { SectionHeader } from '../components/SectionHeader';
 import { StartDatePicker } from '../components/StartDatePicker';
 import { ListCard, RowAction, UserRow } from '../components/UserList';
 import { showDialog } from '../features/dialog/dialogStore';
-import { GENERATION_DETAIL, isGenerationCancelled, runPlanGeneration } from '../features/dietPlan/planGeneration';
+import { getGenerationDetail, isGenerationCancelled, runPlanGeneration } from '../features/dietPlan/planGeneration';
 import { useCancelGeneration } from '../features/dietPlan/useCancelGeneration';
 import { acceptSharedPlanOffer, askToSwitch, declineSharedPlanOffer } from '../features/sharedPlan/sharedPlanOffer';
 import { AppStackParamList } from '../navigation/navigationTypes';
@@ -17,6 +17,7 @@ import { friendService } from '../services/friendService';
 import { sharedPlanService } from '../services/sharedPlanService';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { Friend, SharedGroup, SharedGroupMember, SharedPlanInvite } from '../types/models';
 import { formatCalendarDate, formatDateLabel, toCalendarDate } from '../utils/date';
@@ -27,24 +28,24 @@ type Props = NativeStackScreenProps<AppStackParamList, 'SharedPlan'>;
 const DEFAULT_MAX_FRIENDS = 2;
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  return error instanceof Error ? error.message : t('common.errors.generic');
 }
 
 function joinNames(names: string[]) {
   if (names.length <= 1) {
     return names[0] ?? '';
   }
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  return t('common.list.and', { items: names.slice(0, -1).join(', '), last: names[names.length - 1] });
 }
 
 function getMemberDetail(member: SharedGroupMember) {
   if (member.status === 'invited') {
-    return 'Invited, waiting for an answer';
+    return t('sharedPlan.member.invited');
   }
   if (member.isOwner) {
-    return 'Started the group';
+    return t('sharedPlan.member.owner');
   }
-  return member.joinedAt ? `Joined ${formatDateLabel(member.joinedAt)}` : 'Joined';
+  return member.joinedAt ? t('sharedPlan.member.joinedOn', { date: formatDateLabel(member.joinedAt) }) : t('sharedPlan.member.joined');
 }
 
 export function SharedPlanScreen({ navigation }: Props) {
@@ -126,7 +127,7 @@ export function SharedPlanScreen({ navigation }: Props) {
       await action();
       await load();
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error), tone: 'danger' });
     } finally {
       setBusyId(null);
     }
@@ -144,12 +145,12 @@ export function SharedPlanScreen({ navigation }: Props) {
   const confirmAccept = (invite: SharedPlanInvite) => {
     const ownerName = invite.owner.displayName;
     showDialog({
-      title: `Share meals with ${ownerName}?`,
-      message: `You'll eat the same meals as the group, in portions for your own goal and weight. When ${ownerName} starts a shared plan, you'll be asked whether to switch to it, and your plan only changes if you do. You can leave at any time.`,
+      title: t('sharedPlan.accept.title', { name: ownerName }),
+      message: t('sharedPlan.accept.message', { name: ownerName }),
       icon: 'people-outline',
       buttons: [
-        { text: 'Join', onPress: () => run(invite.groupId, () => sharedPlanService.acceptInvite(invite.groupId)) },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.actions.join'), onPress: () => run(invite.groupId, () => sharedPlanService.acceptInvite(invite.groupId)) },
+        { text: t('common.actions.cancel'), style: 'cancel' },
       ],
     });
   };
@@ -157,15 +158,15 @@ export function SharedPlanScreen({ navigation }: Props) {
   const confirmRemove = (member: SharedGroupMember) => {
     const isInvite = member.status === 'invited';
     showDialog({
-      title: isInvite ? 'Withdraw invitation' : 'Remove from group',
+      title: isInvite ? t('sharedPlan.remove.withdrawTitle') : t('sharedPlan.remove.removeTitle'),
       message: isInvite
-        ? `Withdraw ${member.displayName}'s invitation?`
-        : `Remove ${member.displayName}? Their current plan stays as it is, and your next shared plans won't include them.`,
+        ? t('sharedPlan.remove.withdrawMessage', { name: member.displayName })
+        : t('sharedPlan.remove.removeMessage', { name: member.displayName }),
       icon: 'person-remove-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.actions.cancel'), style: 'cancel' },
         {
-          text: isInvite ? 'Withdraw' : 'Remove',
+          text: isInvite ? t('common.actions.withdraw') : t('common.actions.remove'),
           style: 'destructive',
           onPress: () => run(member.userId, () => sharedPlanService.removeMember(member.userId)),
         },
@@ -175,14 +176,14 @@ export function SharedPlanScreen({ navigation }: Props) {
 
   const confirmLeave = () => {
     showDialog({
-      title: isOwner ? 'Delete your group?' : 'Leave the group?',
+      title: isOwner ? t('sharedPlan.leave.deleteTitle') : t('sharedPlan.leave.leaveTitle'),
       message: isOwner
-        ? "Everyone's current plan stays as it is, but you won't share new plans any more."
-        : `Your current plan stays as it is, and you won't be offered ${owner?.displayName ?? 'the owner'}'s next shared plans.`,
+        ? t('sharedPlan.leave.deleteMessage')
+        : t('sharedPlan.leave.leaveMessage', { name: owner?.displayName ?? t('sharedPlan.leave.theOwner') }),
       icon: 'exit-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
-        { text: isOwner ? 'Delete group' : 'Leave', style: 'destructive', onPress: () => run('leave', sharedPlanService.leave) },
+        { text: t('common.actions.cancel'), style: 'cancel' },
+        { text: isOwner ? t('sharedPlan.leave.deleteGroup') : t('common.actions.leave'), style: 'destructive', onPress: () => run('leave', sharedPlanService.leave) },
       ],
     });
   };
@@ -194,18 +195,18 @@ export function SharedPlanScreen({ navigation }: Props) {
       await runPlanGeneration(() => sharedPlanService.createSharedPlan(startDate));
       await fetchActivePlan();
       showDialog({
-        title: 'Your shared plan is ready',
-        message: `${names} will be asked whether to switch to it when they next open the app. Their plans change only if they do.`,
+        title: t('sharedPlan.ready.title'),
+        message: t('sharedPlan.ready.message', { names }),
         icon: 'checkmark-circle-outline',
         buttons: isMounted.current
-          ? [{ text: 'See my plan', onPress: () => isMounted.current && navigation.canGoBack() && navigation.goBack() }]
+          ? [{ text: t('sharedPlan.ready.seePlan'), onPress: () => isMounted.current && navigation.canGoBack() && navigation.goBack() }]
           : undefined,
       });
     } catch (error) {
       if (isGenerationCancelled(error)) {
         return;
       }
-      showDialog({ title: "We couldn't prepare the shared plan", message: getErrorMessage(error), tone: 'danger' });
+      showDialog({ title: t('sharedPlan.createFailed'), message: getErrorMessage(error), tone: 'danger' });
     } finally {
       setIsGenerating(false);
     }
@@ -214,12 +215,12 @@ export function SharedPlanScreen({ navigation }: Props) {
   const confirmCreate = () => {
     const names = joinNames(joinedFriends.map((member) => member.displayName));
     showDialog({
-      title: 'Start a shared plan?',
-      message: `Your plan is replaced from ${formatCalendarDate(startDate)} with meals that suit ${names} too. If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset. ${names} will be asked whether to switch, and get portions for their own goal and weight if they do.`,
+      title: t('sharedPlan.start.title'),
+      message: t('sharedPlan.start.message', { date: formatCalendarDate(startDate), names }),
       icon: 'restaurant-outline',
       buttons: [
-        { text: 'Start shared plan', onPress: createPlan },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('sharedPlan.start.confirm'), onPress: createPlan },
+        { text: t('common.actions.cancel'), style: 'cancel' },
       ],
     });
   };
@@ -230,7 +231,7 @@ export function SharedPlanScreen({ navigation }: Props) {
     }
     return [
       {
-        label: member.status === 'invited' ? 'Withdraw' : 'Remove',
+        label: member.status === 'invited' ? t('common.actions.withdraw') : t('common.actions.remove'),
         icon: 'person-remove-outline',
         onPress: () => confirmRemove(member),
       },
@@ -243,9 +244,9 @@ export function SharedPlanScreen({ navigation }: Props) {
       return (
         <View style={[styles.card, styles.centered]}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
-          <Text style={styles.cardTitle}>Switching to the shared plan</Text>
-          <Text style={[styles.bodyText, styles.centeredText]}>{GENERATION_DETAIL}</Text>
-          <AppButton title="Stop" variant="ghost" loading={isCancelling} onPress={confirmCancel} />
+          <Text style={styles.cardTitle}>{t('sharedPlan.offerCard.switching')}</Text>
+          <Text style={[styles.bodyText, styles.centeredText]}>{getGenerationDetail()}</Text>
+          <AppButton title={t('dietPlan.generation.stop')} variant="ghost" loading={isCancelling} onPress={confirmCancel} />
         </View>
       );
     }
@@ -255,16 +256,15 @@ export function SharedPlanScreen({ navigation }: Props) {
 
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{offer.owner.displayName} started a shared plan</Text>
+        <Text style={styles.cardTitle}>{t('sharedPlan.offerCard.title', { name: offer.owner.displayName })}</Text>
         <Text style={styles.bodyText}>
-          It runs from {formatCalendarDate(offer.startDate)} to {formatCalendarDate(offer.endDate)}. Your plan stays as it is
-          until you choose. If you switch, you get the group's meals in portions for your own goal and weight.
+          {t('sharedPlan.offerCard.body', { start: formatCalendarDate(offer.startDate), end: formatCalendarDate(offer.endDate) })}
         </Text>
         <AppButton
-          title="Switch to the shared plan"
-          onPress={() => void askToSwitch(offer, { onSwitch: () => void acceptSharedPlanOffer(), dismissText: 'Cancel' })}
+          title={t('sharedPlan.offerCard.switch')}
+          onPress={() => void askToSwitch(offer, { onSwitch: () => void acceptSharedPlanOffer(), dismissText: t('common.actions.cancel') })}
         />
-        <AppButton title="Keep my plan" variant="ghost" onPress={() => void declineSharedPlanOffer()} />
+        <AppButton title={t('sharedPlan.offerCard.keep')} variant="ghost" onPress={() => void declineSharedPlanOffer()} />
       </View>
     );
   };
@@ -277,11 +277,9 @@ export function SharedPlanScreen({ navigation }: Props) {
     if (!group.isOwner) {
       return (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Shared plans</Text>
+          <Text style={styles.cardTitle}>{t('sharedPlan.planCard.memberTitle')}</Text>
           <Text style={styles.bodyText}>
-            {owner?.displayName ?? 'The owner'} starts the group's shared plans and renews them. You're asked each time whether
-            to switch, and your plan only changes if you do. Swapping a shared meal changes only yours, and it stops being
-            shared.
+            {t('sharedPlan.planCard.memberBody', { name: owner?.displayName ?? t('sharedPlan.planCard.theOwner') })}
           </Text>
         </View>
       );
@@ -290,8 +288,8 @@ export function SharedPlanScreen({ navigation }: Props) {
     if (joinedFriends.length === 0) {
       return (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Start a shared plan</Text>
-          <Text style={styles.bodyText}>Once a friend accepts your invitation, you can start a plan for all of you.</Text>
+          <Text style={styles.cardTitle}>{t('sharedPlan.planCard.startTitle')}</Text>
+          <Text style={styles.bodyText}>{t('sharedPlan.planCard.waiting')}</Text>
         </View>
       );
     }
@@ -300,23 +298,21 @@ export function SharedPlanScreen({ navigation }: Props) {
       return (
         <View style={[styles.card, styles.centered]}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
-          <Text style={styles.cardTitle}>Preparing your shared plan</Text>
-          <Text style={[styles.bodyText, styles.centeredText]}>{GENERATION_DETAIL}</Text>
-          <AppButton title="Stop" variant="ghost" loading={isCancelling} onPress={confirmCancel} />
+          <Text style={styles.cardTitle}>{t('sharedPlan.planCard.preparing')}</Text>
+          <Text style={[styles.bodyText, styles.centeredText]}>{getGenerationDetail()}</Text>
+          <AppButton title={t('dietPlan.generation.stop')} variant="ghost" loading={isCancelling} onPress={confirmCancel} />
         </View>
       );
     }
 
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Start a shared plan</Text>
+        <Text style={styles.cardTitle}>{t('sharedPlan.planCard.startTitle')}</Text>
         <Text style={styles.bodyText}>
-          You get your plan straight away. Your friends are asked whether to switch, and get the same meals with portions
-          worked out from their own goal and weight. Where someone's allergies, dislikes or diet rule out an ingredient, only
-          their own version of the meal changes, yours included. Pick a day you'll all have time to shop for.
+          {t('sharedPlan.planCard.startBody')}
         </Text>
         <StartDatePicker firstDate={today} onChange={setStartDate} value={startDate} />
-        <AppButton title="Create shared plan" onPress={confirmCreate} />
+        <AppButton title={t('sharedPlan.planCard.create')} onPress={confirmCreate} />
       </View>
     );
   };
@@ -329,8 +325,8 @@ export function SharedPlanScreen({ navigation }: Props) {
       }}
     >
       <SectionHeader
-        title="Share meals"
-        subtitle={`Eat the same meals with up to ${maxFriends} friends. Each of you gets portions for your own goal and weight.`}
+        title={t('sharedPlan.header.title')}
+        subtitle={t('sharedPlan.header.subtitle', { count: maxFriends })}
       />
 
       {isLoading ? <ActivityIndicator color={theme.colors.primary} style={styles.loading} /> : null}
@@ -340,26 +336,26 @@ export function SharedPlanScreen({ navigation }: Props) {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
           </View>
-          <Text style={[styles.bodyText, styles.centeredText]}>We couldn't load your shared meals. Please try again.</Text>
-          <AppButton title="Try again" onPress={loadScreen} variant="secondary" />
+          <Text style={[styles.bodyText, styles.centeredText]}>{t('sharedPlan.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={loadScreen} variant="secondary" />
         </View>
       ) : null}
 
       {!isLoading && !failed ? (
         <>
           {invites.length > 0 ? (
-            <ListCard title="Invitations">
+            <ListCard title={t('sharedPlan.invitations')}>
               {invites.map((invite) => {
                 const groupmates = invite.members.filter((member) => !member.isOwner).map((member) => member.displayName);
                 return (
                   <UserRow
                     key={invite.groupId}
                     actions={[
-                      { label: 'Join', tone: 'primary', onPress: () => confirmAccept(invite) },
-                      { label: 'Decline', onPress: () => run(invite.groupId, () => sharedPlanService.declineInvite(invite.groupId)) },
+                      { label: t('common.actions.join'), tone: 'primary', onPress: () => confirmAccept(invite) },
+                      { label: t('common.actions.decline'), onPress: () => run(invite.groupId, () => sharedPlanService.declineInvite(invite.groupId)) },
                     ]}
                     busy={busyId === invite.groupId}
-                    detail={groupmates.length > 0 ? `With ${joinNames(groupmates)}` : `Invited ${formatDateLabel(invite.invitedAt)}`}
+                    detail={groupmates.length > 0 ? t('sharedPlan.withNames', { names: joinNames(groupmates) }) : t('sharedPlan.invitedOn', { date: formatDateLabel(invite.invitedAt) })}
                     name={invite.owner.displayName}
                     stacked
                     userId={invite.owner.userId}
@@ -370,14 +366,14 @@ export function SharedPlanScreen({ navigation }: Props) {
           ) : null}
 
           {group ? (
-            <ListCard meta={`${others.length} of ${maxFriends} friends`} title="Your group">
+            <ListCard meta={t('sharedPlan.group.meta', { count: others.length, max: maxFriends })} title={t('sharedPlan.group.title')}>
               {group.members.map((member) => (
                 <UserRow
                   key={member.userId}
                   actions={getMemberActions(member)}
                   busy={busyId === member.userId}
                   detail={getMemberDetail(member)}
-                  name={member.isCurrentUser ? `${member.displayName} (you)` : member.displayName}
+                  name={member.isCurrentUser ? t('common.you', { name: member.displayName }) : member.displayName}
                   userId={member.userId}
                 />
               ))}
@@ -389,14 +385,14 @@ export function SharedPlanScreen({ navigation }: Props) {
           {renderPlanCard()}
 
           {isOwner && slotsLeft > 0 ? (
-            <ListCard meta={`${slotsLeft} ${slotsLeft === 1 ? 'spot' : 'spots'} left`} title="Invite friends">
+            <ListCard meta={t('sharedPlan.inviteFriends.spotsLeft', { count: slotsLeft })} title={t('sharedPlan.inviteFriends.title')}>
               {invitableFriends.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Text style={[styles.bodyText, styles.centeredText]}>
-                    {friends.length === 0 ? 'Add friends first, then invite them to share meals.' : 'Everyone you could invite is already in your group.'}
+                    {friends.length === 0 ? t('sharedPlan.inviteFriends.noFriends') : t('sharedPlan.inviteFriends.allInvited')}
                   </Text>
                   {friends.length === 0 ? (
-                    <AppButton title="Find friends" variant="secondary" onPress={() => navigation.navigate('Friends')} />
+                    <AppButton title={t('sharedPlan.inviteFriends.findFriends')} variant="secondary" onPress={() => navigation.navigate('Friends')} />
                   ) : null}
                 </View>
               ) : null}
@@ -404,10 +400,10 @@ export function SharedPlanScreen({ navigation }: Props) {
                 <UserRow
                   key={friend.userId}
                   actions={[
-                    { label: 'Invite', tone: 'primary', onPress: () => run(friend.userId, () => sharedPlanService.invite(friend.userId)) },
+                    { label: t('common.actions.invite'), tone: 'primary', onPress: () => run(friend.userId, () => sharedPlanService.invite(friend.userId)) },
                   ]}
                   busy={busyId === friend.userId}
-                  detail={`Friends since ${formatDateLabel(friend.friendsSince)}`}
+                  detail={t('sharedPlan.inviteFriends.friendsSince', { date: formatDateLabel(friend.friendsSince) })}
                   name={friend.displayName}
                   userId={friend.userId}
                 />
@@ -417,7 +413,7 @@ export function SharedPlanScreen({ navigation }: Props) {
 
           {group ? (
             <AppButton
-              title={group.isOwner ? 'Delete group' : 'Leave group'}
+              title={group.isOwner ? t('sharedPlan.leave.deleteGroup') : t('sharedPlan.leave.leaveGroup')}
               variant="ghost"
               loading={busyId === 'leave'}
               disabled={isGenerating || isAccepting}

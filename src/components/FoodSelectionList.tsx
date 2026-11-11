@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View }
 
 import { AppTextInput } from './AppTextInput';
 import { recommendationService } from '../services/recommendationService';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { FoodResponse } from '../types/models';
 
@@ -30,11 +31,17 @@ export function FoodSelectionList({ selectedFoodNames, onToggleFood }: FoodSelec
     fetchFoods();
   }, []);
 
+  // Choices are saved by the name shown, so one saved in the other language
+  // matches the food's English name or, failing that, nothing.
+  const isSelected = (food: FoodResponse) =>
+    selectedFoodNames.includes(food.name) || (!!food.english_name && selectedFoodNames.includes(food.english_name));
+
+  const query = searchQuery.toLowerCase();
   const filteredFoods = foods
-    .filter((food) => food.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((food) => food.name.toLowerCase().includes(query) || !!food.english_name?.toLowerCase().includes(query))
     .sort((a, b) => {
-      const aSelected = selectedFoodNames.includes(a.name);
-      const bSelected = selectedFoodNames.includes(b.name);
+      const aSelected = isSelected(a);
+      const bSelected = isSelected(b);
       
       if (aSelected && !bSelected) return -1;
       if (!aSelected && bSelected) return 1;
@@ -43,22 +50,32 @@ export function FoodSelectionList({ selectedFoodNames, onToggleFood }: FoodSelec
     });
 
   const renderItem = ({ item }: { item: FoodResponse }) => {
-    const isSelected = selectedFoodNames.includes(item.name);
+    const selected = isSelected(item);
+    const toggle = () => {
+      if (!selected) {
+        onToggleFood(item.name);
+        return;
+      }
+      // Unticking removes the choice in whichever name it was saved.
+      new Set([item.name, item.english_name]).forEach((name) => {
+        if (name && selectedFoodNames.includes(name)) onToggleFood(name);
+      });
+    };
     return (
       <TouchableOpacity
-        style={[styles.foodItem, isSelected && styles.foodItemSelected]}
-        onPress={() => onToggleFood(item.name)}
+        style={[styles.foodItem, selected && styles.foodItemSelected]}
+        onPress={toggle}
       >
         <View style={styles.foodInfo}>
-          <Text style={[styles.foodName, isSelected && styles.foodNameSelected]}>
+          <Text style={[styles.foodName, selected && styles.foodNameSelected]}>
             {item.name}
           </Text>
           <Text style={styles.foodMacros}>
-            {item.kcal} kcal | P: {item.protein}g | C: {item.carbs}g | F: {item.fats}g
+            {t('components.foodList.macros', { kcal: item.kcal, protein: item.protein, carbs: item.carbs, fats: item.fats })}
           </Text>
         </View>
-        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-          {isSelected && <Text style={styles.checkmark}>✓</Text>}
+        <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+          {selected && <Text style={styles.checkmark}>✓</Text>}
         </View>
       </TouchableOpacity>
     );
@@ -67,8 +84,8 @@ export function FoodSelectionList({ selectedFoodNames, onToggleFood }: FoodSelec
   return (
     <View style={styles.container}>
       <AppTextInput
-        label="Search Foods"
-        placeholder="e.g. Apple, Chicken Breast..."
+        label={t('components.foodList.searchLabel')}
+        placeholder={t('components.foodList.searchPlaceholder')}
         value={searchQuery}
         onChangeText={setSearchQuery}
         clearable
@@ -85,7 +102,7 @@ export function FoodSelectionList({ selectedFoodNames, onToggleFood }: FoodSelec
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No foods found matching "{searchQuery}"</Text>
+            <Text style={styles.emptyText}>{t('components.foodList.empty', { query: searchQuery })}</Text>
           }
         />
       )}

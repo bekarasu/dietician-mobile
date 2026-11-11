@@ -1,0 +1,48 @@
+{
+  "status": {
+    "pending": "Sonuçlar okunuyor",
+    "completed": "Sonuçlar okundu",
+    "parse_failed": "Sonuçlar okunamadı"
+  },
+  "lock": {
+    "setupTitle": "Ekran kilidi ayarlayın",
+    "setupMessage": "Kan tahlili sonuçlarınız ekran kilidinizle korunur. Bunu kullanmak için telefon ayarlarınızdan bir şifre veya biyometrik kilit ayarlayın.",
+    "usePasscode": "Şifre Kullan",
+    "prompt": "Kan tahlili sonuçlarınızın kilidini açın",
+    "unlockText": "Kan tahlili sonuçlarınızı görmek için kilidi açın.",
+    "unlock": "Kilidi aç"
+  },
+  "hidePrompt": "Bu sonucu gizlemek için kilidi açın",
+  "showPrompt": "Bu sonucu göstermek için kilidi açın",
+  "hideFailed": "Bu sonuç gizlenemedi. Lütfen tekrar deneyin.",
+  "showFailed": "Bu sonuç gösterilemedi. Lütfen tekrar deneyin.",
+  "delete": {
+    "title": "Bu sonuç silinsin mi?",
+    "message": "Sonuçlarınızdan kaldırılır ve sonraki planlarınızda kullanılmaz.",
+    "prompt": "Bu sonucu silmek için kilidi açın",
+    "failed": "Bu sonuç silinemedi. Lütfen tekrar deneyin."
+  },
+  "header": {
+    "title": "Kan tahlili sonuçları",
+    "lockedSubtitle": "Sonuçlarınız ekran kilidinizle korunur.",
+    "subtitle": "Eklediğiniz raporlar ve onlardan okunan sonuçlar."
+  },
+  "hiddenNote": "Bu sonuç gizli. Okunanları görmek için gösterin.",
+  "stillReading": "Bu rapor hâlâ okunuyor.",
+  "noResults": "Bu rapordan sonuç okunamadı.",
+  "table": {
+    "test": "Test",
+    "result": "Sonuç",
+    "reference": "Ref"
+  },
+  "item": {
+    "hidden": "Gizli kan tahlili",
+    "title": "Kan tahlili",
+    "show": "Sonucu göster",
+    "hide": "Sonucu gizle",
+    "delete": "Sonucu sil"
+  },
+  "loadFailed": "Kan tahlilleriniz yüklenemedi. Lütfen tekrar deneyin.",
+  "empty": "Henüz bir kan tahlili eklemediniz. Profilinizden kurulumu yeniden başlatarak ekleyebilirsiniz.",
+  "disclaimerTitle": "Tıbbi uyarı"
+}

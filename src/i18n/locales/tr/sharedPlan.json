@@ -1,0 +1,93 @@
+{
+  "member": {
+    "invited": "Davet edildi, yanıt bekleniyor",
+    "owner": "Grubu başlattı",
+    "joinedOn": "{{date}} tarihinde katıldı",
+    "joined": "Katıldı"
+  },
+  "accept": {
+    "title": "{{name}} ile öğünler paylaşılsın mı?",
+    "message": "Grupla aynı öğünleri, kendi hedefinize ve kilonuza göre porsiyonlarla yersiniz. {{name}} ortak bir plan başlattığında geçmek isteyip istemediğiniz sorulur; planınız yalnızca siz geçerseniz değişir. İstediğiniz zaman ayrılabilirsiniz."
+  },
+  "remove": {
+    "withdrawTitle": "Daveti geri çek",
+    "removeTitle": "Gruptan çıkar",
+    "withdrawMessage": "{{name}} için gönderilen davet geri çekilsin mi?",
+    "removeMessage": "{{name}} gruptan çıkarılsın mı? Mevcut planı olduğu gibi kalır ve sonraki ortak planlarınıza dahil edilmez."
+  },
+  "leave": {
+    "deleteTitle": "Grubunuz silinsin mi?",
+    "leaveTitle": "Gruptan ayrılmak istiyor musunuz?",
+    "deleteMessage": "Herkesin mevcut planı olduğu gibi kalır, ancak artık yeni planlar paylaşmazsınız.",
+    "leaveMessage": "Mevcut planınız olduğu gibi kalır ve {{name}} tarafından başlatılan sonraki ortak planlar size önerilmez.",
+    "theOwner": "grup sahibi",
+    "deleteGroup": "Grubu sil",
+    "leaveGroup": "Gruptan ayrıl"
+  },
+  "ready": {
+    "title": "Ortak planınız hazır",
+    "message": "{{names}} uygulamayı bir sonraki açışında bu plana geçmek isteyip istemediği sorulacak. Planları yalnızca geçerlerse değişir.",
+    "seePlan": "Planımı gör"
+  },
+  "createFailed": "Ortak plan hazırlanamadı",
+  "start": {
+    "title": "Ortak plan başlatılsın mı?",
+    "message": "Planınız {{date}} tarihinden itibaren {{names}} için de uygun öğünlerle değiştirilir. O tarihte planınız devam ediyorsa, o haftanın önceki günlerinde planınızdan kazandığınız öğün, su ve kahve puanları sıfırlanır. {{names}} geçmek isteyip istemediği sorulacak ve geçerse kendi hedefine ve kilosuna göre porsiyonlar alacak.",
+    "confirm": "Ortak planı başlat"
+  },
+  "offerCard": {
+    "switching": "Ortak plana geçiliyor",
+    "title": "{{name}} ortak bir plan başlattı",
+    "body": "Plan {{start}} ile {{end}} arasında geçerli. Siz karar verene kadar planınız olduğu gibi kalır. Geçerseniz grubun öğünlerini kendi hedefinize ve kilonuza göre porsiyonlarla alırsınız.",
+    "switch": "Ortak plana geç",
+    "keep": "Planımı koru"
+  },
+  "planCard": {
+    "memberTitle": "Ortak planlar",
+    "theOwner": "Grup sahibi",
+    "memberBody": "{{name}} grubun ortak planlarını başlatır ve yeniler. Her seferinde geçmek isteyip istemediğiniz sorulur; planınız yalnızca siz geçerseniz değişir. Ortak bir öğünü değiştirmek yalnızca sizinkini değiştirir ve öğün artık ortak olmaz.",
+    "startTitle": "Ortak plan başlatın",
+    "waiting": "Bir arkadaşınız davetinizi kabul ettiğinde hepiniz için bir plan başlatabilirsiniz.",
+    "preparing": "Ortak planınız hazırlanıyor",
+    "startBody": "Planınızı hemen alırsınız. Arkadaşlarınıza geçmek isteyip istemedikleri sorulur; geçerlerse aynı öğünleri kendi hedeflerine ve kilolarına göre hesaplanan porsiyonlarla alırlar. Birinin alerjisi, sevmedikleri veya beslenme şekli bir malzemeyi dışarıda bırakıyorsa yalnızca o kişinin öğün versiyonu değişir; sizinki de dahil. Hepinizin alışverişe vakit bulabileceği bir gün seçin.",
+    "create": "Ortak plan oluştur"
+  },
+  "header": {
+    "title": "Öğünleri paylaşın",
+    "subtitle": "En fazla {{count}} arkadaşınızla aynı öğünleri yiyin. Herkes kendi hedefine ve kilosuna göre porsiyon alır."
+  },
+  "loadFailed": "Ortak öğünleriniz yüklenemedi. Lütfen tekrar deneyin.",
+  "invitations": "Davetler",
+  "withNames": "{{names}} ile",
+  "invitedOn": "{{date}} tarihinde davet edildi",
+  "group": {
+    "title": "Grubunuz",
+    "meta": "{{count}}/{{max}} arkadaş"
+  },
+  "inviteFriends": {
+    "title": "Arkadaş davet et",
+    "spotsLeft_one": "{{count}} yer kaldı",
+    "spotsLeft_other": "{{count}} yer kaldı",
+    "noFriends": "Önce arkadaş ekleyin, sonra onları öğünlerinizi paylaşmaya davet edin.",
+    "allInvited": "Davet edebileceğiniz herkes zaten grubunuzda.",
+    "findFriends": "Arkadaş bul",
+    "friendsSince": "{{date}} tarihinden beri arkadaş"
+  },
+  "offer": {
+    "title": "Ortak plana geçilsin mi?",
+    "message": "{{name}}, {{end}} tarihine kadar sürecek ortak bir plan başlattı. Geçerseniz grubunuzla aynı öğünleri, kendi hedefinize ve kilonuza göre hesaplanan ve alerjilerinize, sevmediklerinize ve beslenme şeklinize göre uyarlanan porsiyonlarla yersiniz; bu plan {{from}} itibaren mevcut planınızın yerini alır.",
+    "today": "bugünden",
+    "pointsUnknown": "O tarihte planınız devam ediyorsa, o haftanın önceki günlerinde planınızdan kazandığınız öğün, su ve kahve puanları sıfırlanır; o günler yine de haftalık ortalamanıza dahil edilir.",
+    "points_one": "Bu, bu hafta planınızdan kazandığınız {{count}} puanı sıfırlar; o günler yine de haftalık ortalamanıza dahil edilir.",
+    "points_other": "Bu, bu hafta planınızdan kazandığınız {{count}} puanı sıfırlar; o günler yine de haftalık ortalamanıza dahil edilir.",
+    "prepTime": "Porsiyonlarınızın hazırlanması yaklaşık bir dakika sürer.",
+    "switch": "Geç",
+    "acceptedTitle": "Ortak plandasınız",
+    "acceptedMessage": "Artık grubunuzla aynı öğünlere, kendi hedefinize ve kilonuza göre porsiyonlarla sahipsiniz.",
+    "acceptFailed": "Ortak plana geçişiniz yapılamadı"
+  },
+  "errors": {
+    "loadMeals": "Ortak öğünler yüklenemedi",
+    "loadPlan": "Ortak plan yüklenemedi"
+  }
+}

@@ -7,18 +7,13 @@ import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
-import { BLOOD_TEST_DISCLAIMER } from '../constants/health';
+import { getBloodTestDisclaimer } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
 import { bloodTestService } from '../services/bloodTestService';
+import { t, translateIfExists } from '../i18n';
 import { theme } from '../theme/theme';
 import { BloodTestUpload } from '../types/models';
 import { formatDateLabel } from '../utils/date';
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Reading results',
-  completed: 'Results read',
-  parse_failed: 'Results not read',
-};
 
 // The screen lock, by biometrics or passcode, guards the results. The server
 // doesn't ask for it, so it only keeps out someone else holding the phone.
@@ -26,14 +21,14 @@ async function unlock(promptMessage: string) {
   const level = await LocalAuthentication.getEnrolledLevelAsync();
   if (level === LocalAuthentication.SecurityLevel.NONE) {
     showDialog({
-      title: 'Set up a screen lock',
-      message: 'Your blood test results are protected by your screen lock. Set up a passcode or biometrics in your phone settings to use this.',
+      title: t('bloodTest.lock.setupTitle'),
+      message: t('bloodTest.lock.setupMessage'),
       icon: 'lock-closed-outline',
     });
     return false;
   }
 
-  const result = await LocalAuthentication.authenticateAsync({ promptMessage, fallbackLabel: 'Use Passcode' });
+  const result = await LocalAuthentication.authenticateAsync({ promptMessage, fallbackLabel: t('bloodTest.lock.usePasscode') });
   return result.success;
 }
 
@@ -59,7 +54,7 @@ export function BloodTestUploadScreen() {
   const tryUnlock = useCallback(async () => {
     setIsUnlocking(true);
     try {
-      if (await unlock('Unlock your blood test results')) {
+      if (await unlock(t('bloodTest.lock.prompt'))) {
         setIsUnlocked(true);
         void load();
       }
@@ -97,7 +92,7 @@ export function BloodTestUploadScreen() {
       await action();
     } catch (error) {
       console.error('Failed to change a blood test', error);
-      showDialog({ title: 'Error', message: failure, tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: failure, tone: 'danger' });
       await load();
     } finally {
       setBusyId(null);
@@ -108,8 +103,8 @@ export function BloodTestUploadScreen() {
     const isHidden = !upload.isHidden;
     void run(
       upload.id,
-      isHidden ? 'Unlock to hide this result' : 'Unlock to show this result',
-      `We couldn't ${isHidden ? 'hide' : 'show'} this result. Please try again.`,
+      isHidden ? t('bloodTest.hidePrompt') : t('bloodTest.showPrompt'),
+      isHidden ? t('bloodTest.hideFailed') : t('bloodTest.showFailed'),
       async () => {
         await bloodTestService.toggleVisibility(upload.id, isHidden);
         setUploads((current) => current?.map((item) => (item.id === upload.id ? { ...item, isHidden } : item)));
@@ -119,19 +114,19 @@ export function BloodTestUploadScreen() {
 
   const confirmDelete = (upload: BloodTestUpload) => {
     showDialog({
-      title: 'Delete this result?',
-      message: 'It leaves your results, and your next plans won\'t use it.',
+      title: t('bloodTest.delete.title'),
+      message: t('bloodTest.delete.message'),
       icon: 'trash-outline',
       buttons: [
         {
-          text: 'Delete',
+          text: t('common.actions.delete'),
           style: 'destructive',
-          onPress: () => run(upload.id, 'Unlock to delete this result', 'We couldn\'t delete this result. Please try again.', async () => {
+          onPress: () => run(upload.id, t('bloodTest.delete.prompt'), t('bloodTest.delete.failed'), async () => {
             await bloodTestService.deleteUpload(upload.id);
             setUploads((current) => current?.filter((item) => item.id !== upload.id));
           }),
         },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.actions.cancel'), style: 'cancel' },
       ],
     });
   };
@@ -139,7 +134,7 @@ export function BloodTestUploadScreen() {
   if (!isUnlocked) {
     return (
       <ScreenContainer>
-        <SectionHeader title="Blood test results" subtitle="Your results are protected by your screen lock." />
+        <SectionHeader title={t('bloodTest.header.title')} subtitle={t('bloodTest.header.lockedSubtitle')} />
         {isUnlocking ? (
           <ActivityIndicator color={theme.colors.primary} size="large" style={styles.loading} />
         ) : (
@@ -147,8 +142,8 @@ export function BloodTestUploadScreen() {
             <View style={styles.stateIcon}>
               <Ionicons color={theme.colors.primary} name="lock-closed-outline" size={28} />
             </View>
-            <Text style={styles.stateText}>Unlock to see your blood test results.</Text>
-            <AppButton title="Unlock" onPress={tryUnlock} />
+            <Text style={styles.stateText}>{t('bloodTest.lock.unlockText')}</Text>
+            <AppButton title={t('bloodTest.lock.unlock')} onPress={tryUnlock} />
           </AppCard>
         )}
       </ScreenContainer>
@@ -159,12 +154,12 @@ export function BloodTestUploadScreen() {
     const groups = upload.parsedResults?.testGroups ?? [];
 
     if (upload.isHidden) {
-      return <Text style={styles.noteText}>This result is hidden. Show it to see what was read from it.</Text>;
+      return <Text style={styles.noteText}>{t('bloodTest.hiddenNote')}</Text>;
     }
     if (groups.length === 0) {
       return (
         <Text style={styles.noteText}>
-          {upload.status === 'pending' ? 'We\'re still reading this report.' : 'No results could be read from this report.'}
+          {upload.status === 'pending' ? t('bloodTest.stillReading') : t('bloodTest.noResults')}
         </Text>
       );
     }
@@ -173,9 +168,9 @@ export function BloodTestUploadScreen() {
       <View key={groupIndex} style={styles.tableGroup}>
         {group.groupName ? <Text style={styles.groupTitle}>{group.groupName}</Text> : null}
         <View style={styles.tableHeader}>
-          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.testColumn]}>Test</Text>
-          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>Result</Text>
-          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>Ref</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.testColumn]}>{t('bloodTest.table.test')}</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>{t('bloodTest.table.result')}</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderCell, styles.valueColumn]}>{t('bloodTest.table.reference')}</Text>
         </View>
         {group.tests.map((test, testIndex) => (
           <View key={testIndex} style={styles.tableRow}>
@@ -204,10 +199,10 @@ export function BloodTestUploadScreen() {
           </View>
           <View style={styles.uploadText}>
             <Text style={[styles.uploadTitle, upload.isHidden && styles.hiddenTitle]}>
-              {upload.isHidden ? 'Hidden blood test' : 'Blood test'}
+              {upload.isHidden ? t('bloodTest.item.hidden') : t('bloodTest.item.title')}
             </Text>
             <Text style={styles.uploadMeta}>
-              {formatDateLabel(upload.createdAt)} · {STATUS_LABELS[upload.status] ?? upload.status}
+              {formatDateLabel(upload.createdAt)} · {translateIfExists(`bloodTest.status.${upload.status}`) ?? upload.status}
             </Text>
           </View>
           {busyId === upload.id ? (
@@ -216,13 +211,13 @@ export function BloodTestUploadScreen() {
             <>
               <IconButton
                 icon={upload.isHidden ? 'eye-off-outline' : 'eye-outline'}
-                label={upload.isHidden ? 'Show result' : 'Hide result'}
+                label={upload.isHidden ? t('bloodTest.item.show') : t('bloodTest.item.hide')}
                 disabled={busyId !== null}
                 onPress={() => toggleVisibility(upload)}
               />
               <IconButton
                 icon="trash-outline"
-                label="Delete result"
+                label={t('bloodTest.item.delete')}
                 color={theme.colors.danger}
                 disabled={busyId !== null}
                 onPress={() => confirmDelete(upload)}
@@ -244,8 +239,8 @@ export function BloodTestUploadScreen() {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>We couldn't load your blood tests. Please try again.</Text>
-          <AppButton title="Try again" onPress={retry} variant="secondary" />
+          <Text style={styles.stateText}>{t('bloodTest.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={retry} variant="secondary" />
         </AppCard>
       );
     }
@@ -260,7 +255,7 @@ export function BloodTestUploadScreen() {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="document-text-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>You haven't added a blood test yet. You can add one by restarting onboarding from your profile.</Text>
+          <Text style={styles.stateText}>{t('bloodTest.empty')}</Text>
         </AppCard>
       );
     }
@@ -270,11 +265,11 @@ export function BloodTestUploadScreen() {
 
   return (
     <ScreenContainer>
-      <SectionHeader title="Blood test results" subtitle="The reports you've added, and the results read from them." />
+      <SectionHeader title={t('bloodTest.header.title')} subtitle={t('bloodTest.header.subtitle')} />
 
       <AppCard style={styles.warningCard}>
-        <Text style={styles.warningTitle}>Medical disclaimer</Text>
-        <Text style={styles.warningText}>{BLOOD_TEST_DISCLAIMER}</Text>
+        <Text style={styles.warningTitle}>{t('bloodTest.disclaimerTitle')}</Text>
+        <Text style={styles.warningText}>{getBloodTestDisclaimer()}</Text>
       </AppCard>
 
       {renderList()}

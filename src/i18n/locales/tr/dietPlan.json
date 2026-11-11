@@ -1,0 +1,147 @@
+{
+  "generation": {
+    "detail": "Bu genellikle yaklaşık bir dakika sürer ve uygulamadan çıksanız da devam eder.",
+    "failed": "Planınız hazırlanamadı. Lütfen tekrar deneyin.",
+    "cancelled": "Planınızın hazırlanması iptal edildi.",
+    "tooLateTitle": "Durdurmak için çok geç",
+    "tooLateMessage": "Planınız zaten kaydediliyor.",
+    "stopFailed": "Planınızın hazırlanması durdurulamadı. Lütfen tekrar deneyin.",
+    "stopTitle": "Planınızın hazırlanması durdurulsun mu?",
+    "stopMessage": "Hiçbir şey kaydedilmez ve yeniden başlayabilirsiniz.",
+    "stop": "Durdur"
+  },
+  "points": {
+    "logWaterFirst": "Önce su kaydedin",
+    "coffeeOver": "{{cups}} fincan, {{limit}} sınırınızın üzerinde",
+    "coffeeOf": "{{cups}} / {{limit}} fincan",
+    "upcomingDetail": "Puan kazanmak için bu gün öğünlerinizi, suyunuzu ve kahvenizi kaydedin.",
+    "weekLine": "Bu hafta: {{total}} = kilo {{weight}} + öğün {{meals}} + su {{water}} + kahve {{coffee}}",
+    "weekNoteToday": "Haftanın öğün, su ve kahve puanları günlerinizin ortalamasıdır. Bugün, bitene kadar aleyhinize sayılmaz.",
+    "weekNote": "Haftanın öğün, su ve kahve puanları günlerinizin ortalamasıdır.",
+    "upTo": "En fazla {{max}}",
+    "title": "Günün puanları",
+    "mealsLogged": "3 öğünden {{count}} kayıtlı",
+    "mealsLoggedSoFar": "Şimdiye kadar 3 öğünden {{count}} kayıtlı",
+    "waterOf": "{{amount}} / {{target}}",
+    "waterOfSoFar": "Şimdiye kadar {{amount}} / {{target}}",
+    "mealsCountHint": "Öğünler, ait oldukları plan gününe değil, yenildi olarak işaretlediğiniz güne sayılır."
+  },
+  "view": {
+    "current": "Bu plan",
+    "next": "Sonraki plan"
+  },
+  "status": {
+    "dayOf": "Gün {{day}}/{{total}}",
+    "ends": "{{date}} tarihinde bitiyor",
+    "startsIn": "Planınız {{when}} başlıyor",
+    "upcomingDetail": "1. gün {{date}}. Öğünlerinize şimdiden göz atın. Kayıt ve puanlar 1. günde başlar.",
+    "ended": "Planınız {{date}} tarihinde sona erdi",
+    "endedDetail": "Sonraki planınızı almak için değerlendirme yapın.",
+    "lastDay": "Planınızın son günü",
+    "lastDayDetail": "Sonraki planınızın alışveriş için zamanında hazır olması için şimdi değerlendirme yapın.",
+    "nextStarts": "Sonraki planınız {{date}} tarihinde başlıyor.",
+    "renew": "Planımı Yenile"
+  },
+  "shared": {
+    "title": "Ortak plan",
+    "invite": "Öğünleri arkadaşlarınızla paylaşın",
+    "detail": "Grubunuzdaki herkes aynı öğünleri, kendi hedefine göre porsiyonlarla yer. Kimlerin olduğunu görmek için dokunun.",
+    "inviteDetail": "En fazla 2 arkadaşınızla aynı öğünleri, kendi hedefinize ve kilonuza göre porsiyonlarla yiyin.",
+    "switching": "Ortak plana geçiliyor",
+    "switchingDetail": "Porsiyonlarınız hazırlanıyor. Bu genellikle yaklaşık bir dakika sürer.",
+    "offer": "{{name}} ortak bir plan başlattı",
+    "offerDetail": "Siz karar verene kadar planınız olduğu gibi kalır. Geçip geçmeyeceğinize karar vermek için dokunun."
+  },
+  "goals": {
+    "title": "Plan Özeti",
+    "readMore": "Planınız hakkında daha fazlası",
+    "targetOverview": "Hedef özeti",
+    "rationale": "Gerekçe",
+    "tips": "İpuçları"
+  },
+  "shopping": {
+    "title": "Günlük Alışveriş Listesi",
+    "intro": "Bugünün plan öğünleri için hesaplanan malzemeler:"
+  },
+  "meal": {
+    "swapFailed": "Öğün değiştirilemedi.",
+    "logFailed": "Öğün kaydedilemedi.",
+    "swapSharedTitle": "Bu ortak öğün değiştirilsin mi?",
+    "swapSharedMessage": "\"Herkes için değiştir\", grubunuzda bu öğünü henüz yemeyen herkes için öğünü kendi porsiyonlarıyla değiştirir. \"Sadece benim için\" yalnızca sizin öğününüzü değiştirir ve öğün artık ortak olmaz; grup kendi öğününü korur.",
+    "swapEveryone": "Herkes için değiştir",
+    "swapMe": "Sadece benim için",
+    "extra": "EK",
+    "shared": "ORTAK",
+    "description": "Açıklama",
+    "ingredients": "Malzemeler",
+    "swapping": "Öğün değiştiriliyor...",
+    "swap": "Öğünü Değiştir",
+    "taken": "Öğünü Yedim"
+  },
+  "empty": {
+    "title": "Aktif Diyet Planı Yok",
+    "text": "Henüz aktif bir diyet planınız yok. Öğünlerinizi burada görmek için bir plan oluşturun."
+  },
+  "header": {
+    "title": "Diyet Planınız",
+    "subtitle": "Size özel beslenme planınıza bağlı kalın."
+  },
+  "day": "{{day}}. Gün",
+  "todaySuffix": " · Bugün",
+  "dailyProgress": "Günlük İlerleme",
+  "noMeals": "Bu gün için öğün bulunamadı.",
+  "additionalMeals": "Ek Öğünler",
+  "extraMeal": {
+    "loadingFoods": "Yiyecekler yükleniyor…",
+    "foodsFailed": "Yiyecek listesi yüklenemedi. Öğünü ve kalorisini kendiniz girin.",
+    "notInList": "Listede yok. Kalorisini aşağıya kendiniz girin.",
+    "pickHint": "Kalori ve makrolarını doldurmak için bir yiyecek seçin ya da kendiniz girin.",
+    "logFailed": "Ek öğün kaydedilemedi.",
+    "add": "Ek Öğün Ekle",
+    "title": "Ek Öğün Kaydet",
+    "food": "Yiyecek",
+    "kcalPer": "{{portion}} g başına {{kcal}} kcal",
+    "changeFood": "Yiyeceği değiştir",
+    "searchPlaceholder": "Yiyecek arayın veya kendiniz yazın",
+    "suggestionMacros": "{{portion}} g başına {{kcal}} kcal · P {{protein}} g · K {{carbs}} g · Y {{fats}} g",
+    "amount": "Miktar",
+    "amountHint": "Kaç gram yediğinizi girin.",
+    "calories": "Kalori (isteğe bağlı)",
+    "caloriesPlaceholder": "ör. 250",
+    "protein": "Protein (g)",
+    "carbs": "Karbonhidrat (g)",
+    "fat": "Yağ (g)",
+    "mealType": "Öğün Türü",
+    "mealTypePlaceholder": "ör. Ara öğün, Tatlı"
+  },
+  "checkIn": {
+    "effort": {
+      "too_hard": "Çok zor",
+      "about_right": "Tam kararında",
+      "too_easy": "Çok kolay"
+    },
+    "mealChoice": {
+      "keep_favourites": "Favorileri koru",
+      "start_fresh": "Yeniden başla"
+    },
+    "checkWeightTitle": "Kilonuzu kontrol edin",
+    "checkWeightMessage": "Kilonuzu kilogram olarak girin veya boş bırakın.",
+    "weightNote": "Plan değerlendirmesinden kaydedildi",
+    "weightFailed": "Kilonuz kaydedilemedi. Lütfen tekrar deneyin.",
+    "createFailed": "Sonraki planınız oluşturulamadı. Lütfen tekrar deneyin.",
+    "title": "Bu plan nasıl geçti?",
+    "subtitle": "Yanıtlarınız ve kaydettiğiniz öğünler sonraki planınızı şekillendirir.",
+    "weight": "Bugünkü kilo (isteğe bağlı)",
+    "weightPlaceholder": "ör. 72,5",
+    "feel": "Plan nasıldı?",
+    "nextMeals": "Sonraki öğünleriniz",
+    "keepHint": "Yenildi olarak işaretlediğiniz öğünleri geri getirip bazı yenilerini ekleyeceğiz.",
+    "freshHint": "Tüm öğünler yeni olacak.",
+    "startOn": "Sonraki planınızın başlangıç günü",
+    "create": "Sonraki Planımı Oluştur"
+  },
+  "foodSelection": {
+    "saveFailed": "Seçiminiz kaydedilemedi. Lütfen tekrar deneyin.",
+    "save": "Seçimi Kaydet"
+  }
+}

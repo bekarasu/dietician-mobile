@@ -1,0 +1,23 @@
+{
+  "tabs": {
+    "today": "Bugün",
+    "dietPlan": "Diyet Planı",
+    "leaderboard": "Sıralama",
+    "progress": "İlerleme",
+    "profile": "Profil"
+  },
+  "home": "Ana Sayfa",
+  "fridge": "Buzdolabım",
+  "hydration": "Su ve Kahve",
+  "friends": "Arkadaşlar",
+  "sharedMeals": "Ortak Öğünler",
+  "profile": "Profil",
+  "score": "Puanınız",
+  "bloodTests": "Kan tahlilleri",
+  "weightProgress": "Kilo Takibi",
+  "mealReminders": "Öğün Hatırlatıcıları",
+  "pushNotifications": "Anlık Bildirimler",
+  "notifications": "Bildirimler",
+  "planCheckIn": "Plan Değerlendirmesi",
+  "selectFoods": "Yiyecek Seç"
+}

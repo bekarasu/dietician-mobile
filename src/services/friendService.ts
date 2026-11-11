@@ -1,4 +1,5 @@
 import { BlockedUser, Friend, FriendRequestList, PublicProfile, UserSearchResponse } from '../types/models';
+import { t } from '../i18n';
 import { fetchData, fetchWithAuth } from './apiClient';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/friends`;
@@ -48,7 +49,7 @@ export const friendService = {
     }
 
     if (!response.ok) {
-      throw new Error('Failed to fetch profile');
+      throw new Error(t('friends.errors.fetchProfile'));
     }
 
     const json = await response.json();

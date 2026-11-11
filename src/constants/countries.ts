@@ -1,7 +1,10 @@
+import { getCatalogRevision, getLanguage, getLocaleTag, translateIfExists } from '../i18n';
+
 // Where a user can say they live. The code is ISO 3166-1 alpha-2, which is what
 // account-service stores and accepts (any other value is a 400); plans then use
 // ingredients that are easy to buy there. Uninhabited territories are left out.
-// `aliases` are other names people search by.
+// `name` is the English name; `aliases` are other names people search by, in
+// any language. Shown names come from the translations (`countries.<code>`).
 export interface Country {
   code: string;
   name: string;
@@ -239,9 +242,9 @@ const COUNTRY_LIST: Country[] = [
   { code: 'VI', name: 'U.S. Virgin Islands', aliases: ['US Virgin Islands'] },
   { code: 'UG', name: 'Uganda' },
   { code: 'UA', name: 'Ukraine' },
-  { code: 'AE', name: 'United Arab Emirates', aliases: ['UAE', 'Emirates', 'Dubai'] },
-  { code: 'GB', name: 'United Kingdom', aliases: ['UK', 'Great Britain', 'Britain', 'England', 'Scotland', 'Wales', 'Northern Ireland'] },
-  { code: 'US', name: 'United States', aliases: ['USA', 'US', 'America'] },
+  { code: 'AE', name: 'United Arab Emirates', aliases: ['UAE', 'Emirates', 'Dubai', 'BAE'] },
+  { code: 'GB', name: 'United Kingdom', aliases: ['UK', 'Great Britain', 'Britain', 'England', 'Scotland', 'Wales', 'Northern Ireland', 'İngiltere', 'Britanya'] },
+  { code: 'US', name: 'United States', aliases: ['USA', 'US', 'America', 'ABD', 'Amerika'] },
   { code: 'UY', name: 'Uruguay' },
   { code: 'UZ', name: 'Uzbekistan' },
   { code: 'VU', name: 'Vanuatu' },
@@ -255,12 +258,42 @@ const COUNTRY_LIST: Country[] = [
   { code: 'ZW', name: 'Zimbabwe' },
 ];
 
-export const COUNTRIES: Country[] = [...COUNTRY_LIST].sort((a, b) => a.name.localeCompare(b.name, 'en'));
+const BY_CODE = new Map(COUNTRY_LIST.map((country) => [country.code, country]));
 
-const BY_CODE = new Map(COUNTRIES.map((country) => [country.code, country]));
+// The list in the current language, sorted by its names, rebuilt when the
+// language or the texts change.
+let localized: { key: string; countries: Country[]; byCode: Map<string, Country>; terms: Map<string, string[]> } | null = null;
+
+function getLocalized() {
+  const key = `${getLanguage()}:${getCatalogRevision()}`;
+  if (localized?.key !== key) {
+    const locale = getLocaleTag();
+    const countries = COUNTRY_LIST.map((country) => ({
+      ...country,
+      name: translateIfExists(`countries.${country.code}`) ?? country.name,
+    })).sort((a, b) => a.name.localeCompare(b.name, locale));
+    localized = {
+      key,
+      countries,
+      byCode: new Map(countries.map((country) => [country.code, country])),
+      // The English name stays searchable in every language.
+      terms: new Map(
+        countries.map((country) => [
+          country.code,
+          [country.name, BY_CODE.get(country.code)?.name ?? '', ...(country.aliases ?? [])].filter(Boolean).map(fold),
+        ]),
+      ),
+    };
+  }
+  return localized;
+}
+
+export function getCountries(): Country[] {
+  return getLocalized().countries;
+}
 
 export function findCountry(code: string | null | undefined): Country | undefined {
-  return code ? BY_CODE.get(code.toUpperCase()) : undefined;
+  return code ? getLocalized().byCode.get(code.toUpperCase()) : undefined;
 }
 
 // Lower case without accents or punctuation, so "turkiye" finds Türkiye and
@@ -274,21 +307,20 @@ function fold(text: string) {
     .replace(/[^a-z0-9 ]/g, '');
 }
 
-const SEARCH_TERMS = new Map(COUNTRIES.map((country) => [country.code, [country.name, ...(country.aliases ?? [])].map(fold)]));
-
 // Countries whose name or another name has the query in it: exact matches and
 // the code first ("tr" is Türkiye, "uk" the United Kingdom), then names
 // starting with it.
 export function searchCountries(query: string): Country[] {
+  const { countries, terms: searchTerms } = getLocalized();
   const folded = fold(query.trim());
   if (!folded) {
-    return COUNTRIES;
+    return countries;
   }
   const exact: Country[] = [];
   const starts: Country[] = [];
   const contains: Country[] = [];
-  COUNTRIES.forEach((country) => {
-    const terms = SEARCH_TERMS.get(country.code) ?? [];
+  countries.forEach((country) => {
+    const terms = searchTerms.get(country.code) ?? [];
     if (country.code.toLowerCase() === folded || terms.includes(folded)) {
       exact.push(country);
     } else if (terms.some((term) => term.startsWith(folded))) {

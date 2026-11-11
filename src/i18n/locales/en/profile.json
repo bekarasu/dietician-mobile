@@ -1,0 +1,101 @@
+{
+  "rules": {
+    "oneBaseDiet": "Choose only one of omnivore, vegetarian, vegan or pescatarian.",
+    "targetBelowWeight": "For weight loss, choose a target below your current weight of {{weight}}.",
+    "targetBelowHealthy": "That's below the healthy range for your height. Choose at least {{min}}.",
+    "pregnancyWeek": "Enter how many weeks pregnant you are, from {{min}} to {{max}}.",
+    "pregnancyGoal": "A pregnancy plan never cuts calories. Choose healthy maintenance or habit building."
+  },
+  "form": {
+    "enterAge": "Enter your age.",
+    "enterHeight": "Enter your height.",
+    "enterTarget": "Enter your target weight.",
+    "enterName": "Enter your name.",
+    "name": "Name",
+    "age": "Age",
+    "ageUnit": "years",
+    "height": "Height",
+    "targetWeight": "Target weight",
+    "goal": "Goal",
+    "sex": "Sex",
+    "specialProgram": "Special program",
+    "specialProgramHelp": "Pregnancy adds the energy each trimester needs and leaves out foods to avoid.",
+    "pregnancyWeek": "Weeks pregnant",
+    "pregnancyWeekUnit": "weeks",
+    "activity": "Activity",
+    "saveChanges": "Save changes",
+    "saved": "Saved"
+  },
+  "reminders": {
+    "noMeals": "No meals chosen",
+    "blockedTitle": "Notifications are off",
+    "blockedMessage": "Allow notifications for Eativio in Settings to get meal reminders.",
+    "updateTitle": "Update needed",
+    "updateMessage": "This version of the app can't send reminders. Install the latest one to use them."
+  },
+  "saved": {
+    "title": "Saved",
+    "message": "Your profile is up to date."
+  },
+  "errors": {
+    "saveProfile": "We couldn't save your profile. Please try again.",
+    "saveDiet": "We couldn't save your diet. Please try again.",
+    "saveCountry": "We couldn't save your country. Please try again.",
+    "loadProfile": "We couldn't load your profile. Please try again.",
+    "loadPreferences": "We couldn't load your preferences. Please try again.",
+    "savePreferences": "We couldn't save your preferences. Please try again."
+  },
+  "logout": {
+    "title": "Log out",
+    "message": "Are you sure you want to log out?"
+  },
+  "header": {
+    "fallbackName": "Your profile",
+    "pregnancyWeek": "Pregnancy · week {{week}}"
+  },
+  "stats": {
+    "weight": "Weight",
+    "target": "Target",
+    "height": "Height"
+  },
+  "personalDetails": "Personal details",
+  "food": {
+    "title": "Food preferences",
+    "caption": "Every meal in your plan respects these. Changes save straight away.",
+    "country": "Country",
+    "countryCaption": "Meals use ingredients you can buy there, from your next plan or swap.",
+    "diet": "Diet",
+    "disliked": "Foods you don't like",
+    "dislikedPlaceholder": "Choose foods to leave out",
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "Choose any allergies"
+  },
+  "targets": {
+    "title": "Daily targets",
+    "pregnancyCaption": "Set for you from your weight, age and pregnancy.",
+    "caption": "Set for you from your weight and age.",
+    "waterLabel": "water a day",
+    "cups": "{{cups}} cups",
+    "coffeeLabel": "coffee at most"
+  },
+  "menu": {
+    "weightHistory": "Weight history",
+    "fridge": "My fridge",
+    "ingredients_one": "{{count}} ingredient",
+    "ingredients_other": "{{count}} ingredients",
+    "fridgeEmpty": "Plans prefer what you have",
+    "bloodTests": "Blood tests",
+    "friends": "Friends",
+    "requests_one": "{{count}} request waiting",
+    "requests_other": "{{count}} requests waiting",
+    "mealReminders": "Meal reminders",
+    "mealRemindersText": "A nudge at each meal in your plan.",
+    "reminderTimes": "Reminder times",
+    "push": "Push notifications",
+    "pushDetail": "Friends, shared meals and plan updates",
+    "safeGuidance": "Safe guidance mode",
+    "safeGuidanceText": "Keeps suggestions sustainable and never compensatory.",
+    "restart": "Restart onboarding",
+    "restartDetail": "Answer the setup questions again"
+  }
+}

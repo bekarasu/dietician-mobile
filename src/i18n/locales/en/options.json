@@ -1,0 +1,31 @@
+{
+  "goal": {
+    "weight_loss": "Weight loss",
+    "maintenance": "Healthy maintenance",
+    "body_recomposition": "Body recomposition",
+    "habit_building": "Habit building"
+  },
+  "diet": {
+    "omnivore": "Omnivore",
+    "vegetarian": "Vegetarian",
+    "vegan": "Vegan",
+    "pescatarian": "Pescatarian",
+    "gluten_free": "Gluten free",
+    "dairy_free": "Dairy free"
+  },
+  "specialProgram": {
+    "pregnancy": "Pregnancy"
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
+  "activity": {
+    "sedentary": "Sedentary",
+    "lightly_active": "Lightly Active",
+    "moderately_active": "Moderately Active",
+    "very_active": "Very Active",
+    "extra_active": "Extra Active"
+  }
+}

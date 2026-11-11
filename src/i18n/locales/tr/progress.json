@@ -1,0 +1,90 @@
+{
+  "activity": {
+    "meal": "Öğün",
+    "weighIn": "Tartım",
+    "waterOf": "{{amount}} / {{target}}",
+    "coffeeLimit": "{{cups}}, sınır {{limit}}",
+    "reasons": {
+      "not_core_meal": "Yalnızca kahvaltı, öğle ve akşam yemeği puan kazandırır.",
+      "meal_already_counted": "Bu öğün bugün zaten sayıldı.",
+      "plan_not_started": "Planınız başlamadan önce kaydedildi.",
+      "plan_replaced": "Planınızı değiştirdiğinizde sıfırlandı.",
+      "no_water_logged": "Kahve puanı için aynı gün su kaydı gerekir."
+    },
+    "overCoffeeLimit": "{{cups}} sınırınızın üzerinde.",
+    "dayTotal": "Gün toplamı"
+  },
+  "chart": {
+    "trend": "Eğilim",
+    "lastWeighIns": "Son {{count}} tartımınız",
+    "a11y": "{{fromDate}} tarihindeki {{from}} değerinden {{toDate}} tarihindeki {{to}} değerine kilo eğilimi",
+    "tapHint": "Herhangi bir tartımı görmek için grafiğe dokunun."
+  },
+  "day": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "notScored": "Puanlanmadı",
+    "points": "{{points}} / {{max}}",
+    "pointsSoFar": "Şimdiye kadar {{points}} / {{max}}",
+    "nothingYet": "Henüz kayıt yok.",
+    "nothing": "Kayıt yok."
+  },
+  "week": {
+    "current": "Bu hafta · {{range}}",
+    "split": "Kilo {{weight}} · Öğün {{meals}} · Su {{water}} · Kahve {{coffee}}",
+    "final": "kesin",
+    "soFar": "şimdiye kadar",
+    "score": "puan",
+    "nothing": "Bu hafta kayıt yok."
+  },
+  "dashboard": {
+    "currentWeight": "Mevcut kilo",
+    "last7Days": "Son 7 gün",
+    "consistency": "Haftalık istikrar",
+    "consistencyHint": "Bu hafta şimdiye kadar kazandığınız öğün, su ve kahve puanlarının oranı.",
+    "goalProgress": "Hedef ilerlemesi",
+    "setTarget": "Hedef kilo belirleyin",
+    "logWeight": "Kilonuzu kaydedin",
+    "history": "Geçmiş",
+    "historyFailed": "Geçmişiniz yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+    "historyHint": "Her gün öğün, su ve kahve için en fazla 45 puan kazandırır; haftanın alışkanlık puanları günlerinin ortalamasıdır. Tartımlar haftanın kilo puanına sayılır.",
+    "earlierFailed": "Yüklenemedi. Tekrar deneyin",
+    "earlier": "Önceki haftayı göster",
+    "prev": "< Önceki",
+    "next": "Sonraki >",
+    "waterChart": "Su Tüketimi (ml)",
+    "coffeeChart": "Kahve Tüketimi (fincan)",
+    "title": "İlerleme paneli",
+    "subtitle": "Kilonuz, haftalık istikrarınız ve kaydettiğiniz her şeyin kazandırdığı puanlar.",
+    "tabProgress": "İlerleme",
+    "tabHydration": "Su ve Kahve"
+  },
+  "weight": {
+    "invalid": "Kilonuzu kilogram olarak girin.",
+    "note": "İlerleme ekranından kaydedildi",
+    "saveFailed": "Tartımınız kaydedilemedi. Lütfen tekrar deneyin.",
+    "removeFailed": "Bu tartım silinemedi. Lütfen tekrar deneyin.",
+    "removeTitle": "Tartımı sil",
+    "removeMessage": "{{date}} tarihli {{weight}} kaydı silinsin mi?",
+    "removeA11y": "{{date}} tarihli {{weight}} kaydını sil",
+    "current": "Mevcut kilo",
+    "in7Days": "7 günde {{change}}",
+    "lastWeighed": "Son tartım {{date}}",
+    "starting": "Başlangıç",
+    "change": "Değişim",
+    "target": "Hedef",
+    "towardsGoal": "Hedefinize doğru {{total}} kg yolun {{done}} kg kadarı",
+    "setTarget": "Hedef ilerlemenizi takip etmek için profilinizde bir hedef kilo belirleyin.",
+    "empty": "Henüz tartım yok. İlerlemenizi takip etmeye başlamak için aşağıdan kilonuzu kaydedin.",
+    "logTitle": "Tartım kaydet",
+    "logCaption": "Tartımlar haftanızın kilo puanına sayılır. Günün aynı saatinde tartılmak ölçümleri karşılaştırılabilir tutar.",
+    "label": "Kilo",
+    "placeholder": "ör. 72,5",
+    "save": "Tartımı kaydet",
+    "trend": "Eğilim",
+    "oneMore": "Eğiliminizi görmek için bir tartım daha kaydedin.",
+    "history": "Geçmiş",
+    "showFewer": "Daha az göster",
+    "showAll": "{{count}} tartımın tümünü göster"
+  }
+}

@@ -8,28 +8,29 @@ import {
   syncPushNotifications,
   usePushNotificationStore,
 } from '../features/notifications/pushNotifications';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 export function PushNotificationsScreen() {
   const { enabled, permission, registered, busy, error, token } = usePushNotificationStore();
   const available = permission !== 'unavailable';
   const status = !available
-    ? (Platform.OS === 'ios' ? 'Notifications are not available in this build.' : 'Push notifications are not yet available on Android.')
-    : !enabled ? 'Push notifications are off on this phone.'
-      : permission === 'blocked' ? 'Allow notifications for Eativio in Settings.'
-        : registered ? 'This phone is ready to receive notifications.'
-          : busy ? 'Setting up notifications…' : 'Connect to the internet and try again.';
+    ? (Platform.OS === 'ios' ? t('notifications.push.unavailableIos') : t('notifications.push.unavailableAndroid'))
+    : !enabled ? t('notifications.push.off')
+      : permission === 'blocked' ? t('notifications.push.blocked')
+        : registered ? t('notifications.push.ready')
+          : busy ? t('notifications.push.settingUp') : t('notifications.push.offline');
 
   return (
     <ScreenContainer>
       <View style={styles.card}>
         <View style={styles.row}>
           <View style={styles.copy}>
-            <Text style={styles.title}>Keep up with your plan</Text>
-            <Text style={styles.text}>Friend requests, your weekly and monthly results, shared meal invitations and updates when your plan is ready.</Text>
+            <Text style={styles.title}>{t('notifications.push.title')}</Text>
+            <Text style={styles.text}>{t('notifications.push.text')}</Text>
           </View>
           <Switch
-            accessibilityLabel="Push notifications"
+            accessibilityLabel={t('notifications.push.switchA11y')}
             disabled={busy || !available}
             value={enabled && available && permission !== 'blocked'}
             onValueChange={(value) => { void setPushNotificationsEnabled(value); }}
@@ -40,17 +41,17 @@ export function PushNotificationsScreen() {
         <Text accessibilityLiveRegion="polite" style={styles.text}>{status}</Text>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {permission === 'blocked' ? (
-          <AppButton title="Open Settings" variant="secondary" onPress={() => { void Linking.openSettings(); }} />
+          <AppButton title={t('common.actions.openSettings')} variant="secondary" onPress={() => { void Linking.openSettings(); }} />
         ) : enabled && available && !registered ? (
-          <AppButton title="Try again" loading={busy} variant="secondary" onPress={() => { void syncPushNotifications(true); }} />
+          <AppButton title={t('common.actions.tryAgain')} loading={busy} variant="secondary" onPress={() => { void syncPushNotifications(true); }} />
         ) : null}
       </View>
       {appEnv.monitoring && token ? (
         <View style={styles.card}>
-          <Text style={styles.title}>Test device</Text>
-          <Text style={styles.text}>Use this FCM token to send a test notification from Firebase Console.</Text>
+          <Text style={styles.title}>{t('notifications.push.testTitle')}</Text>
+          <Text style={styles.text}>{t('notifications.push.testText')}</Text>
           <Text selectable style={styles.token}>{token}</Text>
-          <AppButton title="Share token" variant="secondary" onPress={() => { void Share.share({ message: token }); }} />
+          <AppButton title={t('notifications.push.shareToken')} variant="secondary" onPress={() => { void Share.share({ message: token }); }} />
         </View>
       ) : null}
     </ScreenContainer>

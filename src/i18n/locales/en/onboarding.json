@@ -1,0 +1,147 @@
+{
+  "intro": {
+    "kicker": "Dietician onboarding",
+    "plans": {
+      "title": "Personal plans that feel doable",
+      "subtitle": "Set up a dietician flow that fits your day with quick intake and adaptive meal ideas.",
+      "bullet1": "AI assisted meal ideas tuned to your goal",
+      "bullet2": "Inventory nudges that reduce waste",
+      "bullet3": "Portion cues you can adjust anytime",
+      "highlight1Label": "Plan window",
+      "highlight1Value": "7 days",
+      "highlight2Label": "Prep time",
+      "highlight2Value": "15 min"
+    },
+    "habits": {
+      "title": "Hydration and habit nudges",
+      "subtitle": "Gentle prompts keep water, coffee, and consistency in view without noise.",
+      "bullet1": "Hydration targets and streaks",
+      "bullet2": "Water and coffee targets set from your weight and age",
+      "bullet3": "Daily check ins that stay light",
+      "highlight1Label": "Water target",
+      "highlight1Value": "2.4 L",
+      "highlight2Label": "Coffee cap",
+      "highlight2Value": "4 cups"
+    },
+    "progress": {
+      "title": "Progress you can trust",
+      "subtitle": "Weekly signals and coaching notes turn logs into steady momentum.",
+      "bullet1": "Trend views from daily logs",
+      "bullet2": "Guided reflections for the week",
+      "bullet3": "Milestones that celebrate consistency",
+      "highlight1Label": "Weekly check in",
+      "highlight1Value": "Sunday",
+      "highlight2Label": "Consistency goal",
+      "highlight2Value": "5 days"
+    }
+  },
+  "pages": {
+    "activity": {
+      "sedentary": "Little or no exercise",
+      "lightly_active": "Light exercise 1–3 days a week",
+      "moderately_active": "Moderate exercise 3–5 days a week",
+      "very_active": "Hard exercise 6–7 days a week",
+      "extra_active": "Very hard exercise and a physical job"
+    },
+    "goal": {
+      "weight_loss": "Lose weight at a steady, safe pace",
+      "maintenance": "Keep your weight where it is",
+      "body_recomposition": "Build muscle while losing fat",
+      "habit_building": "Eat better, without a weight target"
+    },
+    "basics": {
+      "title": "A little about you",
+      "subtitle": "This sets how much energy you use in a day, so your portions fit you.",
+      "age": "Age",
+      "ageUnit": "years",
+      "height": "Height",
+      "sex": "Sex",
+      "specialProgram": "Special program",
+      "specialProgramHelp": "Optional. Expecting? Your plan adds the energy each trimester needs and leaves out foods to avoid in pregnancy.",
+      "pregnancyWeek": "Weeks pregnant",
+      "pregnancyWeekUnit": "weeks",
+      "activity": "How active are you?"
+    },
+    "goals": {
+      "title": "What are you working towards?",
+      "subtitle": "Your plan paces you safely towards it.",
+      "goal": "Your goal",
+      "weight": "Current weight",
+      "target": "Target weight"
+    },
+    "preferences": {
+      "title": "How do you like to eat?",
+      "subtitle": "Every meal in your plan respects these. You can change them later in your profile.",
+      "country": "Country",
+      "countryHelp": "Optional. Your meals use ingredients you can buy there, with a light touch of the local cuisine.",
+      "diet": "Diet",
+      "dietHelp": "Choose one of omnivore, vegetarian, vegan or pescatarian. Gluten free and dairy free go with any of them.",
+      "disliked": "Foods you don't like",
+      "dislikedPlaceholder": "Choose foods to leave out",
+      "allergies": "Allergies",
+      "allergiesPlaceholder": "Choose any allergies"
+    },
+    "bloodTest": {
+      "title": "Add a recent blood test",
+      "subtitle": "Optional. Your results help tailor your meals further.",
+      "hint": "Your daily water target and coffee limit are set for you from your weight and age.",
+      "finish": "Finish",
+      "results": "Blood test results"
+    }
+  },
+  "renderer": {
+    "fieldMissing": "Add your {{field}} to continue.",
+    "uploadHint": "A PDF or a photo of your lab report",
+    "chooseFoods": "Choose foods"
+  },
+  "preview": {
+    "pregnancy": "Your plan follows your pregnancy, with the energy you need in your {{trimester}} trimester. It never cuts calories, whatever the target. Keep following your doctor's or midwife's advice.",
+    "trimesterFirst": "first",
+    "trimesterSecond": "second",
+    "trimesterThird": "third",
+    "lowBmi": "A target of {{target}} is below the healthy weight range for your height. You might choose a higher one.",
+    "weeksUnit_one": "week",
+    "weeksUnit_other": "weeks",
+    "weightLoss_one": "Losing {{loss}} at a steady {{weekly}} kg a week takes about {{count}} week. Slow and steady is what lasts.",
+    "weightLoss_other": "Losing {{loss}} at a steady {{weekly}} kg a week takes about {{count}} weeks. Slow and steady is what lasts.",
+    "maintenance": "Your plan will keep you around {{weight}}."
+  },
+  "leave": {
+    "title": "Leave setup?",
+    "message": "Nothing you entered here is saved, including a blood test you added. Your profile and plan stay as they are.",
+    "confirm": "Leave",
+    "a11y": "Leave setup"
+  },
+  "submitFailed": "Unable to submit onboarding page.",
+  "initialWeightNote": "Initial weight from onboarding",
+  "startDate": {
+    "title": "When do you want to start?",
+    "subtitle": "Pick a day you'll have time to shop for. Your meals and leaderboard score count from that day.",
+    "replaceRunning": "Your new plan replaces your current one from today. Meal, water and coffee points you've earned this week are reset, and days before the new plan starts aren't scored.",
+    "replaceUpcoming": "Your new plan replaces your current one. Points you've already earned stay, and days before the new plan starts aren't scored.",
+    "create": "Create My Plan",
+    "keepCurrent": "Keep my current plan",
+    "reset": {
+      "title": "Reset this week's points?",
+      "messageUnknown": "A new plan resets the points you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.",
+      "message_one": "A new plan resets the {{count}} point you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.",
+      "message_other": "A new plan resets the {{count}} points you've earned from your plan this week to zero, and those days still count towards your weekly average. If some meals don't suit you, you can swap them in your current plan instead.",
+      "confirm": "Reset and continue",
+      "swapInstead": "Swap meals instead"
+    }
+  },
+  "generating": {
+    "title": "Generating your plan...",
+    "failedTitle": "We couldn't prepare your plan",
+    "resumedCreate": "Nothing from the onboarding it was for is kept, so you can go through it again.",
+    "resumedOther": "Your current plan stays as it is.",
+    "failedHint": "Your answers are kept while you're here. Try again, or go back and nothing from this onboarding is saved.",
+    "aiWarning": "Our AI is carefully crafting your plan! It's always learning, so please take a moment to review the plan before applying it.",
+    "tips": {
+      "hydration": "Hydration is key! Drinking enough water boosts your metabolism.",
+      "protein": "Focusing on lean proteins helps build and repair muscle.",
+      "colors": "Eating a variety of colors provides a wide range of nutrients.",
+      "consistency": "Consistency is more important than perfection in your diet."
+    }
+  }
+}

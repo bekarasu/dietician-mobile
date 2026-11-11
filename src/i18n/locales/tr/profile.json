@@ -1,0 +1,101 @@
+{
+  "rules": {
+    "oneBaseDiet": "Omnivor, vejetaryen, vegan veya pesketaryenden yalnızca birini seçin.",
+    "targetBelowWeight": "Kilo vermek için mevcut kilonuzun ({{weight}}) altında bir hedef seçin.",
+    "targetBelowHealthy": "Bu, boyunuz için sağlıklı aralığın altında. En az {{min}} seçin.",
+    "pregnancyWeek": "Kaç haftalık hamile olduğunuzu {{min}} ile {{max}} arasında girin.",
+    "pregnancyGoal": "Hamilelik planı asla kalori kısıtlamaz. Sağlıklı kilo koruma veya alışkanlık edinmeyi seçin."
+  },
+  "form": {
+    "enterAge": "Yaşınızı girin.",
+    "enterHeight": "Boyunuzu girin.",
+    "enterTarget": "Hedef kilonuzu girin.",
+    "enterName": "Adınızı girin.",
+    "name": "Ad",
+    "age": "Yaş",
+    "ageUnit": "yaş",
+    "height": "Boy",
+    "targetWeight": "Hedef kilo",
+    "goal": "Hedef",
+    "sex": "Cinsiyet",
+    "specialProgram": "Özel program",
+    "specialProgramHelp": "Hamilelik, her trimesterin ihtiyaç duyduğu enerjiyi ekler ve kaçınılması gereken yiyecekleri çıkarır.",
+    "pregnancyWeek": "Hamilelik haftası",
+    "pregnancyWeekUnit": "hafta",
+    "activity": "Aktivite",
+    "saveChanges": "Değişiklikleri kaydet",
+    "saved": "Kaydedildi"
+  },
+  "reminders": {
+    "noMeals": "Öğün seçilmedi",
+    "blockedTitle": "Bildirimler kapalı",
+    "blockedMessage": "Öğün hatırlatıcıları almak için Ayarlar’dan Eativio bildirimlerine izin verin.",
+    "updateTitle": "Güncelleme gerekli",
+    "updateMessage": "Uygulamanın bu sürümü hatırlatıcı gönderemiyor. Kullanmak için en son sürümü yükleyin."
+  },
+  "saved": {
+    "title": "Kaydedildi",
+    "message": "Profiliniz güncel."
+  },
+  "errors": {
+    "saveProfile": "Profiliniz kaydedilemedi. Lütfen tekrar deneyin.",
+    "saveDiet": "Beslenme şekliniz kaydedilemedi. Lütfen tekrar deneyin.",
+    "saveCountry": "Ülkeniz kaydedilemedi. Lütfen tekrar deneyin.",
+    "loadProfile": "Profiliniz yüklenemedi. Lütfen tekrar deneyin.",
+    "loadPreferences": "Tercihleriniz yüklenemedi. Lütfen tekrar deneyin.",
+    "savePreferences": "Tercihleriniz kaydedilemedi. Lütfen tekrar deneyin."
+  },
+  "logout": {
+    "title": "Çıkış yap",
+    "message": "Çıkış yapmak istediğinizden emin misiniz?"
+  },
+  "header": {
+    "fallbackName": "Profiliniz",
+    "pregnancyWeek": "Hamilelik · {{week}}. hafta"
+  },
+  "stats": {
+    "weight": "Kilo",
+    "target": "Hedef",
+    "height": "Boy"
+  },
+  "personalDetails": "Kişisel bilgiler",
+  "food": {
+    "title": "Yemek tercihleri",
+    "caption": "Planınızdaki her öğün bunlara uyar. Değişiklikler hemen kaydedilir.",
+    "country": "Ülke",
+    "countryCaption": "Öğünlerde, sonraki planınızdan veya değişiminizden itibaren orada bulabileceğiniz malzemeler kullanılır.",
+    "diet": "Beslenme şekli",
+    "disliked": "Sevmediğiniz yiyecekler",
+    "dislikedPlaceholder": "Çıkarılacak yiyecekleri seçin",
+    "allergies": "Alerjiler",
+    "allergiesPlaceholder": "Varsa alerjilerinizi seçin"
+  },
+  "targets": {
+    "title": "Günlük hedefler",
+    "pregnancyCaption": "Kilonuza, yaşınıza ve hamileliğinize göre sizin için belirlenir.",
+    "caption": "Kilonuza ve yaşınıza göre sizin için belirlenir.",
+    "waterLabel": "günlük su",
+    "cups": "{{cups}} fincan",
+    "coffeeLabel": "en fazla kahve"
+  },
+  "menu": {
+    "weightHistory": "Kilo geçmişi",
+    "fridge": "Buzdolabım",
+    "ingredients_one": "{{count}} malzeme",
+    "ingredients_other": "{{count}} malzeme",
+    "fridgeEmpty": "Planlar elinizdekileri tercih eder",
+    "bloodTests": "Kan tahlilleri",
+    "friends": "Arkadaşlar",
+    "requests_one": "{{count}} istek bekliyor",
+    "requests_other": "{{count}} istek bekliyor",
+    "mealReminders": "Öğün hatırlatıcıları",
+    "mealRemindersText": "Planınızdaki her öğünde küçük bir hatırlatma.",
+    "reminderTimes": "Hatırlatma saatleri",
+    "push": "Anlık bildirimler",
+    "pushDetail": "Arkadaşlar, ortak öğünler ve plan güncellemeleri",
+    "safeGuidance": "Güvenli rehberlik modu",
+    "safeGuidanceText": "Önerileri sürdürülebilir tutar, asla telafi amaçlı değildir.",
+    "restart": "Kurulumu yeniden başlat",
+    "restartDetail": "Kurulum sorularını yeniden yanıtlayın"
+  }
+}

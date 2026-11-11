@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { GoalType } from '../../types/models';
 import { formatKg } from '../../utils/formatters';
 
@@ -25,7 +26,7 @@ export function toggleDietaryPreference<T extends string>(current: T[], value: T
 // Only reachable with diets saved before the rule, since picking one replaces the other.
 export function getDietError(preferences: string[]) {
   return preferences.filter((item) => BASE_DIETS.includes(item)).length > 1
-    ? 'Choose only one of omnivore, vegetarian, vegan or pescatarian.'
+    ? t('profile.rules.oneBaseDiet')
     : null;
 }
 
@@ -36,13 +37,13 @@ export function getTargetWeightError(goalType: GoalType | string, weightKg: numb
     return null;
   }
   if (weightKg > 0 && targetKg >= weightKg) {
-    return `For weight loss, choose a target below your current weight of ${formatKg(weightKg)}.`;
+    return t('profile.rules.targetBelowWeight', { weight: formatKg(weightKg) });
   }
   if (heightCm > 0) {
     // Rounded up, so the weight shown is itself allowed.
     const minKg = Math.ceil(MIN_HEALTHY_BMI * (heightCm / 100) ** 2 * 10) / 10;
     if (targetKg < minKg) {
-      return `That's below the healthy range for your height. Choose at least ${formatKg(minKg)}.`;
+      return t('profile.rules.targetBelowHealthy', { min: formatKg(minKg) });
     }
   }
   return null;
@@ -71,11 +72,11 @@ export function getPregnancyWeekError(week: string) {
   const value = Number(week);
   return Number.isInteger(value) && value >= MIN_PREGNANCY_WEEK && value <= MAX_PREGNANCY_WEEK
     ? null
-    : `Enter how many weeks pregnant you are, from ${MIN_PREGNANCY_WEEK} to ${MAX_PREGNANCY_WEEK}.`;
+    : t('profile.rules.pregnancyWeek', { min: MIN_PREGNANCY_WEEK, max: MAX_PREGNANCY_WEEK });
 }
 
 export function getPregnancyGoalError(pregnant: boolean, goalType: GoalType | string) {
   return pregnant && !PREGNANCY_GOALS.includes(goalType)
-    ? 'A pregnancy plan never cuts calories. Choose healthy maintenance or habit building.'
+    ? t('profile.rules.pregnancyGoal')
     : null;
 }

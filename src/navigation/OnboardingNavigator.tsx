@@ -4,6 +4,7 @@ import { FoodSelectionScreen } from '../screens/FoodSelectionScreen'
 import { GeneratingDietPlanScreen } from '../screens/GeneratingDietPlanScreen'
 import { OnboardingScreen } from '../screens/OnboardingScreen'
 import { PlanStartDateScreen } from '../screens/PlanStartDateScreen'
+import { t } from '../i18n';
 import { theme } from '../theme/theme'
 
 import type { OnboardingStackParamList } from './navigationTypes'
@@ -28,7 +29,7 @@ export function OnboardingNavigator() {
 				name="FoodSelection"
 				options={{
 					headerShown: true,
-					title: 'Select Foods',
+					title: t('navigation.selectFoods'),
 					headerTintColor: theme.colors.text,
 					// Otherwise the back label reads as the "Onboarding" route's name.
 					headerBackButtonDisplayMode: 'minimal',

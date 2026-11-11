@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PropsWithChildren } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { getAvatarColors, UserAvatar } from './UserAvatar';
 
@@ -83,7 +84,7 @@ function ActionButton({ action, name, stretch }: ActionButtonProps) {
 
   return (
     <Pressable
-      accessibilityLabel={`${action.label} ${name}`}
+      accessibilityLabel={t('components.userList.actionA11y', { action: action.label, name })}
       accessibilityRole="button"
       hitSlop={theme.spacing.xs}
       onPress={action.onPress}

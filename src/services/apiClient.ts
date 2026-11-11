@@ -1,5 +1,6 @@
 import { ApiError } from './apiError';
 import { authService } from './authService';
+import { withLanguageHeader } from './requestHeaders';
 import { tokenService } from './tokenService';
 
 let isRefreshing = false;
@@ -18,7 +19,7 @@ export const fetchWithAuth = async (url: RequestInfo | URL, options: RequestInit
   let token = await tokenService.getAccessToken();
 
   const buildOptions = (currentToken: string | null) => {
-    const headers = new Headers(options.headers || {});
+    const headers = withLanguageHeader(options.headers);
     if (currentToken && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${currentToken}`);
     }

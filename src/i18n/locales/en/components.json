@@ -1,0 +1,28 @@
+{
+  "textInput": {
+    "clear": "Clear {{label}}"
+  },
+  "bloodTestUploader": {
+    "success": "Blood test uploaded successfully!",
+    "select": "Select and Upload Document"
+  },
+  "countryPicker": {
+    "placeholder": "Choose where you live",
+    "selectedA11y": "Country, {{name}}",
+    "title": "Where do you live?",
+    "close": "Close",
+    "caption": "Your meals use ingredients you can buy there. Plans stay in English.",
+    "search": "Search countries",
+    "all": "All countries",
+    "empty": "No country matches \"{{query}}\"."
+  },
+  "foodList": {
+    "macros": "{{kcal}} kcal | P: {{protein}}g | C: {{carbs}}g | F: {{fats}}g",
+    "searchLabel": "Search Foods",
+    "searchPlaceholder": "e.g. Apple, Chicken Breast...",
+    "empty": "No foods found matching \"{{query}}\""
+  },
+  "userList": {
+    "actionA11y": "{{action}} {{name}}"
+  }
+}

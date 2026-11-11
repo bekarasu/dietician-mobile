@@ -67,7 +67,17 @@
           "resizeMode": "contain",
           "backgroundColor": "#F4F6ED"
         }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": false,
+          "supportedLocales": ["en", "tr"]
+        }
       ]
-    ]
+    ],
+    "locales": {
+      "tr": "./assets/locales/tr.json"
+    }
   }
 }

@@ -1,0 +1,15 @@
+{
+  "optional": "İsteğe bağlı",
+  "openHint": "Metnin tamamını açar",
+  "read": "{{title}} metnini oku",
+  "meta": "Sürüm {{version}} · Yürürlük {{date}}",
+  "update": {
+    "title": "Metinlerimizi güncelledik",
+    "subtitle": "Uygulamayı kullanmaya devam etmek için lütfen aşağıdaki metinleri okuyup onaylayın.",
+    "acceptRequired": "Devam etmek için güncellenen metinleri onaylayın.",
+    "saveFailed": "Yanıtınız kaydedilemedi. Lütfen tekrar deneyin.",
+    "accept": "Onayla ve devam et",
+    "decline": "Onaylamak istemiyor musunuz?"
+  },
+  "optionalA11y": "{{label}} (isteğe bağlı)"
+}

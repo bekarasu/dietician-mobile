@@ -1,5 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
+import { getLocaleTag } from '../../i18n';
+
 // The meal types plans use, in the order of a day. Every plan day has a
 // breakfast, lunch and dinner; snacks come on some days only.
 export const REMINDER_MEAL_TYPES = ['Breakfast', 'Lunch', 'Snack', 'Dinner'] as const;
@@ -82,9 +84,9 @@ export async function saveMealReminderSettings(settings: MealReminderSettings) {
   await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(settings));
 }
 
-// "8:30 AM", matching the app's other en-US times.
+// "8:30 AM" in English, "08:30" in Turkish, matching the app's other times.
 export function formatReminderTime(minutes: number) {
-  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(
+  return new Intl.DateTimeFormat(getLocaleTag(), { hour: 'numeric', minute: '2-digit' }).format(
     new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60),
   );
 }

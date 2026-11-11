@@ -1,0 +1,9 @@
+{
+  "addFailed": "We couldn't add this ingredient. Please try again.",
+  "removeFailed": "We couldn't remove this ingredient. Please try again.",
+  "title": "My Fridge",
+  "subtitle": "Keep this list close to the recommendation engine so meal plans can prefer what is already available at home.",
+  "required": "Ingredient name is required",
+  "label": "Ingredient (e.g. Chicken breast)",
+  "add": "Add to fridge"
+}

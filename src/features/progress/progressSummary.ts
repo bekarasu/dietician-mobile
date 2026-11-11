@@ -1,5 +1,6 @@
 import { Activity, ProgressEntry } from '../../types/models';
-import { formatKg, formatKgChange, formatLitres } from '../../utils/formatters';
+import { t, translateIfExists } from '../../i18n';
+import { formatKg, formatKgChange, formatLitres, formatMealType } from '../../utils/formatters';
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -34,19 +35,19 @@ export function getWeeklyChange(entries: ProgressEntry[], now = new Date()) {
 }
 
 function pluralCups(cups: number) {
-  return `${cups} ${cups === 1 ? 'cup' : 'cups'}`;
+  return t('common.units.cups', { count: cups });
 }
 
 export function getActivityTitle(activity: Activity) {
   switch (activity.type) {
     case 'MEAL':
-      return activity.mealType ?? 'Meal';
+      return activity.mealType ? formatMealType(activity.mealType) : t('progress.activity.meal');
     case 'WEIGHT':
-      return 'Weigh-in';
+      return t('progress.activity.weighIn');
     case 'WATER':
-      return 'Water';
+      return t('common.habits.water');
     case 'COFFEE':
-      return 'Coffee';
+      return t('common.habits.coffee');
   }
 }
 
@@ -60,30 +61,22 @@ export function getActivityDetail(activity: Activity) {
     }
     case 'WATER': {
       const water = formatLitres(activity.waterMl ?? 0);
-      return activity.waterTargetMl ? `${water} of ${formatLitres(activity.waterTargetMl)}` : water;
+      return activity.waterTargetMl ? t('progress.activity.waterOf', { amount: water, target: formatLitres(activity.waterTargetMl) }) : water;
     }
     case 'COFFEE': {
       const cups = pluralCups(activity.coffeeCups ?? 0);
-      return activity.coffeeLimitCups === undefined ? cups : `${cups}, limit ${activity.coffeeLimitCups}`;
+      return activity.coffeeLimitCups === undefined ? cups : t('progress.activity.coffeeLimit', { cups, limit: activity.coffeeLimitCups });
     }
   }
 }
-
-// Keyed by the reason values progress-service returns for an activity.
-const ACTIVITY_REASONS: Record<string, string> = {
-  not_core_meal: 'Only breakfast, lunch and dinner earn points.',
-  meal_already_counted: 'This meal already counted today.',
-  plan_not_started: 'Logged before your plan started.',
-  plan_replaced: 'Reset when you changed your plan.',
-  no_water_logged: 'Coffee points need water logged the same day.',
-};
 
 export function getActivityReason(activity: Activity) {
   if (!activity.reason) {
     return null;
   }
   if (activity.reason === 'over_coffee_limit') {
-    return `Over your limit of ${pluralCups(activity.coffeeLimitCups ?? 0)}.`;
+    return t('progress.activity.overCoffeeLimit', { cups: pluralCups(activity.coffeeLimitCups ?? 0) });
   }
-  return ACTIVITY_REASONS[activity.reason] ?? null;
+  // Keyed by the reason values progress-service returns for an activity.
+  return translateIfExists(`progress.activity.reasons.${activity.reason}`) ?? null;
 }

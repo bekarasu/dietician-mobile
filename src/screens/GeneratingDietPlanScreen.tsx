@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '../components/AppButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import {
-  GENERATION_DETAIL,
+  getGenerationDetail,
   isGenerationCancelled,
   runPlanGeneration,
   waitForGeneration,
@@ -16,19 +16,20 @@ import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { recommendationService } from '../services/recommendationService';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { OnboardingStackParamList } from '../navigation/navigationTypes';
 
 type Tip = {
-  text: string;
+  textKey: TranslationKey;
   icon: keyof typeof Ionicons.glyphMap;
 };
 
 const HEALTHY_TIPS: Tip[] = [
-  { text: 'Hydration is key! Drinking enough water boosts your metabolism.', icon: 'water-outline' },
-  { text: 'Focusing on lean proteins helps build and repair muscle.', icon: 'fish-outline' },
-  { text: 'Eating a variety of colors provides a wide range of nutrients.', icon: 'nutrition-outline' },
-  { text: 'Consistency is more important than perfection in your diet.', icon: 'restaurant-outline' },
+  { textKey: 'onboarding.generating.tips.hydration', icon: 'water-outline' },
+  { textKey: 'onboarding.generating.tips.protein', icon: 'fish-outline' },
+  { textKey: 'onboarding.generating.tips.colors', icon: 'nutrition-outline' },
+  { textKey: 'onboarding.generating.tips.consistency', icon: 'restaurant-outline' },
 ];
 
 // RootNavigator also shows this outside the onboarding stack, with no route.
@@ -181,23 +182,23 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
             </View>
           </View>
 
-          <Text style={styles.title}>We couldn't prepare your plan</Text>
+          <Text style={styles.title}>{t('onboarding.generating.failedTitle')}</Text>
           {resumedGenerationId ? (
             <>
               <Text style={styles.failureText}>
                 {resumedGenerationKind === 'create'
-                  ? 'Nothing from the onboarding it was for is kept, so you can go through it again.'
-                  : 'Your current plan stays as it is.'}
+                  ? t('onboarding.generating.resumedCreate')
+                  : t('onboarding.generating.resumedOther')}
               </Text>
-              <AppButton title="Continue" loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
+              <AppButton title={t('common.actions.continue')} loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
             </>
           ) : (
             <>
               <Text style={styles.failureText}>
-                Your answers are kept while you're here. Try again, or go back and nothing from this onboarding is saved.
+                {t('onboarding.generating.failedHint')}
               </Text>
-              <AppButton title="Try again" disabled={isLeaving} onPress={tryAgain} style={styles.actionButton} />
-              <AppButton title="Go back" variant="ghost" loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
+              <AppButton title={t('common.actions.tryAgain')} disabled={isLeaving} onPress={tryAgain} style={styles.actionButton} />
+              <AppButton title={t('common.actions.goBack')} variant="ghost" loading={isLeaving} onPress={leaveAfterFailure} style={styles.actionButton} />
             </>
           )}
         </View>
@@ -218,13 +219,13 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
           </View>
         </Animated.View>
         
-        <Text style={styles.title}>Generating your plan...</Text>
-        <Text style={styles.subtitle}>{GENERATION_DETAIL}</Text>
+        <Text style={styles.title}>{t('onboarding.generating.title')}</Text>
+        <Text style={styles.subtitle}>{getGenerationDetail()}</Text>
         
         <ActivityIndicator size="small" color={theme.colors.primary} style={styles.spinner} />
         
         <Animated.View style={{ opacity: fadeAnim, width: '100%', alignItems: 'center' }}>
-          <Text style={styles.tipText}>{currentTip.text}</Text>
+          <Text style={styles.tipText}>{t(currentTip.textKey)}</Text>
         </Animated.View>
 
         {/* Pagination Dots */}
@@ -244,13 +245,13 @@ export function GeneratingDietPlanScreen({ navigation, route }: Props) {
         <View style={styles.aiWarningContainer}>
           <Ionicons name="sparkles" size={20} color={theme.colors.primary} />
           <Text style={styles.aiWarningText}>
-            Our AI is carefully crafting your plan! It's always learning, so please take a moment to review the plan before applying it.
+            {t('onboarding.generating.aiWarning')}
           </Text>
         </View>
 
         {isGenerating ? (
           <AppButton
-            title="Cancel"
+            title={t('common.actions.cancel')}
             variant="ghost"
             loading={isCancelling}
             onPress={confirmCancel}

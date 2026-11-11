@@ -1,0 +1,31 @@
+{
+  "loadFailed": "We couldn't load your notifications. Please try again.",
+  "markFailed": "We couldn't mark your notifications as read. Please try again.",
+  "markAllRead": "Mark all read",
+  "emptyTitle": "No notifications yet",
+  "emptyText": "Friend requests, your weekly and monthly results and plan updates will show up here.",
+  "itemA11y": "{{title}}. {{body}}. {{time}}",
+  "itemA11yUnread": "Unread. {{title}}. {{body}}. {{time}}",
+  "bell": {
+    "label": "Notifications",
+    "unread": "Notifications, {{count}} unread"
+  },
+  "push": {
+    "unavailableIos": "Notifications are not available in this build.",
+    "unavailableAndroid": "Push notifications are not yet available on Android.",
+    "off": "Push notifications are off on this phone.",
+    "blocked": "Allow notifications for Eativio in Settings.",
+    "ready": "This phone is ready to receive notifications.",
+    "settingUp": "Setting up notifications…",
+    "offline": "Connect to the internet and try again.",
+    "title": "Keep up with your plan",
+    "text": "Friend requests, your weekly and monthly results, shared meal invitations and updates when your plan is ready.",
+    "switchA11y": "Push notifications",
+    "testTitle": "Test device",
+    "testText": "Use this FCM token to send a test notification from Firebase Console.",
+    "shareToken": "Share token",
+    "updateFailed": "Could not update notifications. Please try again.",
+    "startFailed": "Could not start notifications. Please reopen the app.",
+    "preferenceFailed": "Could not save your notification preference. Please try again."
+  }
+}

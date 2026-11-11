@@ -1,5 +1,6 @@
 import { DietaryPreference, GoalType, UserProfile } from '../types/models';
 import { fetchWithAuth } from './apiClient';
+import { t } from '../i18n';
 import { ApiError } from './apiError';
 
 const API_URL = `${process.env.EXPO_PUBLIC_ACCOUNT_API_URL}/profiles`;
@@ -38,7 +39,7 @@ export const profileService = {
     }
 
     if (!response.ok) {
-      throw await ApiError.fromResponse(response, "We couldn't load your profile. Please try again.");
+      throw await ApiError.fromResponse(response, t('profile.errors.loadProfile'));
     }
 
     const json = await response.json();
@@ -48,7 +49,7 @@ export const profileService = {
     // safer than empty lists, which a later save would write back over the real ones.
     const prefResponse = await fetchWithAuth(`${API_URL}/preferences`);
     if (!prefResponse.ok) {
-      throw await ApiError.fromResponse(prefResponse, "We couldn't load your preferences. Please try again.");
+      throw await ApiError.fromResponse(prefResponse, t('profile.errors.loadPreferences'));
     }
 
     const prefJson = await prefResponse.json();
@@ -106,7 +107,7 @@ export const profileService = {
     });
 
     if (!response.ok) {
-      throw await ApiError.fromResponse(response, "We couldn't save your profile. Please try again.");
+      throw await ApiError.fromResponse(response, t('profile.errors.saveProfile'));
     }
   },
 
@@ -126,7 +127,7 @@ export const profileService = {
     });
 
     if (!response.ok) {
-      throw await ApiError.fromResponse(response, "We couldn't save your preferences. Please try again.");
+      throw await ApiError.fromResponse(response, t('profile.errors.savePreferences'));
     }
   },
 };

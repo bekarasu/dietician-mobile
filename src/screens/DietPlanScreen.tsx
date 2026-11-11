@@ -21,21 +21,22 @@ import { useSharedPlanOfferStore } from '../store/useSharedPlanOfferStore';
 import { leaderboardService } from '../services/leaderboardService';
 import { getErrorMessage } from '../services/apiError';
 import { recommendationService } from '../services/recommendationService';
+import { getLocaleTag, t, translatedOption } from '../i18n';
 import { theme } from '../theme/theme';
 import { DailyPoints, DayPoints, DietMeal, DietPlan, WeekPoints } from '../types/models';
 import { formatCalendarDate, toCalendarDate } from '../utils/date';
-import { formatLitres } from '../utils/formatters';
+import { formatLitres, formatMealType } from '../utils/formatters';
 
 const CORE_MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 
 function getCoffeeDetail(day: DayPoints) {
   if (day.waterMl === 0) {
-    return 'Log water first';
+    return t('dietPlan.points.logWaterFirst');
   }
   if (day.coffeeCups > day.coffeeLimitCups) {
-    return `${day.coffeeCups} cups, over your ${day.coffeeLimitCups}`;
+    return t('dietPlan.points.coffeeOver', { cups: day.coffeeCups, limit: day.coffeeLimitCups });
   }
-  return `${day.coffeeCups} of ${day.coffeeLimitCups} cups`;
+  return t('dietPlan.points.coffeeOf', { cups: day.coffeeCups, limit: day.coffeeLimitCups });
 }
 
 function PointsRow({ label, detail, points, max }: { label: string; detail: string; points: number; max: number }) {
@@ -50,11 +51,11 @@ function PointsRow({ label, detail, points, max }: { label: string; detail: stri
 
 function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: WeekPoints; takenCoreMeals: number }) {
   const isCounted = day.status === 'SCORED' || day.status === 'IN_PROGRESS';
-  const soFar = day.status === 'IN_PROGRESS' ? ' so far' : '';
+  const inProgress = day.status === 'IN_PROGRESS';
 
   let detail: string | null = null;
   if (day.status === 'UPCOMING') {
-    detail = 'Log your meals, water and coffee on this day to earn them.';
+    detail = t('dietPlan.points.upcomingDetail');
   } else if (day.status === 'NOT_SCORED') {
     detail = getStatusMessage(day.statusReason);
   }
@@ -63,19 +64,19 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
   let weekNote: string | null = null;
   if (isCounted && week) {
     weekLine = week.totalScore !== null
-      ? `This week: ${week.totalScore} = weight ${week.weightPoints} + meals ${week.mealPoints} + water ${week.waterPoints} + coffee ${week.coffeePoints}`
+      ? t('dietPlan.points.weekLine', { total: week.totalScore, weight: week.weightPoints, meals: week.mealPoints, water: week.waterPoints, coffee: week.coffeePoints })
       : getStatusMessage(week.statusReason);
     const today = toCalendarDate(new Date());
     weekNote = today >= week.periodStart && today < week.periodEndExclusive
-      ? 'Meal, water and coffee points for the week are the average of your days. Today isn\'t counted against you until it ends.'
-      : 'Meal, water and coffee points for the week are the average of your days.';
+      ? t('dietPlan.points.weekNoteToday')
+      : t('dietPlan.points.weekNote');
   }
 
   let value = '–';
   if (isCounted) {
     value = String(day.points);
   } else if (day.status === 'UPCOMING') {
-    value = `Up to ${day.maxPoints}`;
+    value = t('dietPlan.points.upTo', { max: day.maxPoints });
   }
 
   return (
@@ -83,7 +84,7 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
       <View style={styles.pointsHeader}>
         <View style={styles.goalsTitleContainer}>
           <Ionicons name="trophy-outline" size={18} color={theme.colors.primary} />
-          <Text style={styles.pointsTitle}>Day points</Text>
+          <Text style={styles.pointsTitle}>{t('dietPlan.points.title')}</Text>
         </View>
         <Text style={styles.pointsValue}>
           {value}
@@ -93,13 +94,23 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
       {detail ? <Text style={styles.goalsText}>{detail}</Text> : null}
       {isCounted ? (
         <View style={styles.pointsRows}>
-          <PointsRow label="Meals" detail={`${day.mealsLogged} of 3 logged${soFar}`} points={day.mealPoints} max={day.maxMealPoints} />
-          <PointsRow label="Water" detail={`${formatLitres(day.waterMl)} of ${formatLitres(day.waterTargetMl)}${soFar}`} points={day.waterPoints} max={day.maxWaterPoints} />
-          <PointsRow label="Coffee" detail={getCoffeeDetail(day)} points={day.coffeePoints} max={day.maxCoffeePoints} />
+          <PointsRow
+            label={t('common.habits.meals')}
+            detail={t(inProgress ? 'dietPlan.points.mealsLoggedSoFar' : 'dietPlan.points.mealsLogged', { count: day.mealsLogged })}
+            points={day.mealPoints}
+            max={day.maxMealPoints}
+          />
+          <PointsRow
+            label={t('common.habits.water')}
+            detail={t(inProgress ? 'dietPlan.points.waterOfSoFar' : 'dietPlan.points.waterOf', { amount: formatLitres(day.waterMl), target: formatLitres(day.waterTargetMl) })}
+            points={day.waterPoints}
+            max={day.maxWaterPoints}
+          />
+          <PointsRow label={t('common.habits.coffee')} detail={getCoffeeDetail(day)} points={day.coffeePoints} max={day.maxCoffeePoints} />
         </View>
       ) : null}
       {isCounted && takenCoreMeals > day.mealsLogged ? (
-        <Text style={styles.pointsHint}>Meals count on the day you mark them as taken, not the plan day they belong to.</Text>
+        <Text style={styles.pointsHint}>{t('dietPlan.points.mealsCountHint')}</Text>
       ) : null}
       {weekLine ? <Text style={styles.pointsWeek}>{weekLine}</Text> : null}
       {weekNote ? <Text style={styles.pointsHint}>{weekNote}</Text> : null}
@@ -109,9 +120,9 @@ function DayPointsCard({ day, week, takenCoreMeals }: { day: DayPoints; week?: W
 
 type PlanView = 'current' | 'next';
 
-const PLAN_VIEW_OPTIONS: { label: string; value: PlanView }[] = [
-  { label: 'This plan', value: 'current' },
-  { label: 'Next plan', value: 'next' },
+const PLAN_VIEW_OPTIONS: { readonly label: string; value: PlanView }[] = [
+  translatedOption<PlanView>('current', 'dietPlan.view.current'),
+  translatedOption<PlanView>('next', 'dietPlan.view.next'),
 ];
 
 function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestStartDate: string) => void }) {
@@ -119,22 +130,22 @@ function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestS
   const { earliestRenewalDate, nextPlan } = plan;
   const nextStart = nextPlan ? getPlanDayDate(nextPlan, 1) : null;
 
-  let title = `Day ${currentDay} of ${totalDays}`;
-  let detail = endDate ? `Ends ${formatCalendarDate(endDate)}` : null;
+  let title = t('dietPlan.status.dayOf', { day: currentDay, total: totalDays });
+  let detail = endDate ? t('dietPlan.status.ends', { date: formatCalendarDate(endDate) }) : null;
 
   if (phase === 'upcoming' && daysUntilStart !== null) {
-    title = `Your plan starts ${formatStartsIn(daysUntilStart)}`;
-    detail = `Day 1 is ${formatCalendarDate(startDate)}. Look through your meals now. Logging and scores begin on day 1.`;
+    title = t('dietPlan.status.startsIn', { when: formatStartsIn(daysUntilStart) });
+    detail = t('dietPlan.status.upcomingDetail', { date: formatCalendarDate(startDate) });
   } else if (phase === 'ended' && endDate) {
-    title = `Your plan ended ${formatCalendarDate(endDate)}`;
-    detail = 'Check in to get your next plan.';
+    title = t('dietPlan.status.ended', { date: formatCalendarDate(endDate) });
+    detail = t('dietPlan.status.endedDetail');
   } else if (currentDay !== null && currentDay === totalDays) {
-    title = 'Last day of your plan';
-    detail = 'Check in now so your next plan is ready in time to shop for it.';
+    title = t('dietPlan.status.lastDay');
+    detail = t('dietPlan.status.lastDayDetail');
   }
 
   if (nextStart) {
-    detail = `Your next plan starts ${formatCalendarDate(nextStart)}.`;
+    detail = t('dietPlan.status.nextStarts', { date: formatCalendarDate(nextStart) });
   }
 
   if (phase === 'running' && totalDays === null) {
@@ -150,7 +161,7 @@ function PlanStatusCard({ plan, onRenew }: { plan: DietPlan; onRenew: (earliestS
           {detail ? <Text style={styles.goalsText}>{detail}</Text> : null}
         </View>
       </View>
-      {earliestRenewalDate ? <AppButton title="Renew My Plan" onPress={() => onRenew(earliestRenewalDate)} /> : null}
+      {earliestRenewalDate ? <AppButton title={t('dietPlan.status.renew')} onPress={() => onRenew(earliestRenewalDate)} /> : null}
     </AppCard>
   );
 }
@@ -162,16 +173,14 @@ function SharedPlanCard({ plan, onOpen }: { plan: DietPlan; onOpen: () => void }
   const offer = useSharedPlanOfferStore((state) => state.offer);
   const isAccepting = useSharedPlanOfferStore((state) => state.isAccepting);
 
-  let title = isShared ? 'Shared plan' : 'Share meals with friends';
-  let detail = isShared
-    ? 'Your group has the same meals, each with portions for their own goal. Tap to see who\'s in it.'
-    : 'Eat the same meals as up to 2 friends, with portions for your own goal and weight.';
+  let title = isShared ? t('dietPlan.shared.title') : t('dietPlan.shared.invite');
+  let detail = isShared ? t('dietPlan.shared.detail') : t('dietPlan.shared.inviteDetail');
   if (isAccepting) {
-    title = 'Switching to the shared plan';
-    detail = 'Your portions are being prepared. This usually takes about a minute.';
+    title = t('dietPlan.shared.switching');
+    detail = t('dietPlan.shared.switchingDetail');
   } else if (offer) {
-    title = `${offer.owner.displayName} started a shared plan`;
-    detail = 'Your plan stays as it is until you choose. Tap to decide whether to switch.';
+    title = t('dietPlan.shared.offer', { name: offer.owner.displayName });
+    detail = t('dietPlan.shared.offerDetail');
   }
 
   return (
@@ -195,9 +204,10 @@ function GoalsCard({ goalsText }: { goalsText: string }) {
     if (!goalsText) return null;
 
     const sections = [
-      { key: 'Target overview:', icon: 'flag-outline' },
-      { key: 'Rationale:', icon: 'bulb-outline' },
-      { key: 'Tips:', icon: 'list' },
+      // The plan text is in English, so its section markers are too.
+      { key: 'Target overview:', icon: 'flag-outline', label: t('dietPlan.goals.targetOverview') },
+      { key: 'Rationale:', icon: 'bulb-outline', label: t('dietPlan.goals.rationale') },
+      { key: 'Tips:', icon: 'list', label: t('dietPlan.goals.tips') },
     ];
 
     const hasSections = sections.some(s => goalsText.includes(s.key));
@@ -216,7 +226,7 @@ function GoalsCard({ goalsText }: { goalsText: string }) {
             return (
               <View key={index} style={styles.goalSectionHeader}>
                 <Ionicons name={sectionMatch.icon as any} size={16} color={theme.colors.primary} />
-                <Text style={styles.goalSectionTitle}>{part.replace(':', '')}</Text>
+                <Text style={styles.goalSectionTitle}>{sectionMatch.label}</Text>
               </View>
             );
           }
@@ -251,7 +261,7 @@ function GoalsCard({ goalsText }: { goalsText: string }) {
           <View style={styles.sparkleIcon}>
             <Ionicons name="sparkles" size={14} color={theme.colors.surface} />
           </View>
-          <Text style={styles.goalsTitle}>Plan Overview</Text>
+          <Text style={styles.goalsTitle}>{t('dietPlan.goals.title')}</Text>
         </View>
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={theme.colors.muted} />
       </Pressable>
@@ -265,7 +275,7 @@ function GoalsCard({ goalsText }: { goalsText: string }) {
           <Text style={styles.goalsText} numberOfLines={2}>
             {goalsText.replace(/(Target overview:|Rationale:|Tips:)/g, '').trim()}
           </Text>
-          <Text style={styles.readMoreText}>Read more about your plan</Text>
+          <Text style={styles.readMoreText}>{t('dietPlan.goals.readMore')}</Text>
         </View>
       )}
     </AppCard>
@@ -276,11 +286,14 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
   const [expanded, setExpanded] = useState(false);
   const profile = useProfileStore((state) => state.profile);
   const availableIngredients = profile?.availableIngredients || [];
+  const amountFormat = useMemo(() => new Intl.NumberFormat(getLocaleTag(), { maximumFractionDigits: 1 }), []);
 
   const { aggregated, unparsed } = useMemo(() => {
     const agg: Record<string, { amount: number; unit: string; name: string }> = {};
     const unp: string[] = [];
-    const regex = /^([\d.]+)\s*(g|ml|kg|l|tbsp|tsp|cup|cups|oz|lb|lbs|pieces|piece|slice|slices)?\s+(.*)$/i;
+    // The server translates ingredients, keeping the amount first and g, ml, kg
+    // and l as they are, so Turkish kitchen measures are units too.
+    const regex = /^([\d.]+)\s*(g|ml|kg|l|tbsp|tsp|cup|cups|oz|lb|lbs|pieces|piece|slice|slices|yemek kaşığı|tatlı kaşığı|çay kaşığı|su bardağı|adet|dilim|tutam|avuç|diş)?\s+(.*)$/i;
 
     meals.forEach(meal => {
       if (meal.isExtra || !meal.ingredients) return;
@@ -324,7 +337,7 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
           <View style={[styles.sparkleIcon, { backgroundColor: theme.colors.primary }]}>
             <Ionicons name="cart" size={14} color={theme.colors.surface} />
           </View>
-          <Text style={styles.goalsTitle}>Daily Shopping List</Text>
+          <Text style={styles.goalsTitle}>{t('dietPlan.shopping.title')}</Text>
         </View>
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={theme.colors.muted} />
       </Pressable>
@@ -332,7 +345,7 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
       {expanded && (
         <View style={styles.goalsContentExpanded}>
           <Text style={[styles.goalsText, { marginBottom: theme.spacing.sm }]}>
-            Calculated ingredients for today's plan meals:
+            {t('dietPlan.shopping.intro')}
           </Text>
           {aggregated.map((item, idx) => {
             const inFridge = availableIngredients.some((ai) => item.name.toLowerCase().includes(ai.toLowerCase()));
@@ -342,7 +355,7 @@ function ShoppingListCard({ meals }: { meals: DietMeal[] }) {
                   <Text style={[styles.goalsText, { flexShrink: 1 }]}>• {item.name}</Text>
                   {inFridge && <Ionicons name="checkmark-circle" size={14} color={theme.colors.primary} />}
                 </View>
-                <Text style={[styles.goalsText, { fontWeight: '700', marginLeft: 8 }]}>{Math.round(item.amount * 10) / 10} {item.unit}</Text>
+                <Text style={[styles.goalsText, { fontWeight: '700', marginLeft: 8 }]}>{amountFormat.format(item.amount)} {item.unit}</Text>
               </View>
             );
           })}
@@ -376,7 +389,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
       await recommendationService.swapMeal(meal.id, scope);
       onMealLogged?.();
     } catch (e) {
-      showDialog({ title: 'Error', message: getErrorMessage(e, 'Failed to swap meal.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(e, t('dietPlan.meal.swapFailed')), tone: 'danger' });
     } finally {
       setIsSwapping(false);
     }
@@ -395,15 +408,13 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
       return;
     }
     showDialog({
-      title: 'Swap this shared meal?',
-      message:
-        'Swap for everyone changes it for everyone in your group who hasn\'t eaten it yet, each with their own portion. ' +
-        'Just for me changes only your meal, and it stops being shared; the group keeps theirs.',
+      title: t('dietPlan.meal.swapSharedTitle'),
+      message: t('dietPlan.meal.swapSharedMessage'),
       icon: 'swap-horizontal-outline',
       buttons: [
-        { text: 'Swap for everyone', onPress: () => swap('everyone') },
-        { text: 'Just for me', onPress: () => swap('me') },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('dietPlan.meal.swapEveryone'), onPress: () => swap('everyone') },
+        { text: t('dietPlan.meal.swapMe'), onPress: () => swap('me') },
+        { text: t('common.actions.cancel'), style: 'cancel' },
       ],
     });
   };
@@ -413,7 +424,7 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
       await logPlanMeal(meal, logDate);
       onMealLogged?.();
     } catch (e) {
-      showDialog({ title: 'Error', message: 'Failed to log meal.', tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: t('dietPlan.meal.logFailed'), tone: 'danger' });
     }
   };
 
@@ -423,15 +434,15 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
         <View style={styles.mealHeader}>
           <View style={styles.mealTitleRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.mealType}>{meal.mealType}</Text>
+              <Text style={styles.mealType}>{formatMealType(meal.mealType)}</Text>
               {isExtra && (
                 <View style={{ backgroundColor: theme.colors.warningSurface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.text }}>EXTRA</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.text }}>{t('dietPlan.meal.extra')}</Text>
                 </View>
               )}
               {meal.isShared && (
                 <View style={{ backgroundColor: theme.colors.primarySoft, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.primary }}>SHARED</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: theme.colors.primary }}>{t('dietPlan.meal.shared')}</Text>
                 </View>
               )}
               {isLogged && <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />}
@@ -446,17 +457,17 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
             </View>
             {typeof meal.proteinG === 'number' && !isNaN(meal.proteinG) && (
               <View style={styles.macroBadge}>
-                <Text style={styles.macroText}>P: {meal.proteinG}g</Text>
+                <Text style={styles.macroText}>{t('common.macros.protein')}: {meal.proteinG}g</Text>
               </View>
             )}
             {typeof meal.carbsG === 'number' && !isNaN(meal.carbsG) && (
               <View style={styles.macroBadge}>
-                <Text style={styles.macroText}>C: {meal.carbsG}g</Text>
+                <Text style={styles.macroText}>{t('common.macros.carbs')}: {meal.carbsG}g</Text>
               </View>
             )}
             {typeof meal.fatG === 'number' && !isNaN(meal.fatG) && (
               <View style={styles.macroBadge}>
-                <Text style={styles.macroText}>F: {meal.fatG}g</Text>
+                <Text style={styles.macroText}>{t('common.macros.fat')}: {meal.fatG}g</Text>
               </View>
             )}
           </View>
@@ -468,14 +479,14 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
             
             {!!meal.description?.trim() && (
               <>
-                <Text style={styles.detailTitle}>Description</Text>
+                <Text style={styles.detailTitle}>{t('dietPlan.meal.description')}</Text>
                 <Text style={styles.detailText}>{meal.description}</Text>
               </>
             )}
             
             {meal.ingredients && meal.ingredients.length > 0 && (
               <>
-                <Text style={[styles.detailTitle, !!meal.description?.trim() && { marginTop: theme.spacing.md }]}>Ingredients</Text>
+                <Text style={[styles.detailTitle, !!meal.description?.trim() && { marginTop: theme.spacing.md }]}>{t('dietPlan.meal.ingredients')}</Text>
                 {meal.ingredients.map((ingredient, i) => {
                   const inFridge = availableIngredients.some(
                     (ai) => ingredient.toLowerCase().includes(ai.toLowerCase())
@@ -496,12 +507,12 @@ function MealCard({ meal, logDate, isLogged, isExtra, canLog = true, canSwapForE
                 {isSwapping ? (
                   <View style={{ padding: theme.spacing.md, alignItems: 'center' }}>
                     <ActivityIndicator size="small" color={theme.colors.primary} />
-                    <Text style={{ color: theme.colors.muted, marginTop: theme.spacing.xs }}>Swapping meal...</Text>
+                    <Text style={{ color: theme.colors.muted, marginTop: theme.spacing.xs }}>{t('dietPlan.meal.swapping')}</Text>
                   </View>
                 ) : (
                   <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                    <AppButton title="Swap Meal" variant="ghost" onPress={handleSwap} style={{ flex: 1 }} />
-                    {canLog && <AppButton title="Meal Is Taken" onPress={handleLogMeal} style={{ flex: 1 }} />}
+                    <AppButton title={t('dietPlan.meal.swap')} variant="ghost" onPress={handleSwap} style={{ flex: 1 }} />
+                    {canLog && <AppButton title={t('dietPlan.meal.taken')} onPress={handleLogMeal} style={{ flex: 1 }} />}
                   </View>
                 )}
               </>
@@ -533,7 +544,7 @@ export function DietPlanScreen() {
   const todayDay = !isNextPlanShown && schedule?.phase === 'running' ? schedule.currentDay : null;
   // Day 1 of a plan that hasn't started says when it does: "Tomorrow", "In 3 days".
   const startsIn = schedule?.daysUntilStart != null ? formatStartsIn(schedule.daysUntilStart) : null;
-  const startsInLabel = startsIn ? startsIn[0].toUpperCase() + startsIn.slice(1) : null;
+  const startsInLabel = startsIn ? startsIn[0].toLocaleUpperCase(getLocaleTag()) + startsIn.slice(1) : null;
 
   const planStart = activePlan?.startDate.slice(0, 10);
   const planEnd = activePlan?.endDate?.slice(0, 10);
@@ -592,8 +603,8 @@ export function DietPlanScreen() {
     return (
       <ScreenContainer contentStyle={styles.centered}>
         <Ionicons name="restaurant-outline" size={64} color={theme.colors.muted} />
-        <Text style={styles.emptyTitle}>No Active Diet Plan</Text>
-        <Text style={styles.emptyText}>You don't have an active diet plan yet. Generate one to see your meals here.</Text>
+        <Text style={styles.emptyTitle}>{t('dietPlan.empty.title')}</Text>
+        <Text style={styles.emptyText}>{t('dietPlan.empty.text')}</Text>
       </ScreenContainer>
     );
   }
@@ -645,8 +656,8 @@ export function DietPlanScreen() {
     // is open, and sit at the bottom of the screen, so iOS scrolls above it.
     <ScreenContainer scrollViewProps={{ keyboardShouldPersistTaps: 'handled', automaticallyAdjustKeyboardInsets: true }}>
       <SectionHeader
-        title="Your Diet Plan"
-        subtitle="Stay consistent with your customized nutrition plan."
+        title={t('dietPlan.header.title')}
+        subtitle={t('dietPlan.header.subtitle')}
       />
 
       <PlanStatusCard
@@ -675,8 +686,8 @@ export function DietPlanScreen() {
             }}
           >
             <Text style={[styles.dayButtonText, selectedDay === day && styles.dayButtonTextActive]}>
-              Day {day}
-              {day === todayDay ? ' · Today' : ''}
+              {t('dietPlan.day', { day })}
+              {day === todayDay ? t('dietPlan.todaySuffix') : ''}
               {day === 1 && startsInLabel ? ` · ${startsInLabel}` : ''}
             </Text>
           </Pressable>
@@ -685,7 +696,7 @@ export function DietPlanScreen() {
 
       <View style={{ marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.xs }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.text }}>Daily Progress</Text>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.text }}>{t('dietPlan.dailyProgress')}</Text>
           <Text style={{ fontSize: 14, fontWeight: '800', color: takenCalories > planTotalCalories ? theme.colors.danger : theme.colors.primary }}>
             {takenCalories} <Text style={{ color: theme.colors.muted, fontWeight: '600' }}>/ {planTotalCalories} kcal</Text>
           </Text>
@@ -701,7 +712,7 @@ export function DietPlanScreen() {
 
       <View style={styles.mealsContainer}>
         {planMeals.length === 0 ? (
-          <Text style={styles.emptyText}>No meals found for this day.</Text>
+          <Text style={styles.emptyText}>{t('dietPlan.noMeals')}</Text>
         ) : (
           planMeals.map((meal) => {
             return (
@@ -719,7 +730,7 @@ export function DietPlanScreen() {
         )}
         {extraMeals.length > 0 && (
           <View style={{ marginTop: theme.spacing.md }}>
-            <Text style={[styles.detailTitle, { marginBottom: theme.spacing.sm, fontSize: 16 }]}>Additional Meals</Text>
+            <Text style={[styles.detailTitle, { marginBottom: theme.spacing.sm, fontSize: 16 }]}>{t('dietPlan.additionalMeals')}</Text>
             <View style={styles.extraMealsList}>
               {extraMeals.map((meal) => (
                 <MealCard

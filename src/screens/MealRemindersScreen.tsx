@@ -13,16 +13,18 @@ import {
 import { AWAY_REMINDER_DAYS } from '../features/reminders/planMealReminders';
 import { useDietPlanStore } from '../store/useDietPlanStore';
 import { useMealReminderStore } from '../store/useMealReminderStore';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { DietPlan } from '../types/models';
+import { formatMealType } from '../utils/formatters';
 
 const STEP_MINUTES = 15;
 
-const MEAL_DETAILS: Record<ReminderMealType, { icon: keyof typeof Ionicons.glyphMap; detail: string }> = {
-  Breakfast: { icon: 'sunny-outline', detail: 'Every plan day' },
-  Lunch: { icon: 'restaurant-outline', detail: 'Every plan day' },
-  Snack: { icon: 'nutrition-outline', detail: 'On days your plan has a snack' },
-  Dinner: { icon: 'moon-outline', detail: 'Every plan day' },
+const MEAL_DETAILS: Record<ReminderMealType, { icon: keyof typeof Ionicons.glyphMap; detailKey: TranslationKey }> = {
+  Breakfast: { icon: 'sunny-outline', detailKey: 'reminders.screen.everyDay' },
+  Lunch: { icon: 'restaurant-outline', detailKey: 'reminders.screen.everyDay' },
+  Snack: { icon: 'nutrition-outline', detailKey: 'reminders.screen.snackDays' },
+  Dinner: { icon: 'moon-outline', detailKey: 'reminders.screen.everyDay' },
 };
 
 // Why no reminders are coming, or null while the plan has meals ahead.
@@ -31,14 +33,14 @@ function describeQuietPlan(plan: DietPlan | null, isPlanLoaded: boolean) {
     return null;
   }
   if (!plan) {
-    return 'You don\'t have a plan yet. Reminders start with your first one.';
+    return t('reminders.screen.noPlan');
   }
   const schedule = getPlanSchedule(plan);
   if (schedule.phase === 'upcoming' && schedule.daysUntilStart) {
-    return `Your plan starts ${formatStartsIn(schedule.daysUntilStart)}, and reminders start with it.`;
+    return t('reminders.screen.upcoming', { when: formatStartsIn(schedule.daysUntilStart) });
   }
   if (schedule.phase === 'ended' && !plan.nextPlan) {
-    return 'Your plan has ended. Reminders start again with your next plan.';
+    return t('reminders.screen.ended');
   }
   return null;
 }
@@ -51,13 +53,13 @@ function TimeStepper({ label, minutes, onChange }: { label: string; minutes: num
     <View
       accessible
       accessibilityRole="adjustable"
-      accessibilityLabel={`${label} reminder time`}
+      accessibilityLabel={t('reminders.screen.timeA11y', { meal: label })}
       accessibilityValue={{ text: time }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => step(event.nativeEvent.actionName === 'increment' ? STEP_MINUTES : -STEP_MINUTES)}
       style={styles.stepper}
     >
-      <Text style={styles.stepperLabel}>Remind me at</Text>
+      <Text style={styles.stepperLabel}>{t('reminders.screen.remindAt')}</Text>
       <View style={styles.stepperControls}>
         <Pressable hitSlop={8} onPress={() => step(-STEP_MINUTES)} style={({ pressed }) => [styles.stepButton, pressed && styles.pressed]}>
           <Ionicons name="remove" size={18} color={theme.colors.primary} />
@@ -84,9 +86,9 @@ export function MealRemindersScreen() {
   return (
     <ScreenContainer>
       <View style={styles.intro}>
-        <Text style={styles.introTitle}>A nudge at each meal</Text>
+        <Text style={styles.introTitle}>{t('reminders.screen.introTitle')}</Text>
         <Text style={styles.introText}>
-          Each reminder names that meal from your plan, and is skipped once you've logged it. Tap one to log your meal.
+          {t('reminders.screen.introText')}
         </Text>
       </View>
 
@@ -94,10 +96,10 @@ export function MealRemindersScreen() {
         <View style={styles.notice}>
           <View style={styles.noticeHeader}>
             <Ionicons name="notifications-off-outline" size={18} color={theme.colors.text} />
-            <Text style={styles.noticeTitle}>Notifications are off</Text>
+            <Text style={styles.noticeTitle}>{t('reminders.screen.offTitle')}</Text>
           </View>
-          <Text style={styles.noticeText}>Allow notifications for Eativio in Settings, and your reminders start again.</Text>
-          <AppButton title="Open Settings" variant="secondary" onPress={() => Linking.openSettings()} />
+          <Text style={styles.noticeText}>{t('reminders.screen.offText')}</Text>
+          <AppButton title={t('common.actions.openSettings')} variant="secondary" onPress={() => Linking.openSettings()} />
         </View>
       ) : null}
 
@@ -113,7 +115,8 @@ export function MealRemindersScreen() {
       <View style={styles.menu}>
         {REMINDER_MEAL_TYPES.map((mealType) => {
           const meal = settings.meals[mealType];
-          const { icon, detail } = MEAL_DETAILS[mealType];
+          const { icon, detailKey } = MEAL_DETAILS[mealType];
+          const mealLabel = formatMealType(mealType);
           return (
             <View key={mealType} style={styles.mealRow}>
               <View style={styles.mealHeader}>
@@ -121,11 +124,11 @@ export function MealRemindersScreen() {
                   <Ionicons name={icon} size={18} color={theme.colors.primary} />
                 </View>
                 <View style={styles.mealText}>
-                  <Text style={styles.mealLabel}>{mealType}</Text>
-                  <Text style={styles.mealDetail}>{detail}</Text>
+                  <Text style={styles.mealLabel}>{mealLabel}</Text>
+                  <Text style={styles.mealDetail}>{t(detailKey)}</Text>
                 </View>
                 <Switch
-                  accessibilityLabel={`${mealType} reminder`}
+                  accessibilityLabel={t('reminders.screen.switchA11y', { meal: mealLabel })}
                   value={meal.enabled}
                   onValueChange={(enabled) => updateMeal(mealType, { enabled })}
                   thumbColor={theme.colors.surface}
@@ -133,7 +136,7 @@ export function MealRemindersScreen() {
                 />
               </View>
               {meal.enabled ? (
-                <TimeStepper label={mealType} minutes={meal.minutes} onChange={(minutes) => updateMeal(mealType, { minutes })} />
+                <TimeStepper label={mealLabel} minutes={meal.minutes} onChange={(minutes) => updateMeal(mealType, { minutes })} />
               ) : null}
             </View>
           );
@@ -147,13 +150,13 @@ export function MealRemindersScreen() {
               <Ionicons name="notifications-outline" size={18} color={theme.colors.primary} />
             </View>
             <View style={styles.mealText}>
-              <Text style={styles.mealLabel}>If you've been away</Text>
+              <Text style={styles.mealLabel}>{t('reminders.screen.awayTitle')}</Text>
               <Text style={styles.mealDetail}>
-                A nudge when you haven't opened the app for {AWAY_REMINDER_DAYS} days, never at night.
+                {t('reminders.screen.awayText', { days: AWAY_REMINDER_DAYS })}
               </Text>
             </View>
             <Switch
-              accessibilityLabel="Away reminder"
+              accessibilityLabel={t('reminders.screen.awayA11y')}
               value={settings.awayReminder}
               onValueChange={setAwayReminder}
               thumbColor={theme.colors.surface}

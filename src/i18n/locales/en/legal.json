@@ -1,0 +1,15 @@
+{
+  "optional": "Optional",
+  "openHint": "Opens the full text",
+  "read": "Read {{title}}",
+  "meta": "Version {{version}} · Effective {{date}}",
+  "update": {
+    "title": "We've updated our terms",
+    "subtitle": "Please read the documents below and accept them to keep using the app.",
+    "acceptRequired": "Please accept the updated documents to continue.",
+    "saveFailed": "We couldn't save your answer. Please try again.",
+    "accept": "Accept and continue",
+    "decline": "Don't want to accept?"
+  },
+  "optionalA11y": "{{label}} (optional)"
+}

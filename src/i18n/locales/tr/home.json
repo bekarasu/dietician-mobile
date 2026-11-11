@@ -1,0 +1,47 @@
+{
+  "greeting": {
+    "morning": "Günaydın",
+    "afternoon": "İyi günler",
+    "evening": "İyi akşamlar"
+  },
+  "planStarts": "Plan {{when}} başlıyor",
+  "planEnded": "Plan sona erdi",
+  "dayOf": "Gün {{day}}/{{total}}",
+  "logMealFailed": "Bu öğün kaydedilemedi. Lütfen tekrar deneyin.",
+  "profileA11y": "Profil",
+  "waterTarget": "{{target}} hedefin",
+  "coffeeLimit": "sınır {{limit}}",
+  "addCup": "+1 fincan",
+  "week": {
+    "default": "Haftanız",
+    "score": "Bu hafta: {{score}} puan",
+    "scoreWithConsistency": "Bu hafta: {{score}} puan · %{{consistency}} istikrar"
+  },
+  "ring": {
+    "ofToday": "bugün {{max}} üzerinden",
+    "pointsToday": "bugünkü puan"
+  },
+  "mealsLogged": "3 öğünden {{count}} kayıtlı",
+  "waterOf": "{{amount}} / {{target}}",
+  "logWaterFirst": "Önce su kaydedin",
+  "coffeeOf": "{{cups}} / {{limit}} fincan",
+  "pointsPlaceholder": "Bugünkü puanlarınız burada görünecek.",
+  "meals": {
+    "title": "Bugünün öğünleri",
+    "openPlan": "Planı aç",
+    "noPlan": "Öğünlerinizi burada görmek için bir diyet planı oluşturun.",
+    "upcoming": "Planınız {{when}}, {{date}} tarihinde başlıyor. Öğünlerinize göz atıp alışverişinizi yapın.",
+    "ended": "Planınız sona erdi. Sonraki planınızı almak için plandan değerlendirme yapın.",
+    "upNext": "Sıradaki · {{mealType}}",
+    "macros": "{{kcal}} kcal · P {{protein}} g · K {{carbs}} g · Y {{fat}} g",
+    "ateThis": "Bunu yedim",
+    "allDone": "Bugünün tüm öğünleri kaydedildi.",
+    "eatenFromPlan": "Planınızdan yenen"
+  },
+  "weight": {
+    "title": "Kilo",
+    "in7Days": "7 günde {{change}}",
+    "towardsGoal": "Hedefinize doğru {{total}} kg yolun {{done}} kg kadarı",
+    "empty": "İlerlemenizi takip etmek için ilk tartımınızı kaydedin."
+  }
+}

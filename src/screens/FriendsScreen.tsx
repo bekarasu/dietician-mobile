@@ -10,6 +10,7 @@ import { showDialog } from '../features/dialog/dialogStore';
 import { formatFriendCode, getSearchTerm, readSearchInput, SearchInput } from '../features/friends/friendSearch';
 import { getErrorMessage as getRequestErrorMessage } from '../services/apiError';
 import { friendService } from '../services/friendService';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { BlockedUser, Friend, FriendRequestList, UserSearchMatchType, UserSearchResponse, UserSearchResult } from '../types/models';
 import { formatDateLabel } from '../utils/date';
@@ -115,7 +116,7 @@ export function FriendsScreen() {
         // Forgotten, so submitting the same text again retries it.
         requestedTerm.current = '';
         setResults(null);
-        setSearchError(getRequestErrorMessage(error, "We couldn't search just now. Please try again."));
+        setSearchError(getRequestErrorMessage(error, t('friends.searchFailed')));
       }
     } finally {
       if (seq === searchSeq.current) {
@@ -160,7 +161,7 @@ export function FriendsScreen() {
       return;
     }
     Share.share({
-      message: `Add me as a friend on Eativio! My friend code is ${formatFriendCode(friendCode)}.`,
+      message: t('friends.shareMessage', { code: formatFriendCode(friendCode) }),
     }).catch(() => undefined);
   };
 
@@ -174,7 +175,7 @@ export function FriendsScreen() {
         await runSearch(requestedTerm.current);
       }
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error), tone: 'danger' });
     } finally {
       setBusyUserId(null);
     }
@@ -182,13 +183,13 @@ export function FriendsScreen() {
 
   const confirmRemove = (friend: Friend) => {
     showDialog({
-      title: 'Remove friend',
-      message: `Remove ${friend.displayName} from your friends?`,
+      title: t('friends.remove.title'),
+      message: t('friends.remove.message', { name: friend.displayName }),
       icon: 'person-remove-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.actions.cancel'), style: 'cancel' },
         {
-          text: 'Remove',
+          text: t('common.actions.remove'),
           style: 'destructive',
           onPress: () => run(friend.userId, () => friendService.removeFriend(friend.userId)),
         },
@@ -198,13 +199,13 @@ export function FriendsScreen() {
 
   const confirmBlock = (userId: string, displayName: string) => {
     showDialog({
-      title: 'Block user',
-      message: `${displayName} won't be able to find you, and you won't see each other on leaderboards. Any friendship or request between you ends.`,
+      title: t('friends.block.title'),
+      message: t('friends.block.message', { name: displayName }),
       icon: 'ban-outline',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.actions.cancel'), style: 'cancel' },
         {
-          text: 'Block',
+          text: t('common.actions.block'),
           style: 'destructive',
           onPress: () => run(userId, () => friendService.blockUser(userId)),
         },
@@ -217,12 +218,12 @@ export function FriendsScreen() {
 
     switch (result.relationship) {
       case 'NONE':
-        return [{ label: 'Add', tone: 'primary', onPress: () => run(userId, () => friendService.sendRequest(userId)) }];
+        return [{ label: t('common.actions.add'), tone: 'primary', onPress: () => run(userId, () => friendService.sendRequest(userId)) }];
       case 'OUTGOING_REQUEST':
-        return requestId ? [{ label: 'Cancel', onPress: () => run(userId, () => friendService.cancelRequest(requestId)) }] : [];
+        return requestId ? [{ label: t('common.actions.cancel'), onPress: () => run(userId, () => friendService.cancelRequest(requestId)) }] : [];
       case 'INCOMING_REQUEST':
         return requestId
-          ? [{ label: 'Accept', tone: 'primary', onPress: () => run(userId, () => friendService.acceptRequest(requestId)) }]
+          ? [{ label: t('common.actions.accept'), tone: 'primary', onPress: () => run(userId, () => friendService.acceptRequest(requestId)) }]
           : [];
       default:
         return [];
@@ -243,9 +244,9 @@ export function FriendsScreen() {
         {friendCode ? (
           <View style={styles.codeRow}>
             <View style={styles.codeIdentity}>
-              <Text style={styles.codeLabel}>Your friend code</Text>
+              <Text style={styles.codeLabel}>{t('friends.code.label')}</Text>
               <Text
-                accessibilityLabel={`Your friend code: ${friendCode.split('').join(' ')}`}
+                accessibilityLabel={t('friends.code.a11y', { digits: friendCode.split('').join(' ') })}
                 selectable
                 style={styles.code}
               >
@@ -253,14 +254,14 @@ export function FriendsScreen() {
               </Text>
             </View>
             <Pressable
-              accessibilityLabel="Share your friend code"
+              accessibilityLabel={t('friends.code.shareA11y')}
               accessibilityRole="button"
               hitSlop={8}
               onPress={shareFriendCode}
               style={({ pressed }) => [styles.shareButton, pressed && styles.pressed]}
             >
               <Ionicons color={theme.colors.primary} name="share-outline" size={18} />
-              <Text style={styles.shareText}>Share</Text>
+              <Text style={styles.shareText}>{t('common.actions.share')}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -268,10 +269,10 @@ export function FriendsScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           clearable
-          label="Find people"
+          label={t('friends.search.label')}
           onChangeText={setQuery}
           onSubmitEditing={submitSearch}
-          placeholder="Name, email or friend code"
+          placeholder={t('friends.search.placeholder')}
           returnKeyType="search"
           value={query}
         />
@@ -288,12 +289,12 @@ export function FriendsScreen() {
                   key={result.userId}
                   actions={getResultActions(result)}
                   busy={busyUserId === result.userId}
-                  detail={RELATIONSHIP_LABELS[result.relationship] ?? MATCH_LABELS[results.matchType]}
+                  detail={translateKey(RELATIONSHIP_LABELS[result.relationship] ?? MATCH_LABELS[results.matchType])}
                   name={result.displayName}
                   userId={result.userId}
                 />
               ))}
-              {results.users.length === 0 ? <Text style={styles.noResults}>{NO_RESULTS[results.matchType]}</Text> : null}
+              {results.users.length === 0 ? <Text style={styles.noResults}>{t(NO_RESULTS[results.matchType])}</Text> : null}
             </View>
           </View>
         ) : null}
@@ -306,8 +307,8 @@ export function FriendsScreen() {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>We couldn't load your friends. Please try again.</Text>
-          <AppButton title="Try again" onPress={loadScreen} variant="secondary" />
+          <Text style={styles.stateText}>{t('friends.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={loadScreen} variant="secondary" />
         </View>
       ) : null}
 
@@ -315,28 +316,28 @@ export function FriendsScreen() {
         <>
           {requestCount > 0 ? (
             <ListCard
-              meta={requests.incoming.length > 0 ? `${requests.incoming.length} new` : undefined}
-              title="Requests"
+              meta={requests.incoming.length > 0 ? t('friends.requests.new', { count: requests.incoming.length }) : undefined}
+              title={t('friends.requests.title')}
             >
               {requests.incoming.map((request) => (
                 <UserRow
                   key={request.id}
                   actions={[
                     {
-                      label: 'Accept',
+                      label: t('common.actions.accept'),
                       tone: 'primary',
                       onPress: () => run(request.userId, () => friendService.acceptRequest(request.id)),
                     },
-                    { label: 'Decline', onPress: () => run(request.userId, () => friendService.rejectRequest(request.id)) },
+                    { label: t('common.actions.decline'), onPress: () => run(request.userId, () => friendService.rejectRequest(request.id)) },
                     {
-                      label: 'Block',
+                      label: t('common.actions.block'),
                       tone: 'danger',
                       icon: 'ban-outline',
                       onPress: () => confirmBlock(request.userId, request.displayName),
                     },
                   ]}
                   busy={busyUserId === request.userId}
-                  detail={`Wants to be friends · ${formatDateLabel(request.createdAt)}`}
+                  detail={t('friends.requests.incoming', { date: formatDateLabel(request.createdAt) })}
                   name={request.displayName}
                   stacked
                   userId={request.userId}
@@ -345,9 +346,9 @@ export function FriendsScreen() {
               {requests.outgoing.map((request) => (
                 <UserRow
                   key={request.id}
-                  actions={[{ label: 'Cancel', onPress: () => run(request.userId, () => friendService.cancelRequest(request.id)) }]}
+                  actions={[{ label: t('common.actions.cancel'), onPress: () => run(request.userId, () => friendService.cancelRequest(request.id)) }]}
                   busy={busyUserId === request.userId}
-                  detail={`Request sent · ${formatDateLabel(request.createdAt)}`}
+                  detail={t('friends.requests.outgoing', { date: formatDateLabel(request.createdAt) })}
                   name={request.displayName}
                   userId={request.userId}
                 />
@@ -355,15 +356,15 @@ export function FriendsScreen() {
             </ListCard>
           ) : null}
 
-          <ListCard meta={friends.length > 0 ? formatCount(friends.length, 'friend', 'friends') : undefined} title="Your friends">
+          <ListCard meta={friends.length > 0 ? t('friends.count.friends', { count: friends.length }) : undefined} title={t('friends.list.title')}>
             {friends.length === 0 ? (
               <View style={styles.emptyState}>
                 <View style={styles.stateIcon}>
                   <Ionicons color={theme.colors.primary} name="people-outline" size={28} />
                 </View>
-                <Text style={styles.stateTitle}>No friends yet</Text>
+                <Text style={styles.stateTitle}>{t('friends.list.emptyTitle')}</Text>
                 <Text style={styles.stateDetail}>
-                  Share your friend code, or search for a name, email or code above to send your first request.
+                  {t('friends.list.emptyText')}
                 </Text>
               </View>
             ) : null}
@@ -371,16 +372,16 @@ export function FriendsScreen() {
               <UserRow
                 key={friend.userId}
                 actions={[
-                  { label: 'Remove', icon: 'person-remove-outline', onPress: () => confirmRemove(friend) },
+                  { label: t('common.actions.remove'), icon: 'person-remove-outline', onPress: () => confirmRemove(friend) },
                   {
-                    label: 'Block',
+                    label: t('common.actions.block'),
                     tone: 'danger',
                     icon: 'ban-outline',
                     onPress: () => confirmBlock(friend.userId, friend.displayName),
                   },
                 ]}
                 busy={busyUserId === friend.userId}
-                detail={`Friends since ${formatDateLabel(friend.friendsSince)}`}
+                detail={t('friends.list.since', { date: formatDateLabel(friend.friendsSince) })}
                 name={friend.displayName}
                 userId={friend.userId}
               />
@@ -388,13 +389,13 @@ export function FriendsScreen() {
           </ListCard>
 
           {blocked.length > 0 ? (
-            <ListCard meta={formatCount(blocked.length, 'person', 'people')} title="Blocked">
+            <ListCard meta={t('friends.count.people', { count: blocked.length })} title={t('friends.blocked.title')}>
               {blocked.map((user) => (
                 <UserRow
                   key={user.userId}
-                  actions={[{ label: 'Unblock', onPress: () => run(user.userId, () => friendService.unblockUser(user.userId)) }]}
+                  actions={[{ label: t('common.actions.unblock'), onPress: () => run(user.userId, () => friendService.unblockUser(user.userId)) }]}
                   busy={busyUserId === user.userId}
-                  detail={`Blocked ${formatDateLabel(user.blockedAt)}`}
+                  detail={t('friends.blocked.since', { date: formatDateLabel(user.blockedAt) })}
                   muted
                   name={user.displayName}
                   userId={user.userId}
@@ -408,26 +409,30 @@ export function FriendsScreen() {
   );
 }
 
-const RELATIONSHIP_LABELS: Record<UserSearchResult['relationship'], string | undefined> = {
+const RELATIONSHIP_LABELS: Record<UserSearchResult['relationship'], TranslationKey | undefined> = {
   NONE: undefined,
-  FRIEND: 'Already friends',
-  OUTGOING_REQUEST: 'Request sent',
-  INCOMING_REQUEST: 'Wants to be friends',
+  FRIEND: 'friends.relationship.friend',
+  OUTGOING_REQUEST: 'friends.relationship.outgoing',
+  INCOMING_REQUEST: 'friends.relationship.incoming',
 };
+
+function translateKey(key: TranslationKey | undefined) {
+  return key ? t(key) : undefined;
+}
 
 // Says how a search can find someone, or what the text in the field still needs.
 function getSearchHint(input: SearchInput, query: string, isOwnCode: boolean): string | null {
   if (query.trim().length === 0) {
-    return 'Search for a name, a full email address or an 8-digit friend code.';
+    return t('friends.search.hintEmpty');
   }
   if (isOwnCode) {
-    return "That's your own friend code. Share it so friends can add you.";
+    return t('friends.search.hintOwnCode');
   }
   if (input.kind === 'email' && !input.complete) {
-    return 'Keep typing: email search needs the full address.';
+    return t('friends.search.hintEmail');
   }
   if (input.kind === 'partialCode') {
-    return 'A friend code is 8 digits, like 4821 7730.';
+    return t('friends.search.hintCode');
   }
   return null;
 }
@@ -437,7 +442,7 @@ function SearchStatus({ searching, error, hint }: { searching: boolean; error: s
     return (
       <View style={styles.status}>
         <ActivityIndicator color={theme.colors.primary} size="small" />
-        <Text style={styles.statusText}>Searching…</Text>
+        <Text style={styles.statusText}>{t('friends.search.searching')}</Text>
       </View>
     );
   }
@@ -448,25 +453,22 @@ function SearchStatus({ searching, error, hint }: { searching: boolean; error: s
 }
 
 // Shown under someone with no relationship yet, so it's clear why they came up.
-const MATCH_LABELS: Record<UserSearchMatchType, string | undefined> = {
+const MATCH_LABELS: Record<UserSearchMatchType, TranslationKey | undefined> = {
   NAME: undefined,
-  EMAIL: 'Matched by email',
-  FRIEND_CODE: 'Matched by friend code',
+  EMAIL: 'friends.search.matchedEmail',
+  FRIEND_CODE: 'friends.search.matchedCode',
 };
 
-const NO_RESULTS: Record<UserSearchMatchType, string> = {
-  NAME: 'No one found with that name.',
-  EMAIL: 'No one found with that email address. Check the spelling, or ask for their friend code.',
-  FRIEND_CODE: 'No one has this friend code. Check the digits.',
+const NO_RESULTS: Record<UserSearchMatchType, TranslationKey> = {
+  NAME: 'friends.search.noName',
+  EMAIL: 'friends.search.noEmail',
+  FRIEND_CODE: 'friends.search.noCode',
 };
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  return error instanceof Error ? error.message : t('common.errors.generic');
 }
 
-function formatCount(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
 
 const styles = StyleSheet.create({
   loading: {

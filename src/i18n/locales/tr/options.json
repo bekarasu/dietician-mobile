@@ -1,0 +1,31 @@
+{
+  "goal": {
+    "weight_loss": "Kilo verme",
+    "maintenance": "Sağlıklı kilo koruma",
+    "body_recomposition": "Vücut kompozisyonu",
+    "habit_building": "Alışkanlık edinme"
+  },
+  "diet": {
+    "omnivore": "Omnivor",
+    "vegetarian": "Vejetaryen",
+    "vegan": "Vegan",
+    "pescatarian": "Pesketaryen",
+    "gluten_free": "Glutensiz",
+    "dairy_free": "Süt ürünsüz"
+  },
+  "specialProgram": {
+    "pregnancy": "Hamilelik"
+  },
+  "gender": {
+    "male": "Erkek",
+    "female": "Kadın",
+    "other": "Diğer"
+  },
+  "activity": {
+    "sedentary": "Hareketsiz",
+    "lightly_active": "Az hareketli",
+    "moderately_active": "Orta derecede hareketli",
+    "very_active": "Çok hareketli",
+    "extra_active": "Aşırı hareketli"
+  }
+}

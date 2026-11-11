@@ -10,6 +10,7 @@ import { AppStackParamList } from '../navigation/navigationTypes';
 import { getErrorMessage } from '../services/apiError';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'FoodSelection'>;
@@ -49,7 +50,7 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
       await updatePreferences(fieldName === 'allergies' ? { allergies: selectedFoods } : { dislikedFoods: selectedFoods });
       navigation.goBack();
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error, 'We couldn\'t save your selection. Please try again.'), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error, t('dietPlan.foodSelection.saveFailed')), tone: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -62,7 +63,7 @@ export function FoodSelectionScreen({ route, navigation }: Props) {
           selectedFoodNames={selectedFoods}
           onToggleFood={handleToggleFood}
         />
-        <AppButton title="Save Selection" onPress={handleSave} loading={isSaving} style={styles.saveButton} />
+        <AppButton title={t('dietPlan.foodSelection.save')} onPress={handleSave} loading={isSaving} style={styles.saveButton} />
       </View>
     </ScreenContainer>
   );

@@ -6,18 +6,21 @@ import { BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, Sty
 
 import { AppButton } from '../components/AppButton';
 import { ScreenContainer } from '../components/ScreenContainer';
-import { HEALTH_NOTICE } from '../constants/health';
+import { getHealthNotice } from '../constants/health';
 import { showDialog } from '../features/dialog/dialogStore';
 import { OnboardingPageRenderer } from '../features/onboarding/OnboardingPageRenderer';
-import { ONBOARDING_PAGES } from '../features/onboarding/onboardingPages';
+import { getOnboardingPages } from '../features/onboarding/onboardingPages';
 import { isFieldMissing, isPregnantDraft } from '../features/onboarding/validation';
 import { getTrimester, MIN_HEALTHY_BMI } from '../features/profile/profileRules';
 import { useAuthStore } from '../store/useAuthStore';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { OnboardingDraft } from '../types/models';
-import { formatKg } from '../utils/formatters';
+import { formatDecimal, formatKg } from '../utils/formatters';
+
+const TRIMESTER_KEYS: TranslationKey[] = ['onboarding.preview.trimesterFirst', 'onboarding.preview.trimesterSecond', 'onboarding.preview.trimesterThird'];
 
 import type { OnboardingStackParamList } from '../navigation/navigationTypes';
 
@@ -35,13 +38,12 @@ function GoalPreview({ draft }: { draft: OnboardingDraft }) {
   // During pregnancy weight goes up as it should, so there's no pace to show.
   // The page's error covers a goal that isn't allowed.
   if (isPregnantDraft(draft)) {
-    const trimester = ['first', 'second', 'third'][getTrimester(Number(draft.pregnancyWeek)) - 1];
+    const trimester = t(TRIMESTER_KEYS[getTrimester(Number(draft.pregnancyWeek)) - 1]);
     return (
       <View style={styles.preview}>
         <Ionicons name="heart-outline" size={20} color={theme.colors.primary} />
         <Text style={styles.previewText}>
-          Your plan follows your pregnancy, with the energy you need in your {trimester} trimester. It never cuts calories, whatever the
-          target. Keep following your doctor's or midwife's advice.
+          {t('onboarding.preview.pregnancy', { trimester })}
         </Text>
       </View>
     );
@@ -60,7 +62,7 @@ function GoalPreview({ draft }: { draft: OnboardingDraft }) {
       <View style={[styles.preview, styles.previewWarning]}>
         <Ionicons name="alert-circle-outline" size={20} color={theme.colors.coffee} />
         <Text style={styles.previewText}>
-          A target of {formatKg(target)} is below the healthy weight range for your height. You might choose a higher one.
+          {t('onboarding.preview.lowBmi', { target: formatKg(target) })}
         </Text>
       </View>
     );
@@ -73,11 +75,10 @@ function GoalPreview({ draft }: { draft: OnboardingDraft }) {
       <View style={styles.preview}>
         <View style={styles.previewBadge}>
           <Text style={styles.previewNumber}>{weeks}</Text>
-          <Text style={styles.previewUnit}>{weeks === 1 ? 'week' : 'weeks'}</Text>
+          <Text style={styles.previewUnit}>{t('onboarding.preview.weeksUnit', { count: weeks })}</Text>
         </View>
         <Text style={styles.previewText}>
-          Losing {formatKg(weight - target)} at a steady {weekly.toFixed(1)} kg a week takes about {weeks} {weeks === 1 ? 'week' : 'weeks'}. Slow
-          and steady is what lasts.
+          {t('onboarding.preview.weightLoss', { count: weeks, loss: formatKg(weight - target), weekly: formatDecimal(weekly) })}
         </Text>
       </View>
     );
@@ -87,7 +88,7 @@ function GoalPreview({ draft }: { draft: OnboardingDraft }) {
     return (
       <View style={styles.preview}>
         <Ionicons name="swap-horizontal-outline" size={20} color={theme.colors.primary} />
-        <Text style={styles.previewText}>Your plan will keep you around {formatKg(weight)}.</Text>
+        <Text style={styles.previewText}>{t('onboarding.preview.maintenance', { weight: formatKg(weight) })}</Text>
       </View>
     );
   }
@@ -95,6 +96,7 @@ function GoalPreview({ draft }: { draft: OnboardingDraft }) {
 }
 
 export function OnboardingScreen({ navigation }: Props) {
+  const ONBOARDING_PAGES = getOnboardingPages();
   const user = useAuthStore((state) => state.user);
   const draft = useOnboardingStore((state) => state.draft);
   const currentPageIndex = useOnboardingStore((state) => state.currentPageIndex);
@@ -160,12 +162,12 @@ export function OnboardingScreen({ navigation }: Props) {
 
   const handleLeave = useCallback(() => {
     showDialog({
-      title: 'Leave setup?',
-      message: "Nothing you entered here is saved, including a blood test you added. Your profile and plan stay as they are.",
+      title: t('onboarding.leave.title'),
+      message: t('onboarding.leave.message'),
       icon: 'exit-outline',
       buttons: [
-        { text: 'Keep going', style: 'cancel' },
-        { text: 'Leave', style: 'destructive', onPress: () => leaveOnboarding() },
+        { text: t('common.actions.keepGoing'), style: 'cancel' },
+        { text: t('onboarding.leave.confirm'), style: 'destructive', onPress: () => leaveOnboarding() },
       ],
     });
   }, [leaveOnboarding]);
@@ -220,7 +222,7 @@ export function OnboardingScreen({ navigation }: Props) {
     <ScreenContainer scrollable={false} contentStyle={styles.screen}>
       <View style={styles.topBar}>
         <Pressable
-          accessibilityLabel="Back"
+          accessibilityLabel={t('common.actions.back')}
           accessibilityRole="button"
           disabled={isFirstPage || isSubmitting || isUploadingFile}
           hitSlop={theme.spacing.sm}
@@ -239,7 +241,7 @@ export function OnboardingScreen({ navigation }: Props) {
         </Text>
         {isRestarting ? (
           <Pressable
-            accessibilityLabel="Leave setup"
+            accessibilityLabel={t('onboarding.leave.a11y')}
             accessibilityRole="button"
             disabled={isSubmitting || isUploadingFile}
             hitSlop={theme.spacing.sm}
@@ -294,13 +296,13 @@ export function OnboardingScreen({ navigation }: Props) {
             <View style={styles.errorCard}>
               <Ionicons name="cloud-offline-outline" size={20} color={theme.colors.danger} />
               <View style={styles.errorTextBlock}>
-                <Text style={styles.errorTitle}>We couldn't save your answers</Text>
-                <Text style={styles.errorText}>Check your connection and try again.</Text>
+                <Text style={styles.errorTitle}>{t('common.errors.saveAnswersTitle')}</Text>
+                <Text style={styles.errorText}>{t('common.errors.checkConnection')}</Text>
               </View>
             </View>
           ) : null}
 
-          <Text style={styles.notice}>{HEALTH_NOTICE}</Text>
+          <Text style={styles.notice}>{getHealthNotice()}</Text>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -308,7 +310,7 @@ export function OnboardingScreen({ navigation }: Props) {
             disabled={isUploadingFile}
             loading={isSubmitting}
             onPress={handleContinue}
-            title={currentPage.primaryActionLabel ?? 'Continue'}
+            title={currentPage.primaryActionLabel ?? t('common.actions.continue')}
           />
         </View>
       </KeyboardAvoidingView>

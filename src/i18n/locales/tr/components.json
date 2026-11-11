@@ -1,0 +1,28 @@
+{
+  "textInput": {
+    "clear": "{{label}} alanını temizle"
+  },
+  "bloodTestUploader": {
+    "success": "Kan tahlili başarıyla yüklendi!",
+    "select": "Belge Seç ve Yükle"
+  },
+  "countryPicker": {
+    "placeholder": "Yaşadığınız ülkeyi seçin",
+    "selectedA11y": "Ülke, {{name}}",
+    "title": "Nerede yaşıyorsunuz?",
+    "close": "Kapat",
+    "caption": "Öğünlerinizde orada kolayca bulabileceğiniz malzemeler kullanılır. Planlar İngilizce hazırlanır.",
+    "search": "Ülke ara",
+    "all": "Tüm ülkeler",
+    "empty": "\"{{query}}\" ile eşleşen ülke yok."
+  },
+  "foodList": {
+    "macros": "{{kcal}} kcal | P: {{protein}} g | K: {{carbs}} g | Y: {{fats}} g",
+    "searchLabel": "Yiyecek Ara",
+    "searchPlaceholder": "ör. Elma, Tavuk Göğsü...",
+    "empty": "\"{{query}}\" ile eşleşen yiyecek bulunamadı"
+  },
+  "userList": {
+    "actionA11y": "{{name}}: {{action}}"
+  }
+}

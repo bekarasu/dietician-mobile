@@ -9,15 +9,16 @@ import { getAvatarColors, UserAvatar } from '../components/UserAvatar';
 import { showDialog } from '../features/dialog/dialogStore';
 import { AppStackParamList, ProfileStanding } from '../navigation/navigationTypes';
 import { friendService } from '../services/friendService';
+import { t, TranslationKey } from '../i18n';
 import { theme } from '../theme/theme';
 import { LeaderboardScope, PublicProfile } from '../types/models';
 import { formatDateLabel } from '../utils/date';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'UserProfile'>;
 
-const SCOPE_LABELS: Record<LeaderboardScope, string> = {
-  friends: 'Friends leaderboard',
-  global: 'Global leaderboard',
+const SCOPE_LABELS: Record<LeaderboardScope, TranslationKey> = {
+  friends: 'friends.profile.friendsLeaderboard',
+  global: 'friends.profile.globalLeaderboard',
 };
 
 export function UserProfileScreen({ route }: Props) {
@@ -53,7 +54,7 @@ export function UserProfileScreen({ route }: Props) {
     try {
       await action();
     } catch (error) {
-      showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
+      showDialog({ title: t('common.errors.title'), message: getErrorMessage(error), tone: 'danger' });
     }
     await load();
     setBusyAction(null);
@@ -69,8 +70,8 @@ export function UserProfileScreen({ route }: Props) {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>We couldn't load this profile. Please try again.</Text>
-          <AppButton title="Try again" onPress={retry} variant="secondary" />
+          <Text style={styles.stateText}>{t('friends.profile.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={retry} variant="secondary" />
         </View>
       );
     }
@@ -85,7 +86,7 @@ export function UserProfileScreen({ route }: Props) {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="eye-off-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>This profile isn't available.</Text>
+          <Text style={styles.stateText}>{t('friends.profile.unavailable')}</Text>
         </View>
       );
     }
@@ -104,8 +105,8 @@ export function UserProfileScreen({ route }: Props) {
     if (relationship === 'NONE') {
       return (
         <View style={styles.actions}>
-          {button('Add friend', () => friendService.sendRequest(userId))}
-          <Text style={styles.hint}>Once they accept, you'll see each other on your friends leaderboard.</Text>
+          {button(t('friends.profile.addFriend'), () => friendService.sendRequest(userId))}
+          <Text style={styles.hint}>{t('friends.profile.addHint')}</Text>
         </View>
       );
     }
@@ -113,8 +114,8 @@ export function UserProfileScreen({ route }: Props) {
     if (relationship === 'OUTGOING_REQUEST' && requestId) {
       return (
         <View style={styles.actions}>
-          {button('Cancel request', () => friendService.cancelRequest(requestId), 'secondary')}
-          <Text style={styles.hint}>We'll add them to your friends leaderboard when they accept.</Text>
+          {button(t('friends.profile.cancelRequest'), () => friendService.cancelRequest(requestId), 'secondary')}
+          <Text style={styles.hint}>{t('friends.profile.cancelHint')}</Text>
         </View>
       );
     }
@@ -122,8 +123,8 @@ export function UserProfileScreen({ route }: Props) {
     if (relationship === 'INCOMING_REQUEST' && requestId) {
       return (
         <View style={styles.actions}>
-          {button('Accept request', () => friendService.acceptRequest(requestId))}
-          {button('Decline', () => friendService.rejectRequest(requestId), 'secondary')}
+          {button(t('friends.profile.acceptRequest'), () => friendService.acceptRequest(requestId))}
+          {button(t('common.actions.decline'), () => friendService.rejectRequest(requestId), 'secondary')}
         </View>
       );
     }
@@ -154,15 +155,15 @@ function RelationshipChip({ profile }: { profile: PublicProfile }) {
   switch (profile.relationship) {
     case 'FRIEND':
       icon = 'people';
-      label = profile.friendsSince ? `Friends since ${formatDateLabel(profile.friendsSince)}` : 'Friends';
+      label = profile.friendsSince ? t('friends.list.since', { date: formatDateLabel(profile.friendsSince) }) : t('friends.relationship.friends');
       break;
     case 'OUTGOING_REQUEST':
       icon = 'time-outline';
-      label = 'Request sent';
+      label = t('friends.relationship.outgoing');
       break;
     case 'INCOMING_REQUEST':
       icon = 'person-add-outline';
-      label = 'Wants to be friends';
+      label = t('friends.relationship.incoming');
       break;
     default:
       return null;
@@ -181,25 +182,25 @@ function StandingRow({ standing }: { standing: ProfileStanding }) {
 
   return (
     <View style={styles.standing}>
-      <View accessible accessibilityLabel={`Rank ${rank}, ${totalScore} points`} style={styles.stats}>
+      <View accessible accessibilityLabel={t('friends.profile.standingA11y', { rank, points: totalScore })} style={styles.stats}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>#{rank}</Text>
-          <Text style={styles.statLabel}>RANK</Text>
+          <Text style={styles.statLabel}>{t('friends.profile.rank')}</Text>
         </View>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{totalScore}</Text>
-          <Text style={styles.statLabel}>POINTS</Text>
+          <Text style={styles.statLabel}>{t('friends.profile.points')}</Text>
         </View>
       </View>
       <Text style={styles.standingCaption}>
-        {SCOPE_LABELS[scope]} · {periodLabel}
+        {t(SCOPE_LABELS[scope])} · {periodLabel}
       </Text>
     </View>
   );
 }
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  return error instanceof Error ? error.message : t('common.errors.generic');
 }
 
 const styles = StyleSheet.create({

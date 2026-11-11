@@ -1,0 +1,67 @@
+{
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "title": "Error",
+    "saveAnswersTitle": "We couldn't save your answers",
+    "checkConnection": "Check your connection and try again."
+  },
+  "actions": {
+    "tryAgain": "Try again",
+    "signOut": "Sign out",
+    "continue": "Continue",
+    "next": "Next",
+    "skip": "Skip",
+    "back": "Back",
+    "goBack": "Go back",
+    "cancel": "Cancel",
+    "keepGoing": "Keep going",
+    "notNow": "Not now",
+    "save": "Save",
+    "join": "Join",
+    "decline": "Decline",
+    "invite": "Invite",
+    "remove": "Remove",
+    "withdraw": "Withdraw",
+    "leave": "Leave",
+    "accept": "Accept",
+    "add": "Add",
+    "block": "Block",
+    "unblock": "Unblock",
+    "share": "Share",
+    "openSettings": "Open Settings",
+    "logOut": "Log out",
+    "showMore": "Show more",
+    "ok": "OK",
+    "delete": "Delete"
+  },
+  "mealTypes": {
+    "Breakfast": "Breakfast",
+    "Lunch": "Lunch",
+    "Snack": "Snack",
+    "Dinner": "Dinner"
+  },
+  "units": {
+    "cups_one": "{{count}} cup",
+    "cups_other": "{{count}} cups",
+    "gramsSuffix": "g",
+    "cupsSuffix": " cups",
+    "kgSuffix": " kg",
+    "mlSuffix": " ml",
+    "addCups_one": "+{{count}} cup",
+    "addCups_other": "+{{count}} cups"
+  },
+  "macros": {
+    "protein": "P",
+    "carbs": "C",
+    "fat": "F"
+  },
+  "habits": {
+    "meals": "Meals",
+    "water": "Water",
+    "coffee": "Coffee"
+  },
+  "list": {
+    "and": "{{items}} and {{last}}"
+  },
+  "you": "{{name}} (you)"
+}

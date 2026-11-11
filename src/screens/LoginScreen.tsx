@@ -8,6 +8,7 @@ import { AppTextInput } from '../components/AppTextInput';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionHeader } from '../components/SectionHeader';
 import { useAuthStore } from '../store/useAuthStore';
+import { t } from '../i18n';
 import { theme } from '../theme/theme';
 import { AuthStackParamList } from '../navigation/navigationTypes';
 
@@ -27,18 +28,18 @@ export function LoginScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <SectionHeader title="Welcome back" subtitle="Use the seeded demo credentials or replace the auth service with your backend later." />
+      <SectionHeader title={t('auth.login.title')} subtitle={t('auth.login.subtitle')} />
 
       <AppCard style={styles.form}>
         <Controller
           control={control}
           name="email"
-          rules={{ required: 'Email is required' }}
+          rules={{ required: t('auth.fields.emailRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
             <AppTextInput
               autoCapitalize="none"
               keyboardType="email-address"
-              label="Email"
+              label={t('auth.fields.email')}
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
@@ -49,10 +50,10 @@ export function LoginScreen({ navigation }: Props) {
         <Controller
           control={control}
           name="password"
-          rules={{ required: 'Password is required' }}
+          rules={{ required: t('auth.fields.passwordRequired') }}
           render={({ field: { onBlur, onChange, value }, fieldState: { error: fieldError } }) => (
             <AppTextInput
-              label="Password"
+              label={t('auth.fields.password')}
               onBlur={onBlur}
               onChangeText={onChange}
               secureTextEntry
@@ -64,12 +65,12 @@ export function LoginScreen({ navigation }: Props) {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <AppButton loading={isLoading} title="Log in" onPress={handleSubmit(async (values) => login(values.email, values.password))} />
+        <AppButton loading={isLoading} title={t('auth.login.submit')} onPress={handleSubmit(async (values) => login(values.email, values.password))} />
       </AppCard>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Need an account?</Text>
-        <AppButton title="Create one" variant="ghost" onPress={() => navigation.navigate('Register')} />
+        <Text style={styles.footerText}>{t('auth.login.needAccount')}</Text>
+        <AppButton title={t('auth.login.createOne')} variant="ghost" onPress={() => navigation.navigate('Register')} />
       </View>
     </ScreenContainer>
   );

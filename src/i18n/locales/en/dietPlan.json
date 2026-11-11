@@ -1,0 +1,147 @@
+{
+  "generation": {
+    "detail": "This usually takes about a minute, and carries on if you leave the app.",
+    "failed": "We couldn't prepare your plan. Please try again.",
+    "cancelled": "Preparing your plan was cancelled.",
+    "tooLateTitle": "Too late to stop",
+    "tooLateMessage": "Your plan is already being saved.",
+    "stopFailed": "We couldn't stop preparing your plan. Please try again.",
+    "stopTitle": "Stop preparing your plan?",
+    "stopMessage": "Nothing will be saved, and you can start again.",
+    "stop": "Stop"
+  },
+  "points": {
+    "logWaterFirst": "Log water first",
+    "coffeeOver": "{{cups}} cups, over your {{limit}}",
+    "coffeeOf": "{{cups}} of {{limit}} cups",
+    "upcomingDetail": "Log your meals, water and coffee on this day to earn them.",
+    "weekLine": "This week: {{total}} = weight {{weight}} + meals {{meals}} + water {{water}} + coffee {{coffee}}",
+    "weekNoteToday": "Meal, water and coffee points for the week are the average of your days. Today isn't counted against you until it ends.",
+    "weekNote": "Meal, water and coffee points for the week are the average of your days.",
+    "upTo": "Up to {{max}}",
+    "title": "Day points",
+    "mealsLogged": "{{count}} of 3 logged",
+    "mealsLoggedSoFar": "{{count}} of 3 logged so far",
+    "waterOf": "{{amount}} of {{target}}",
+    "waterOfSoFar": "{{amount}} of {{target}} so far",
+    "mealsCountHint": "Meals count on the day you mark them as taken, not the plan day they belong to."
+  },
+  "view": {
+    "current": "This plan",
+    "next": "Next plan"
+  },
+  "status": {
+    "dayOf": "Day {{day}} of {{total}}",
+    "ends": "Ends {{date}}",
+    "startsIn": "Your plan starts {{when}}",
+    "upcomingDetail": "Day 1 is {{date}}. Look through your meals now. Logging and scores begin on day 1.",
+    "ended": "Your plan ended {{date}}",
+    "endedDetail": "Check in to get your next plan.",
+    "lastDay": "Last day of your plan",
+    "lastDayDetail": "Check in now so your next plan is ready in time to shop for it.",
+    "nextStarts": "Your next plan starts {{date}}.",
+    "renew": "Renew My Plan"
+  },
+  "shared": {
+    "title": "Shared plan",
+    "invite": "Share meals with friends",
+    "detail": "Your group has the same meals, each with portions for their own goal. Tap to see who's in it.",
+    "inviteDetail": "Eat the same meals as up to 2 friends, with portions for your own goal and weight.",
+    "switching": "Switching to the shared plan",
+    "switchingDetail": "Your portions are being prepared. This usually takes about a minute.",
+    "offer": "{{name}} started a shared plan",
+    "offerDetail": "Your plan stays as it is until you choose. Tap to decide whether to switch."
+  },
+  "goals": {
+    "title": "Plan Overview",
+    "readMore": "Read more about your plan",
+    "targetOverview": "Target overview",
+    "rationale": "Rationale",
+    "tips": "Tips"
+  },
+  "shopping": {
+    "title": "Daily Shopping List",
+    "intro": "Calculated ingredients for today's plan meals:"
+  },
+  "meal": {
+    "swapFailed": "Failed to swap meal.",
+    "logFailed": "Failed to log meal.",
+    "swapSharedTitle": "Swap this shared meal?",
+    "swapSharedMessage": "Swap for everyone changes it for everyone in your group who hasn't eaten it yet, each with their own portion. Just for me changes only your meal, and it stops being shared; the group keeps theirs.",
+    "swapEveryone": "Swap for everyone",
+    "swapMe": "Just for me",
+    "extra": "EXTRA",
+    "shared": "SHARED",
+    "description": "Description",
+    "ingredients": "Ingredients",
+    "swapping": "Swapping meal...",
+    "swap": "Swap Meal",
+    "taken": "Meal Is Taken"
+  },
+  "empty": {
+    "title": "No Active Diet Plan",
+    "text": "You don't have an active diet plan yet. Generate one to see your meals here."
+  },
+  "header": {
+    "title": "Your Diet Plan",
+    "subtitle": "Stay consistent with your customized nutrition plan."
+  },
+  "day": "Day {{day}}",
+  "todaySuffix": " · Today",
+  "dailyProgress": "Daily Progress",
+  "noMeals": "No meals found for this day.",
+  "additionalMeals": "Additional Meals",
+  "extraMeal": {
+    "loadingFoods": "Loading foods…",
+    "foodsFailed": "Couldn't load the food list. Enter the meal and its calories yourself.",
+    "notInList": "Not in the list. Enter its calories yourself below.",
+    "pickHint": "Pick a food to fill in its calories and macros, or enter your own.",
+    "logFailed": "Failed to log extra meal.",
+    "add": "Add Extra Meal",
+    "title": "Log Extra Meal",
+    "food": "Food",
+    "kcalPer": "{{kcal}} kcal per {{portion}} g",
+    "changeFood": "Change food",
+    "searchPlaceholder": "Search foods or type your own",
+    "suggestionMacros": "{{kcal}} kcal · P {{protein}}g · C {{carbs}}g · F {{fats}}g per {{portion}} g",
+    "amount": "Amount",
+    "amountHint": "Enter how many grams you had.",
+    "calories": "Calories (optional)",
+    "caloriesPlaceholder": "e.g. 250",
+    "protein": "Protein (g)",
+    "carbs": "Carbs (g)",
+    "fat": "Fat (g)",
+    "mealType": "Meal Type",
+    "mealTypePlaceholder": "e.g. Snack, Dessert"
+  },
+  "checkIn": {
+    "effort": {
+      "too_hard": "Too hard",
+      "about_right": "About right",
+      "too_easy": "Too easy"
+    },
+    "mealChoice": {
+      "keep_favourites": "Keep favourites",
+      "start_fresh": "Start fresh"
+    },
+    "checkWeightTitle": "Check your weight",
+    "checkWeightMessage": "Enter your weight in kilograms, or leave it empty.",
+    "weightNote": "Logged from plan check-in",
+    "weightFailed": "We couldn't save your weight. Please try again.",
+    "createFailed": "We couldn't create your next plan. Please try again.",
+    "title": "How did this plan go?",
+    "subtitle": "Your answers and the meals you logged shape your next plan.",
+    "weight": "Weight today (optional)",
+    "weightPlaceholder": "e.g. 72.5",
+    "feel": "How did the plan feel?",
+    "nextMeals": "Your next meals",
+    "keepHint": "We'll bring back meals you marked as taken and add some new ones.",
+    "freshHint": "Every meal will be new.",
+    "startOn": "Start your next plan on",
+    "create": "Create My Next Plan"
+  },
+  "foodSelection": {
+    "saveFailed": "We couldn't save your selection. Please try again.",
+    "save": "Save Selection"
+  }
+}

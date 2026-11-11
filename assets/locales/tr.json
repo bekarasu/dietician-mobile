@@ -1,0 +1,6 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Eativio",
+    "NSFaceIDUsageDescription": "Eativio, sağlık verilerinizi korumak için Face ID kullanır."
+  }
+}

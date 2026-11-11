@@ -13,21 +13,20 @@ import { showDialog } from '../features/dialog/dialogStore';
 import { getComparisonMessage, getDifferenceLabel, getStatusMessage } from '../features/leaderboard/scoreMessages';
 import { AppStackParamList, AppTabParamList } from '../navigation/navigationTypes';
 import { LEADERBOARD_PAGE_SIZE, leaderboardService } from '../services/leaderboardService';
+import { t, translatedOption } from '../i18n';
 import { theme } from '../theme/theme';
 import { Leaderboard, LeaderboardEntry, LeaderboardPeriod, LeaderboardScope } from '../types/models';
 import { formatDateTimeLabel, formatMonth, formatWeekRange } from '../utils/date';
 
-const SCOPE_OPTIONS: { label: string; value: LeaderboardScope }[] = [
-  { label: 'Friends', value: 'friends' },
-  { label: 'Global', value: 'global' },
+const SCOPE_OPTIONS: { readonly label: string; value: LeaderboardScope }[] = [
+  translatedOption<LeaderboardScope>('friends', 'leaderboard.scope.friends'),
+  translatedOption<LeaderboardScope>('global', 'leaderboard.scope.global'),
 ];
 
-const PERIOD_OPTIONS: { label: string; value: LeaderboardPeriod }[] = [
-  { label: 'Weekly', value: 'weekly' },
-  { label: 'Monthly', value: 'monthly' },
+const PERIOD_OPTIONS: { readonly label: string; value: LeaderboardPeriod }[] = [
+  translatedOption<LeaderboardPeriod>('weekly', 'leaderboard.period.weekly'),
+  translatedOption<LeaderboardPeriod>('monthly', 'leaderboard.period.monthly'),
 ];
-
-const LOAD_ERROR = 'We couldn\'t load the rankings. Please try again.';
 
 // How often the current period refreshes while it's on screen. Scores change
 // within seconds of anyone logging, and this stays far inside the server's
@@ -190,7 +189,7 @@ export function LeaderboardScreen() {
       }
     } catch {
       if (request === latestRequest.current) {
-        showDialog({ title: 'Error', message: LOAD_ERROR, tone: 'danger' });
+        showDialog({ title: t('common.errors.title'), message: t('leaderboard.loadFailed'), tone: 'danger' });
       }
     } finally {
       setIsLoadingMore(false);
@@ -204,7 +203,7 @@ export function LeaderboardScreen() {
         refreshControl: <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={theme.colors.primary} />,
       }}
     >
-      <SectionHeader title="Leaderboard" subtitle="See how your habits compare with friends and everyone else." />
+      <SectionHeader title={t('leaderboard.header.title')} subtitle={t('leaderboard.header.subtitle')} />
 
       <View style={styles.controls}>
         <View style={styles.control}>
@@ -220,8 +219,8 @@ export function LeaderboardScreen() {
           <View style={styles.stateIcon}>
             <Ionicons color={theme.colors.primary} name="cloud-offline-outline" size={28} />
           </View>
-          <Text style={styles.stateText}>{LOAD_ERROR}</Text>
-          <AppButton title="Try again" onPress={retry} variant="secondary" />
+          <Text style={styles.stateText}>{t('leaderboard.loadFailed')}</Text>
+          <AppButton title={t('common.actions.tryAgain')} onPress={retry} variant="secondary" />
         </View>
       ) : null}
 
@@ -256,7 +255,7 @@ export function LeaderboardScreen() {
           )}
 
           {board.hasMore ? (
-            <AppButton title="Show more" onPress={loadMore} loading={isLoadingMore} variant="secondary" />
+            <AppButton title={t('leaderboard.showMore')} onPress={loadMore} loading={isLoadingMore} variant="secondary" />
           ) : null}
 
           <UpdatedCaption board={board} />
@@ -282,7 +281,7 @@ function PeriodNavigator({ board, onChange }: PeriodNavigatorProps) {
   return (
     <View style={styles.periodRow}>
       <Pressable
-        accessibilityLabel="Previous period"
+        accessibilityLabel={t('leaderboard.previousPeriod')}
         accessibilityRole="button"
         hitSlop={theme.spacing.sm}
         onPress={() => onChange(previousPeriodStart)}
@@ -292,7 +291,7 @@ function PeriodNavigator({ board, onChange }: PeriodNavigatorProps) {
       </Pressable>
       <Text style={styles.periodLabel}>{label}</Text>
       <Pressable
-        accessibilityLabel="Next period"
+        accessibilityLabel={t('leaderboard.nextPeriod')}
         accessibilityRole="button"
         accessibilityState={{ disabled: nextPeriodStart === null }}
         disabled={nextPeriodStart === null}
@@ -328,13 +327,13 @@ function StandingCard({ board, onChangePeriod, onExplain }: StandingCardProps) {
         <PeriodNavigator board={board} onChange={onChangePeriod} />
 
         <View style={styles.heroLabelRow}>
-          <Text style={styles.heroLabel}>YOUR POSITION</Text>
+          <Text style={styles.heroLabel}>{t('leaderboard.hero.position')}</Text>
           {isLive ? (
             <LiveBadge />
           ) : (
             <View style={styles.heroBadge}>
               <Ionicons color={theme.colors.surface} name="flag" size={11} />
-              <Text style={styles.heroBadgeText}>FINAL</Text>
+              <Text style={styles.heroBadgeText}>{t('leaderboard.hero.final')}</Text>
             </View>
           )}
         </View>
@@ -349,16 +348,16 @@ function StandingCard({ board, onChangePeriod, onExplain }: StandingCardProps) {
         ) : (
           <View
             accessible
-            accessibilityLabel={`Rank ${currentUser.rank} of ${totalParticipants}, ${currentUser.totalScore ?? 0} points`}
+            accessibilityLabel={t('leaderboard.hero.a11y', { rank: currentUser.rank, total: totalParticipants, points: currentUser.totalScore ?? 0 })}
             style={styles.heroStats}
           >
             <Text style={styles.heroRank}>
               #{currentUser.rank}
-              <Text style={styles.heroRankOf}> of {totalParticipants}</Text>
+              <Text style={styles.heroRankOf}>{t('leaderboard.hero.of', { total: totalParticipants })}</Text>
             </Text>
             <View style={styles.heroScore}>
               <Text style={styles.heroScoreValue}>{currentUser.totalScore ?? '–'}</Text>
-              <Text style={styles.heroScoreUnit}>POINTS</Text>
+              <Text style={styles.heroScoreUnit}>{t('leaderboard.hero.points')}</Text>
             </View>
           </View>
         )}
@@ -377,7 +376,7 @@ function StandingCard({ board, onChangePeriod, onExplain }: StandingCardProps) {
           style={({ pressed }) => [styles.heroLink, pressed && styles.pressed]}
         >
           <Ionicons color={theme.colors.surface} name="information-circle-outline" size={18} />
-          <Text style={styles.heroLinkText}>How is my score calculated?</Text>
+          <Text style={styles.heroLinkText}>{t('leaderboard.hero.explain')}</Text>
           <Ionicons color={ON_PRIMARY_MUTED} name="chevron-forward" size={16} />
         </Pressable>
       </View>
@@ -402,7 +401,7 @@ function LiveBadge() {
   return (
     <View style={styles.heroBadge}>
       <Animated.View style={[styles.liveDot, { opacity: pulse }]} />
-      <Text style={styles.heroBadgeText}>LIVE</Text>
+      <Text style={styles.heroBadgeText}>{t('leaderboard.hero.live')}</Text>
     </View>
   );
 }
@@ -423,9 +422,9 @@ function Rankings({ board, onOpenProfile }: RankingsProps) {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Rankings</Text>
+        <Text style={styles.cardTitle}>{t('leaderboard.rankings.title')}</Text>
         <Text style={styles.cardMeta}>
-          {totalParticipants} {totalParticipants === 1 ? 'person' : 'people'}
+          {t('leaderboard.rankings.people', { count: totalParticipants })}
         </Text>
       </View>
 
@@ -473,9 +472,9 @@ function PodiumPlace({ entry, onPress, position }: EntryProps & { position: numb
         <UserAvatar colors={getAvatarColors(entry.userId)} name={entry.displayName} size={isTop ? 60 : 50} />
       </View>
       <Text numberOfLines={1} style={[styles.podiumName, entry.isCurrentUser && styles.currentUserName]}>
-        {entry.isCurrentUser ? 'You' : entry.displayName}
+        {entry.isCurrentUser ? t('leaderboard.rankings.you') : entry.displayName}
       </Text>
-      <Text style={styles.podiumScore}>{entry.totalScore} pts</Text>
+      <Text style={styles.podiumScore}>{t('leaderboard.rankings.pointsShort', { points: entry.totalScore })}</Text>
       <View style={[styles.podiumBlock, { backgroundColor: medal.soft, height: PODIUM_HEIGHTS[position] }]}>
         <Text style={[styles.podiumRank, { color: medal.text }]}>{entry.rank}</Text>
       </View>
@@ -509,13 +508,13 @@ function RankingRow({ entry, onPress }: EntryProps) {
       />
       <View style={styles.identity}>
         <Text numberOfLines={1} style={[styles.name, entry.isCurrentUser && styles.currentUserName]}>
-          {entry.isCurrentUser ? 'You' : entry.displayName}
+          {entry.isCurrentUser ? t('leaderboard.rankings.you') : entry.displayName}
         </Text>
         {differenceLabel ? <Text style={styles.difference}>{differenceLabel}</Text> : null}
       </View>
       <View style={[styles.scorePill, entry.isCurrentUser ? styles.scorePillCurrentUser : undefined]}>
         <Text style={[styles.score, entry.isCurrentUser && styles.scoreCurrentUser]}>{entry.totalScore}</Text>
-        <Text style={[styles.scoreUnit, entry.isCurrentUser && styles.scoreCurrentUser]}>pts</Text>
+        <Text style={[styles.scoreUnit, entry.isCurrentUser && styles.scoreCurrentUser]}>{t('leaderboard.rankings.pts')}</Text>
       </View>
     </Pressable>
   );
@@ -524,9 +523,11 @@ function RankingRow({ entry, onPress }: EntryProps) {
 function UpdatedCaption({ board }: { board: Leaderboard }) {
   let caption: string | null = null;
   if (board.nextPeriodStart === null) {
-    caption = `Scores update as people log.${board.lastUpdatedAt ? ` Last change ${formatDateTimeLabel(board.lastUpdatedAt)}.` : ''}`;
+    caption = board.lastUpdatedAt
+      ? t('leaderboard.caption.liveWithChange', { date: formatDateTimeLabel(board.lastUpdatedAt) })
+      : t('leaderboard.caption.live');
   } else if (board.lastUpdatedAt) {
-    caption = `Updated ${formatDateTimeLabel(board.lastUpdatedAt)}`;
+    caption = t('leaderboard.caption.updated', { date: formatDateTimeLabel(board.lastUpdatedAt) });
   }
 
   if (!caption) {
@@ -543,11 +544,11 @@ function UpdatedCaption({ board }: { board: Leaderboard }) {
 
 function FriendsCard({ friendCount, onPress }: { friendCount?: number; onPress: () => void }) {
   const hasNoFriends = friendCount === 0;
-  let detail = 'Add or remove the people you compete with.';
+  let detail = t('leaderboard.friendsCard.manageDetail');
   if (hasNoFriends) {
-    detail = 'Search by name or email to send a request.';
+    detail = t('leaderboard.friendsCard.searchDetail');
   } else if (friendCount) {
-    detail = `${friendCount} ${friendCount === 1 ? 'friend' : 'friends'} on your leaderboard.`;
+    detail = t('leaderboard.friendsCard.count', { count: friendCount });
   }
 
   return (
@@ -560,7 +561,7 @@ function FriendsCard({ friendCount, onPress }: { friendCount?: number; onPress: 
         <Ionicons color={theme.colors.primary} name={hasNoFriends ? 'person-add' : 'people'} size={20} />
       </View>
       <View style={styles.identity}>
-        <Text style={styles.name}>{hasNoFriends ? 'Find friends' : 'Manage friends'}</Text>
+        <Text style={styles.name}>{hasNoFriends ? t('leaderboard.friendsCard.find') : t('leaderboard.friendsCard.manage')}</Text>
         <Text style={styles.difference}>{detail}</Text>
       </View>
       <Ionicons color={theme.colors.muted} name="chevron-forward" size={18} />
@@ -579,7 +580,7 @@ function getNextRankProgress({ currentUser, nextPeriodStart }: Leaderboard) {
 }
 
 function getEntryLabel(entry: LeaderboardEntry) {
-  return `Rank ${entry.rank}, ${entry.isCurrentUser ? 'you' : entry.displayName}, ${entry.totalScore} points`;
+  return t('leaderboard.rankings.rowA11y', { rank: entry.rank, name: entry.isCurrentUser ? t('leaderboard.rankings.youLower') : entry.displayName, points: entry.totalScore });
 }
 
 // An entry without onPress, the user's own, reads as plain text rather than a disabled button.
@@ -588,7 +589,7 @@ function getEntryPressProps(entry: LeaderboardEntry, onPress?: () => void) {
     accessible: true,
     accessibilityLabel: getEntryLabel(entry),
     accessibilityRole: onPress ? ('button' as const) : undefined,
-    accessibilityHint: onPress ? 'Opens their profile' : undefined,
+    accessibilityHint: onPress ? t('leaderboard.rankings.openHint') : undefined,
     disabled: !onPress,
     onPress,
   };
@@ -610,12 +611,12 @@ function appendPage(board: Leaderboard, page: Leaderboard): Leaderboard {
 
 function getEmptyMessage(scope: LeaderboardScope, board: Leaderboard) {
   if (scope === 'global') {
-    return 'No one has a score for this period yet.';
+    return t('leaderboard.empty.global');
   }
   if (board.friendCount === 0) {
-    return 'Add friends to compare your progress.';
+    return t('leaderboard.empty.noFriends');
   }
-  return 'No one in your friends list has a score for this period yet.';
+  return t('leaderboard.empty.friends');
 }
 
 const styles = StyleSheet.create({

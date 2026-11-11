@@ -37,7 +37,7 @@ It is `isOnboardingComplete` in `src/features/onboarding/validation.ts`, used by
 
 End of onboarding:
 
-1. The pages are local. The last one in `ONBOARDING_PAGES` (now `blood-test`) opens `PlanStartDateScreen`. A blood test is the exception: it uploads when picked, and its id goes in `bloodTestUploadIds`.
+1. The pages are local. The last one in `getOnboardingPages()` (now `blood-test`) opens `PlanStartDateScreen`. A blood test is the exception: it uploads when picked, and its id goes in `bloodTestUploadIds`.
 2. `PlanStartDateScreen` asks when to start. "Create My Plan" calls `saveAnswers()`, which posts `/profiles/onboarding`, sets `hasSavedAnswers`, and reloads the profile. Then it passes `startDate` as a route param.
 3. `GeneratingDietPlanScreen` creates the plan, then calls `completeOnboarding()`, which logs the onboarding weight now that the answers stay.
 4. `RootNavigator` switches to `AppStackNavigator`.

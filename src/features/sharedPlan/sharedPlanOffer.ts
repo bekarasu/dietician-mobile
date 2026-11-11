@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { showDialog } from '../dialog/dialogStore';
 import { isGenerationCancelled } from '../dietPlan/planGeneration';
 import { getPlanSchedule } from '../dietPlan/planSchedule';
@@ -47,15 +48,15 @@ async function getPointsToReset(offer: SharedPlanOffer): Promise<PointsToReset> 
 
 function getOfferMessage(offer: SharedPlanOffer, points: PointsToReset) {
   const today = toCalendarDate(new Date());
-  const from = offer.startDate === today ? 'today' : formatCalendarDate(offer.startDate);
-  let message = `${offer.owner.displayName} started a shared plan, until ${formatCalendarDate(offer.endDate)}. If you switch, you'll eat the same meals as your group, in portions worked out for your own goal and weight and adapted to your own allergies, dislikes and diet, and it replaces your plan from ${from}.`;
+  const from = offer.startDate === today ? t('sharedPlan.offer.today') : formatCalendarDate(offer.startDate);
+  const parts = [t('sharedPlan.offer.message', { name: offer.owner.displayName, end: formatCalendarDate(offer.endDate), from })];
   if (points === null) {
-    message +=
-      ' If your plan is running then, the meal, water and coffee points from your plan earlier that week are reset to zero, and those days still count towards your weekly average.';
+    parts.push(t('sharedPlan.offer.pointsUnknown'));
   } else if (points > 0) {
-    message += ` This resets the ${points} ${points === 1 ? 'point' : 'points'} you've earned from your plan this week to zero, and those days still count towards your weekly average.`;
+    parts.push(t('sharedPlan.offer.points', { count: points }));
   }
-  return `${message} Your portions take about a minute to prepare.`;
+  parts.push(t('sharedPlan.offer.prepTime'));
+  return parts.join(' ');
 }
 
 // Asks whether to switch to the shared plan, with the points that would cost.
@@ -63,19 +64,19 @@ function getOfferMessage(offer: SharedPlanOffer, points: PointsToReset) {
 export async function askToSwitch(offer: SharedPlanOffer, options: { onSwitch: () => void; dismissText: string; withKeepOption?: boolean }) {
   const points = await getPointsToReset(offer);
   showDialog({
-    title: 'Switch to the shared plan?',
+    title: t('sharedPlan.offer.title'),
     message: getOfferMessage(offer, points),
     icon: 'people-outline',
     buttons: [
-      { text: 'Switch', onPress: options.onSwitch },
-      ...(options.withKeepOption ? [{ text: 'Keep my plan', onPress: () => void declineSharedPlanOffer() }] : []),
+      { text: t('sharedPlan.offer.switch'), onPress: options.onSwitch },
+      ...(options.withKeepOption ? [{ text: t('sharedPlan.offerCard.keep'), onPress: () => void declineSharedPlanOffer() }] : []),
       { text: options.dismissText, style: 'cancel' as const },
     ],
   });
 }
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  return error instanceof Error ? error.message : t('common.errors.generic');
 }
 
 // Switches to the offered plan and says how it went. A newer shared plan may
@@ -86,15 +87,15 @@ export async function acceptSharedPlanOffer() {
       return;
     }
     showDialog({
-      title: "You're on the shared plan",
-      message: 'You have the same meals as your group now, in portions for your own goal and weight.',
+      title: t('sharedPlan.offer.acceptedTitle'),
+      message: t('sharedPlan.offer.acceptedMessage'),
       icon: 'checkmark-circle-outline',
     });
   } catch (error) {
     if (isGenerationCancelled(error)) {
       return;
     }
-    showDialog({ title: "We couldn't switch you to the shared plan", message: getErrorMessage(error), tone: 'danger' });
+    showDialog({ title: t('sharedPlan.offer.acceptFailed'), message: getErrorMessage(error), tone: 'danger' });
     void useSharedPlanOfferStore
       .getState()
       .load()
@@ -106,7 +107,7 @@ export async function declineSharedPlanOffer() {
   try {
     await useSharedPlanOfferStore.getState().decline();
   } catch (error) {
-    showDialog({ title: 'Error', message: getErrorMessage(error), tone: 'danger' });
+    showDialog({ title: t('common.errors.title'), message: getErrorMessage(error), tone: 'danger' });
     void useSharedPlanOfferStore
       .getState()
       .load()
